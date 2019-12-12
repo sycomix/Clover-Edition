@@ -88,17 +88,10 @@ def instructions():
     text += '\n  "load"     Asks for a save ID and loads the game if the ID is valid'
     text += '\n  "print"    Prints a transcript of your adventure (without extra newline formatting)'
     text += '\n  "help"     Prints these instructions again'
-    text += '\n  "censor off/on" to turn censoring off or on.'
     return text
 
 
 def play_aidungeon_2():
-
-    console_print(
-        "AI Dungeon 2 will save and use your actions and game to continually improve AI Dungeon."
-        + " If you would like to disable this enter 'nosaving' for any action. This will also turn off the "
-        + "ability to save games."
-    )
 
     upload_story = True
 
@@ -159,12 +152,6 @@ def play_aidungeon_2():
 
             elif action == "help":
                 console_print(instructions())
-
-            elif action == "censor off":
-                generator.censor = False
-
-            elif action == "censor on":
-                generator.censor = True
 
             elif action == "save":
                 if upload_story:

@@ -1,0 +1,2 @@
+removed botnet (uploading saved stories to public google drive)
+removed useless profanity filter

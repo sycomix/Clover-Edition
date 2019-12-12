@@ -3,15 +3,8 @@ import re
 from difflib import SequenceMatcher
 
 import yaml
-from profanityfilter import ProfanityFilter
 
 YAML_FILE = "story/story_data.yaml"
-
-
-with open("story/censored_words.txt", "r") as f:
-    censored_words = [l.replace("\n", "") for l in f.readlines()]
-
-pf = ProfanityFilter(custom_censor_list=censored_words)
 
 
 def console_print(text, width=75):
@@ -72,10 +65,6 @@ def player_won(text):
         "you ((go|get) (in)?to|arrive (at|in)) (heaven|paradise)",
     ]
     return any(re.search(regexp, lower_text) for regexp in won_phrases)
-
-
-def remove_profanity(text):
-    return pf.censor(text)
 
 
 def cut_trailing_quotes(text):
