@@ -129,19 +129,11 @@ class Story:
         f.write(story_json)
         f.close()
 
-        FNULL = open(os.devnull, "w")
-        p = Popen(
-            ["gsutil", "cp", file_name, "gs://aidungeonstories"],
-            stdout=FNULL,
-            stderr=subprocess.STDOUT,
-        )
         return self.uuid
 
     def load_from_storage(self, story_id):
 
         file_name = "story" + story_id + ".json"
-        cmd = "gsutil cp gs://aidungeonstories/" + file_name + " ."
-        os.system(cmd)
         exists = os.path.isfile(file_name)
 
         if exists:
@@ -173,8 +165,6 @@ class StoryManager:
 
     def load_new_story(self, story_id):
         file_name = "story" + story_id + ".json"
-        cmd = "gsutil cp gs://aidungeonstories/" + file_name + " ."
-        os.system(cmd)
         exists = os.path.isfile(file_name)
 
         if exists:
