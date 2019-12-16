@@ -2,13 +2,13 @@
 ## Clover Edition
 ### Coming: Soon.
 
-In 2016, Donald Trump ran for president on a campaign of Making Anime Real. Four years later this promise is finally being fullfilled. Behold AIDungeon(no space): Clover Edition. The only video game where you can truely Do Anything:
+In 2016, Donald Trump ran for president on a campaign of Making Anime Real. Four years later this promise is finally being fullfilled. Behold AIDungeon(no space): Clover Edition. The only video game where you can truly Do Anything:
 
 --insert screenshots here--
 
 A fork of AIDungeon2. I just wanted to change some small things and now I am worried I will end up completely rewriting it.
 
-####Features:
+#### Features:
 ------------------------
 
 * Complete rewrite of the user interface
@@ -19,7 +19,7 @@ A fork of AIDungeon2. I just wanted to change some small things and now I am wor
 * Better config file
 * Eventually hope to improve the AI itself, but this will take some time
 
-###Installation Instructions:
+#### Installation Instructions:
 ------------------------
 
 --insert colab instructions/guide here--
@@ -36,7 +36,7 @@ python3 play.py
 ```
 
 
-Community
+#### Community
 ------------------------
 
 See that github issues page? Post any questions, requests, or problems there if you are willing to create a github account. Unless MicroAndSoft deletes us.
@@ -48,6 +48,6 @@ Resources:
 * **Email**: cloveranon@nuke.africa
 
 
-Contributing
+#### Contributing
 ------------------------
 Contributing are more than welcome. You can fork the thing and send a  [pull request](https://help.github.com/articles/using-pull-requests/) from your fork. Or you can possibly just edit the files from the github page if it lets you. If not fork the thing and try to edit your fork and submit it back.

@@ -25,7 +25,7 @@ def console_print(text, width=75):
 def get_similarity(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
-
+#delet this
 def get_num_options(num):
 
     while True:
