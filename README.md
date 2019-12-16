@@ -1,16 +1,37 @@
 # AIDungeon2
+## Clover Edition
+### Coming: Soon.
 
-### The model for AI Dungeon2 is temporarily unavailable to download due to cost. We're working on a solution!
+In 2016, Donald Trump ran for president on a campaign of Making Anime Real. Four years later this promise is finally being fullfilled. Behold AIDungeon(no space): Clover Edition. The only video game where you can truely Do Anything:
 
-Read more about AIDungeon2 and how it was built [here](https://pcc.cs.byu.edu/2019/11/21/ai-dungeon-2-creating-infinitely-generated-text-adventures-with-deep-learning-language-models/).
+--insert screenshots here--
 
-Play the game in Colab [here](http://www.aidungeon.io).
+A fork of AIDungeon2. I just wanted to change some small things and now I am worried I will end up completely rewriting it.
 
-To play the game locally, it is recommended that you have an nVidia GPU with 12 GB or more of memory, and CUDA installed. If you do not have such a GPU, each turn can take a couple of minutes or more for the game to compose its response. To install and play locally:
+####Features:
+------------------------
+
+* Complete rewrite of the user interface
+ * Color text output
+ * Console Bell when AI finishes
+ * Much improved prompt selection
+* A much larger library of fan made starting prompts
+* Better config file
+* Eventually hope to improve the AI itself, but this will take some time
+
+###Installation Instructions:
+------------------------
+
+--insert colab instructions/guide here--
+
+To play the game locally, it is recommended that you have an nVidia GPU with 12 GB or more of memory, and CUDA installed. If you do not have such a GPU, each turn can take about a minute.
+
+Windows Installer is hopefully coming soon. In the meantime you can manually install pretty easily:
+
+Install python (version 3.7 or lower), tensorflow (1.14 or possibly 1.15 are known to work) and numpy then:
 ```
-git clone https://github.com/AIDungeon/AIDungeon/
-cd AIDungeon
-./install.sh
+git clone "https://github.com/cloveranon/AIDungeon-Clover-Edition/"
+cd aidungeon
 python3 play.py
 ```
 
@@ -18,31 +39,15 @@ python3 play.py
 Community
 ------------------------
 
-AIDungeon is an open source project. Questions, discussion, and
-contributions are welcome. Contributions can be anything from new
-packages to bugfixes, documentation, or even new core features.
+See that github issues page? Post any questions, requests, or problems there if you are willing to create a github account. Unless MicroAndSoft deletes us.
+Otherwise see:
 
 Resources:
 
-* **Website**: [aidungeon.io](http://www.aidungeon.io/)
-* **Email**: aidungeon.io@gmail.com
-* **Twitter**: [creator @nickwalton00](https://twitter.com/nickwalton00), [dev @benjbay](https://twitter.com/benjbay)
-* **Reddit**: [r/AIDungeon](https://www.reddit.com/r/AIDungeon/)
-* **Discord**: [aidungeon discord](https://discord.gg/Dg8Vcz6)
+* **Website**: [4chan Discussion](https://boards.4chan.org/search#/aidungeon%20OR%20%22ai%20dungeon%22)
+* **Email**: cloveranon@nuke.africa
 
 
 Contributing
 ------------------------
-Contributing to AIDungeon is relatively easy.  Just send us a
-[pull request](https://help.github.com/articles/using-pull-requests/) from your fork.
-When you send your request, make ``develop`` the destination branch on the
-[AIDungeon repository](https://github.com/nickwalton/AIDungeon).
-
-We prefer PRs to be
-[PEP 8](https://www.python.org/dev/peps/pep-0008/) compliant.
-
-AIDungeon uses a rough approximation of the
-[Git Flow](http://nvie.com/posts/a-successful-git-branching-model/)
-branching model.  The ``develop`` branch contains the latest
-contributions, and ``master`` is always tagged and points to the latest
-stable release.
+Contributing are more than welcome. You can fork the thing and send a  [pull request](https://help.github.com/articles/using-pull-requests/) from your fork. Or you can possibly just edit the files from the github page if it lets you. If not fork the thing and try to edit your fork and submit it back.
