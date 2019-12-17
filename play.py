@@ -19,12 +19,15 @@ colors=config["Colors"]
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = settings["loglevel"]
 
+if not Path('prompts', 'Anime').exists():
+    import pastebin
+
 #ECMA-48 set graphics codes for the curious. Check out "man console_codes"
 def colPrint(str, col='0'):
         print("\x1B[{}m{}\x1B[{}m".format(col, str, colors["default"]))
 
 def colInput(str, col1=colors["default"], col2=colors["default"]):
-    val=input("\x1B[{}m{}\x1B[{}m".format(col1,str,col1))
+    val=input("\x1B[{}m{}\x1B[0m\x1B[{}m".format(col1,str,col1))
     print('\x1B[0m', end='')
     return val
 
@@ -32,7 +35,7 @@ def getNumberInput(n):
     val=colInput("Enter a number from above:", colors["selectionPrompt"], colors["selectionValue"])
     if val=='':
         return 0
-    if 0>int(val) or int(val)>=n:
+    elif 0>int(val) or int(val)>=n:
         colPrint("Invalid choice.", colors["error"])
         return getNumberInput(n)
     else:
@@ -78,6 +81,7 @@ def play():
     with open('interface/subTitle.txt', 'r', encoding="utf-8") as file:
         cols=get_terminal_size()[0]
         for line in file:
+            line=re.sub(r'\n', '', line)
             line=line[:cols]
             colPrint(re.sub(r'\|[ _]*\|', lambda x: '\x1B[7m'+x.group(0)+'\x1B[27m', line), colors["subtitle"])
         

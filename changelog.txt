@@ -1,2 +1,6 @@
 removed botnet (uploading saved stories to public google drive)
 removed useless profanity filter
+added config file
+added color
+added download of user generated prompts
+added prompt selection menu
