@@ -30,7 +30,7 @@ Windows Installer is hopefully coming soon. In the meantime you can manually ins
 
 Install python (version 3.7 or lower), tensorflow (1.14 or possibly 1.15 are known to work) and numpy then:
 ```
-git clone "https://github.com/cloveranon/AIDungeon-Clover-Edition/"
+git clone "https://github.com/cloveranon/Clover-Edition/"
 cd aidungeon
 python3 play.py
 ```
