@@ -1,4 +1,3 @@
 numpy
-pyyaml
 regex
 tensorflow==1.15

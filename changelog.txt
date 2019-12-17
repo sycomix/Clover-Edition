@@ -4,3 +4,5 @@ added config file
 added color
 added download of user generated prompts
 added prompt selection menu
+added console bell alert when AI finishes generating
+removed useless dependencies

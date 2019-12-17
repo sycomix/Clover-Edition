@@ -2,10 +2,6 @@
 import re
 from difflib import SequenceMatcher
 
-import yaml
-
-YAML_FILE = "story/story_data.yaml"
-
 
 def console_print(text, width=75):
     last_newline = 0
