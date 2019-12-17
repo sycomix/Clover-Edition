@@ -171,6 +171,7 @@ def play():
                 if action == "":
                     action = ""
                     result = story_manager.act(action)
+                    print('\x07', end='')
                     colPrint(result, colors["AIText"])
 
                 elif action[0] == '"':
@@ -191,6 +192,7 @@ def play():
                     action = "\n> " + action + "\n"
 
                 result = "\n" + story_manager.act(action)
+                print('\x07', end='')
                 if len(story_manager.story.results) >= 2:
                     similarity = get_similarity(
                         story_manager.story.results[-1], story_manager.story.results[-2]

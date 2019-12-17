@@ -4,3 +4,5 @@ venv/
 saves/*
 story*.json
 !*.gitkeep
+prompts/*
+!/prompts/cloveranon-prompts/*
