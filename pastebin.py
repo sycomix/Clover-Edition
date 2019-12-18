@@ -33,5 +33,5 @@ for sect in sections[2:][:-1]:
         else:
             title=story[:30]
         title=filename(title)+'.txt'
-        with Path('prompts', category, title).open('w') as f:
+        with Path('prompts', category, title).open('w', encoding='UTF-8') as f:
             f.write(re.sub(r'^\([^\)]+\)\n', '', story))
