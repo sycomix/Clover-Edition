@@ -21,21 +21,6 @@ def console_print(text, width=75):
 def get_similarity(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
-#delet this
-def get_num_options(num):
-
-    while True:
-        choice = input("Enter the number of your choice: ")
-        try:
-            result = int(choice)
-            if result >= 0 and result < num:
-                return result
-            else:
-                print("Error invalid choice. ")
-        except ValueError:
-            print("Error invalid choice. ")
-
-
 def player_died(text):
     """
     TODO: Add in more sophisticated NLP, maybe a custom classifier

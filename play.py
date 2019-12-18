@@ -32,10 +32,10 @@ def colInput(str, col1=colors["default"], col2=colors["default"]):
     return val
 
 def getNumberInput(n):
-    val=colInput("Enter a number from above:", colors["selectionPrompt"], colors["selectionValue"])
+    val=colInput("Enter a number from above (default 0):", colors["selection-prompt"], colors["selection-value"])
     if val=='':
         return 0
-    elif 0>int(val) or int(val)>=n:
+    elif 0>int(val) or int(val)>n:
         colPrint("Invalid choice.", colors["error"])
         return getNumberInput(n)
     else:
@@ -47,7 +47,7 @@ def selectFile(p=Path('prompts')):
         shuffle(files)
         for n in range(len(files)):
             colPrint('{}: {}'.format(n, re.sub(r'\.txt$', '', files[n].name)), colors["menu"])
-        return selectFile(files[getNumberInput(len(files))])
+        return selectFile(files[getNumberInput(len(files)-1)])
     else:
         with p.open() as file:
             line1=file.readline()
@@ -66,7 +66,7 @@ def instructions():
 
 
 def play():
-    colPrint("\nInitializing AI Dungeon! (This might take a few minutes)\n", colors["loadingMessage"])
+    colPrint("\nInitializing AI Dungeon! (This might take a few minutes)\n", colors["loading-message"])
     generator = GPT2Generator(
             generate_num=settings.getint('generatenum'),
             temperature=settings.getfloat("temp"),
@@ -91,21 +91,36 @@ def play():
             del story_manager.story
 
         print("\n\n")
-        
-        context, prompt = selectFile()
+
+        colPrint("0: Pick Prompt From File (Default if you type nothing)\n1: Write Custom Prompt", colors["menu"])
+
+        if getNumberInput(1) == 1:
+            with open(Path('interface', 'prompt-instructions.txt'), 'r') as file:
+                colPrint(file.read(), colors['instructions'])
+            context=colInput('Context>', colors['main-prompt'], colors['user-text'])
+            prompt=colInput('Prompt>', colors['main-prompt'], colors['user-text'])
+            filename=colInput('Name to save prompt as? (Leave blank for no save): ', colors['query'], colors['user-text'])
+            filename=re.sub('-$','',re.sub('^-', '', re.sub('[^a-zA-Z0-9_-]+', '-', filename)))+'.txt'
+            if filename != '':
+                with open(Path('prompts', filename), 'w') as f: 
+                    #this saves unix style line endings which might be an issue
+                    #don't know how to do this properly
+                    f.write(context+'\n'+prompt+'\n')
+        else:
+            context, prompt = selectFile()
 
         instructions()
 
-        colPrint("\nGenerating story...", colors["loadingMessage"])
+        colPrint("\nGenerating story...", colors["loading-message"])
 
         story_manager.start_new_story(
             prompt, context=context
         )
         print("\n")
-        colPrint(str(story_manager.story), colors["AIText"])
+        colPrint(str(story_manager.story), colors["ai-text"])
 
         while True:
-            action = colInput("> ", colors["mainPrompt"], colors["userText"])
+            action = colInput("> ", colors["main-prompt"], colors["user-text"])
             if action == "restart":
                 #rating = input("Please rate the story quality from 1-10: ")
                 #rating_float = float(rating)
@@ -160,11 +175,11 @@ def play():
 
                 story_manager.story.actions = story_manager.story.actions[:-1]
                 story_manager.story.results = story_manager.story.results[:-1]
-                colPrint("Last action reverted. ", colors["loadingMessage"])
+                colPrint("Last action reverted. ", colors["message"])
                 if len(story_manager.story.results) > 0:
-                    colPrint(story_manager.story.results[-1], colors["AIText"])
+                    colPrint(story_manager.story.results[-1], colors["ai-text"])
                 else:
-                    console_print(story_manager.story.story_start, colors["AIText"])
+                    colPrint(story_manager.story.story_start, colors["ai-text"])
                 continue
 
             else:
@@ -172,7 +187,7 @@ def play():
                     action = ""
                     result = story_manager.act(action)
                     print('\x07', end='')
-                    colPrint(result, colors["AIText"])
+                    colPrint(result, colors["ai-text"])
 
                 elif action[0] == '"':
                     action = "You say " + action
@@ -204,21 +219,21 @@ def play():
                         continue
 
                 if player_won(result):
-                    colPrint(result + "\n CONGRATS YOU WIN", colors["loadingMessage"])
+                    colPrint(result + "\n CONGRATS YOU WIN", colors["message"])
                     break
                 elif player_died(result):
-                    colPrint(result, colors["AIText"])
+                    colPrint(result, colors["ai-text"])
                     colPrint("YOU DIED. GAME OVER", colors["error"])
-                    console_print("\nOptions:\n0)Start a new game\n1)\"I'm not dead yet!\" (If you didn't actually die)", colors["menu"])
-                    choice = getNumberInput(2)
+                    colPrint("\nOptions:\n0)Start a new game\n1)\"I'm not dead yet!\" (If you didn't actually die)", colors["menu"])
+                    choice = getNumberInput(1)
                     if choice == 0:
                         break
                     else:
-                        colPrint("Sorry about that...where were we?", colors["menu"])
-                        console_print(result, colors["AIText"])
+                        colPrint("Sorry about that...where were we?", colors["query"])
+                        colPrint(result, colors["ai-text"])
 
                 else:
-                    colPrint(result, colors["AIText"])
+                    colPrint(result, colors["ai-text"])
 
 
 play()

@@ -89,6 +89,7 @@ class Story:
 
         return "".join(story_list)
 
+    #delet this
     def to_json(self):
         story_dict = {}
         story_dict["story_start"] = self.story_start
