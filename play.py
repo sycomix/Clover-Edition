@@ -10,6 +10,7 @@ from shutil import get_terminal_size
 from generator.gpt2.gpt2_generator import *
 from story.story_manager import *
 from story.utils import *
+import textwrap
 
 #perhaps all the following should be put in a seperate utils file like original
 config = configparser.ConfigParser()
@@ -17,13 +18,15 @@ config.read('config.ini')
 settings=config["Settings"]
 colors=config["Colors"]
 
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = settings["loglevel"]
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = settings["log-level"]
 
 if not Path('prompts', 'Anime').exists():
     import pastebin
 
 #ECMA-48 set graphics codes for the curious. Check out "man console_codes"
-def colPrint(str, col='0'):
+def colPrint(str, col='0', wrap=True):
+        if wrap and settings.getint('text-wrap-width') > 1:
+            str = textwrap.fill(str, settings.getint('text-wrap-width'), replace_whitespace=False)
         print("\x1B[{}m{}\x1B[{}m".format(col, str, colors["default"]))
 
 def colInput(str, col1=colors["default"], col2=colors["default"]):
@@ -56,22 +59,16 @@ def selectFile(p=Path('prompts')):
 
 def instructions():
     with open('interface/instructions.txt', 'r', encoding='utf-8') as file:
-         colPrint(file.read(), colors["instructions"])
-
-
-#"\nEnter a prompt that describes who you are and the first couple sentences of where you start "
-#            "out ex:\n 'You are a knight in the kingdom of Larion. You are hunting the evil dragon who has been "
-#            + "terrorizing the kingdom. You enter the forest searching for the dragon and see' "
-
+         colPrint(file.read(), colors["instructions"], False)
 
 
 def play():
     colPrint("\nInitializing AI Dungeon! (This might take a few minutes)\n", colors["loading-message"])
     generator = GPT2Generator(
-            generate_num=settings.getint('generatenum'),
+            generate_num=settings.getint('generate-num'),
             temperature=settings.getfloat("temp"),
-            top_k=settings.getint("topkeks"),
-            top_p=settings.getfloat("top_p"))
+            top_k=settings.getint("top-keks"),
+            top_p=settings.getfloat("top-p"))
     story_manager = UnconstrainedStoryManager(generator)
     print("\n")
 
@@ -83,7 +80,7 @@ def play():
         for line in file:
             line=re.sub(r'\n', '', line)
             line=line[:cols]
-            colPrint(re.sub(r'\|[ _]*\|', lambda x: '\x1B[7m'+x.group(0)+'\x1B[27m', line), colors["subtitle"])
+            colPrint(re.sub(r'\|[ _]*\|', lambda x: '\x1B[7m'+x.group(0)+'\x1B[27m', line), colors["subtitle"], False)
         
 
     while True:
@@ -96,7 +93,7 @@ def play():
 
         if getNumberInput(1) == 1:
             with open(Path('interface', 'prompt-instructions.txt'), 'r') as file:
-                colPrint(file.read(), colors['instructions'])
+                colPrint(file.read(), colors['instructions'], False)
             context=colInput('Context>', colors['main-prompt'], colors['user-text'])
             prompt=colInput('Prompt>', colors['main-prompt'], colors['user-text'])
             filename=colInput('Name to save prompt as? (Leave blank for no save): ', colors['query'], colors['user-text'])
@@ -120,6 +117,8 @@ def play():
         colPrint(str(story_manager.story), colors["ai-text"])
 
         while True:
+            if settings.getboolean('console-bell'):
+                print('\x07', end='')
             action = colInput("> ", colors["main-prompt"], colors["user-text"])
             if action == "restart":
                 #rating = input("Please rate the story quality from 1-10: ")
@@ -165,7 +164,7 @@ def play():
 
             elif action == "print":
                 print("\nPRINTING\n")
-                colPrint(str(story_manager.story), colors["printStory"])
+                colPrint(str(story_manager.story), colors["print-story"])
 
             elif action == "revert":
 
@@ -186,7 +185,6 @@ def play():
                 if action == "":
                     action = ""
                     result = story_manager.act(action)
-                    print('\x07', end='')
                     colPrint(result, colors["ai-text"])
 
                 elif action[0] == '"':
@@ -207,7 +205,6 @@ def play():
                     action = "\n> " + action + "\n"
 
                 result = "\n" + story_manager.act(action)
-                print('\x07', end='')
                 if len(story_manager.story.results) >= 2:
                     similarity = get_similarity(
                         story_manager.story.results[-1], story_manager.story.results[-2]
