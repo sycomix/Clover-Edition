@@ -6,3 +6,5 @@ added download of user generated prompts
 added prompt selection menu
 added console bell alert when AI finishes generating
 removed useless dependencies
+added text wrapping
+added ability to save custom prompts

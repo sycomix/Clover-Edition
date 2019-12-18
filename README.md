@@ -8,7 +8,8 @@ In 2016, Donald Trump ran for president on a campaign of Making Anime Real. Four
 
 --insert screenshots here--
 
-A fork of AIDungeon2. I just wanted to change some small things and now I am worried I will end up completely rewriting it.
+A fork of AIDungeon2.
+
 
 #### Features:
 ------------------------
@@ -17,6 +18,7 @@ A fork of AIDungeon2. I just wanted to change some small things and now I am wor
  * Color text output
  * Console Bell when AI finishes
  * Much improved prompt selection
+ * Ability to save custom prompts
 * A much larger library of fan made starting prompts
 * Better config file
 * Eventually hope to improve the AI itself, but this will take some time
@@ -52,4 +54,4 @@ Resources:
 
 #### Contributing
 ------------------------
-Contributing are more than welcome. You can fork the thing and send a  [pull request](https://help.github.com/articles/using-pull-requests/) from your fork. Or you can possibly just edit the files from the github page if it lets you. If not fork the thing and try to edit your fork and submit it back.
+Contributions are more than welcome. You can fork the thing and send a  [pull request](https://help.github.com/articles/using-pull-requests/) from your fork. Or you can possibly just edit the files from the github page if it lets you. If not fork the thing and try to edit your fork and submit it back.
