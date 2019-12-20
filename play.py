@@ -1,8 +1,6 @@
 import os
-#import sys
-#import time
-#import json
 import configparser
+import gc
 from pathlib import Path
 from random import shuffle
 from shutil import get_terminal_size
@@ -59,7 +57,7 @@ def selectFile(p=Path('prompts')):
             colPrint('{}: {}'.format(n, re.sub(r'\.txt$', '', files[n].name)), colors["menu"])
         return selectFile(files[getNumberInput(len(files)-1)])
     else:
-        with p.open() as file:
+        with p.open('r', encoding='utf-8') as file:
             line1=file.readline()
             rest=file.read()
         return (line1, rest)
@@ -68,15 +66,17 @@ def instructions():
     with open('interface/instructions.txt', 'r', encoding='utf-8') as file:
          colPrint(file.read(), colors["instructions"], False)
 
-
-def play():
-    colPrint("\nInitializing AI Dungeon! (This might take a few minutes)\n", colors["loading-message"])
-    generator = GPT2Generator(
+def getGenerator():
+    colPrint("\nInitializing AI Engine! (This might take a few minutes)\n", colors["loading-message"])
+    return GPT2Generator(
             generate_num=settings.getint('generate-num'),
             temperature=settings.getfloat("temp"),
             top_k=settings.getint("top-keks"),
             top_p=settings.getfloat("top-p"))
-    story_manager = UnconstrainedStoryManager(generator)
+    
+
+def play():
+    story_manager = UnconstrainedStoryManager(getGenerator())
     print("\n")
 
     with open("interface/mainTitle.txt", "r", encoding="utf-8") as file:
@@ -99,14 +99,14 @@ def play():
         colPrint("0: Pick Prompt From File (Default if you type nothing)\n1: Write Custom Prompt", colors["menu"])
 
         if getNumberInput(1) == 1:
-            with open(Path('interface', 'prompt-instructions.txt'), 'r') as file:
+            with open(Path('interface', 'prompt-instructions.txt'), 'r', encoding='utf-8') as file:
                 colPrint(file.read(), colors['instructions'], False)
             context=colInput('Context>', colors['main-prompt'], colors['user-text'])
             prompt=colInput('Prompt>', colors['main-prompt'], colors['user-text'])
             filename=colInput('Name to save prompt as? (Leave blank for no save): ', colors['query'], colors['user-text'])
             filename=re.sub('-$','',re.sub('^-', '', re.sub('[^a-zA-Z0-9_-]+', '-', filename)))+'.txt'
             if filename != '':
-                with open(Path('prompts', filename), 'w') as f: 
+                with open(Path('prompts', filename), 'w', encoding='utf-8') as f: 
                     #this saves unix style line endings which might be an issue
                     #don't know how to do this properly
                     f.write(context+'\n'+prompt+'\n')
@@ -127,54 +127,32 @@ def play():
             if settings.getboolean('console-bell'):
                 print('\x07', end='')
             action = colInput("> ", colors["main-prompt"], colors["user-text"])
-            if action == "restart":
-                #rating = input("Please rate the story quality from 1-10: ")
-                #rating_float = float(rating)
-                #story_manager.story.rating = rating_float
+            setRegex = re.search('^set ([^ ]+) ([^ ]+)$', action)
+            if setRegex:
+                if setRegex.group(1) in settings:
+                    currentSettingValue = settings[setRegex.group(1)]
+                    colPrint("Current Value of {}: {}     Changing to: {}".format(setRegex.group(1), currentSettingValue, setRegex.group(2)))
+                    settings[setRegex.group(1)] = setRegex.group(2)
+                    colPrint('Save config file?', colors['query'])
+                    colPrint('Saving an invalid option will corrupt file!', colors['error'])
+                    if colInput('y/n? >', colors['selection-prompt'], colors['selection-value']) == 'y':
+                        with open('config.ini', 'w', encoding='utf-8') as file:
+                            config.write(file)
+                    del story_manager.generator 
+                    gc.collect()
+                    story_manager.generator = getGenerator() 
+                else:
+                    colPrint('Invalid Setting', colors['error'])
+                    instructions()
+            elif action == "restart":
                 break
-#            elif re.match('set', action):
-#                error()
             elif action == "quit":
-                #rating = input("Please rate the story quality from 1-10: ")
-                #rating_float = float(rating)
-                #story_manager.story.rating = rating_float
                 exit()
-
-            #elif action == "nosaving":
-                #upload_story = False
-                #story_manager.story.upload_story = False
-                #console_print("Saving turned off.")
-
             elif action == "help":
                 instructions()
-
-            #elif action == "save":
-            #    if upload_story:
-            #        id = story_manager.story.save_to_storage()
-            #        console_print("Game saved.")
-            #        console_print(
-            #            "To load the game, type 'load' and enter the following ID: "
-            #            + id
-            #        )
-            #    else:
-            #        console_print("Saving has been turned off. Cannot save.")
-
-            #elif action == "load":
-            #    load_ID = input("What is the ID of the saved game?")
-            #    result = story_manager.story.load_from_storage(load_ID)
-            #    console_print("\nLoading Game...\n")
-            #    console_print(result)
-
-            #elif len(action.split(" ")) == 2 and action.split(" ")[0] == "load":
-            #    load_ID = action.split(" ")[1]
-            #    result = story_manager.story.load_from_storage(load_ID)
-            #    console_print("\nLoading Game...\n")
-            #    console_print(result)
-
             elif action == "print":
                 print("\nPRINTING\n")
                 colPrint(str(story_manager.story), colors["print-story"])
-
             elif action == "revert":
 
                 if len(story_manager.story.actions) is 0:
