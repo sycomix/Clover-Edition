@@ -104,9 +104,9 @@ def play():
             context=colInput('Context>', colors['main-prompt'], colors['user-text'])
             prompt=colInput('Prompt>', colors['main-prompt'], colors['user-text'])
             filename=colInput('Name to save prompt as? (Leave blank for no save): ', colors['query'], colors['user-text'])
-            filename=re.sub('-$','',re.sub('^-', '', re.sub('[^a-zA-Z0-9_-]+', '-', filename)))+'.txt'
+            filename=re.sub('-$','',re.sub('^-', '', re.sub('[^a-zA-Z0-9_-]+', '-', filename)))
             if filename != '':
-                with open(Path('prompts', filename), 'w', encoding='utf-8') as f: 
+                with open(Path('prompts', filename+'.txt'), 'w', encoding='utf-8') as f: 
                     #this saves unix style line endings which might be an issue
                     #don't know how to do this properly
                     f.write(context+'\n'+prompt+'\n')
