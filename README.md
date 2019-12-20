@@ -4,6 +4,7 @@
 
 In 2016, Donald Trump ran for president on a campaign of Making Anime Real. Four years later this promise is finally being fullfilled. Behold AIDungeon(no space): Clover Edition. The only video game where you can truly Do Anything:
 
+![img](https://i.4cdn.org/v/1576830028034.png)
 ![img](https://i.4cdn.org/v/1576564400002.png)
 
 --insert screenshots here--
