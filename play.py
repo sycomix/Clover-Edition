@@ -17,6 +17,9 @@ try:
 except ModuleNotFoundError:
     pass
 
+with open(Path('interface', 'clover'), 'r', encoding='utf-8') as file:
+    print(file.read())
+
 #perhaps all the following should be put in a seperate utils file like original
 config = configparser.ConfigParser()
 config.read('config.ini')
