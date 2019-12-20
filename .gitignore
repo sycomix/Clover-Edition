@@ -6,3 +6,4 @@ story*.json
 !*.gitkeep
 /prompts/*
 !/prompts/cloveranon-prompts/*
+/generator/gpt2/models/*

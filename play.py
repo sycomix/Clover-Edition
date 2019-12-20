@@ -12,6 +12,13 @@ from story.story_manager import *
 from story.utils import *
 import textwrap
 
+#add color for windows users that install colorama
+try:
+    import colorama
+    colorama.init()
+except ModuleNotFoundError:
+    pass
+
 #perhaps all the following should be put in a seperate utils file like original
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -125,6 +132,8 @@ def play():
                 #rating_float = float(rating)
                 #story_manager.story.rating = rating_float
                 break
+#            elif re.match('set', action):
+#                error()
             elif action == "quit":
                 #rating = input("Please rate the story quality from 1-10: ")
                 #rating_float = float(rating)
