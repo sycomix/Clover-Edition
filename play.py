@@ -28,8 +28,6 @@ colors=config["Colors"]
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = settings["log-level"]
 
-if not Path('prompts', 'Anime').exists():
-    import pastebin
 
 #ECMA-48 set graphics codes for the curious. Check out "man console_codes"
 def colPrint(str, col='0', wrap=True):
@@ -77,6 +75,11 @@ def getGenerator():
             top_k=settings.getint("top-keks"),
             top_p=settings.getfloat("top-p"))
     
+if not Path('prompts', 'Anime').exists():
+    try:
+        import pastebin
+    except:
+        colPrint("Failed to scrape pastebin, possible connection issue.\nTry again later. Continuing without downloading prompts...", colors['error'])
 
 def play():
     story_manager = UnconstrainedStoryManager(getGenerator())
