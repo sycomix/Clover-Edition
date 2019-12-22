@@ -41,7 +41,7 @@ Some anon a few days ago claimed to have >18,000 sci fi and fantasy novels in an
 
 Anon says Choya.com has many CYOA stories including lewd ones
 
-Every *Welcome to Night Vale* Transcript: https://sys.4channel.org/derefer?url=https%3A%2F%2Fgofile.io%2F%3Fc%3DAOTOEs
+Every *Welcome to Night Vale* Transcript: https://gofile.io/?c=AOTOEs
 
 Kono Sekai ga Game da to Ore dake ga Shitteiru (This World Is a Game, but Only I Know It: volume 1 & 2)
 https://gofile.io/?c=M1Tzye
