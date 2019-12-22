@@ -2,9 +2,11 @@
 ----------------------------
 This page needs a lot of work, please feel free to edit it and submit changes.
 
-## UNIX tools
+No one has quite worked out a great method of retraining the AI, but many anons are trying different things and progress is being made. I have my own approach I'm working on but can't promise anything anytime soon. But I'll take any datasets you want to link me.
+
+## GNU/UNIX tools
 ----------
-Windows users I'm sorry but your software sucks for things that involve manipulating text files. Fortunately you guys have the windows subsystem for linux which allows you to use all the basic unix tools within windows. I'm just throwing some basic info here for noobs that have no idea what to do. Go to [/g/fglt](https://boards.4channel.org/g/catalog#s=fglt) for help.
+Windows users I'm sorry but your software sucks for things that involve manipulating text files. Fortunately you guys have the windows subsystem for linux which allows you to use all the basic unix tools within windows. I'm just throwing some basic info here for noobs that have no idea what to do. Go to [/g/fglt](https://boards.4channel.org/g/catalog#s=fglt) for help with GNU/linux tools and questions.
 
 ### `wget`
 ---------------------------
@@ -39,12 +41,17 @@ Project Gutenberg has over 60,000 public domain books that have been manually tr
 
 Some anon a few days ago claimed to have >18,000 sci fi and fantasy novels in an epub format. I can no longer find his post, would love to have that.
 
-Anon says Choya.com has many CYOA stories including lewd ones
+Anon says chyoa.com has many CYOA stories including lewd ones
 
-Every *Welcome to Night Vale* Transcript: https://gofile.io/?c=AOTOEs
+Every *Welcome to Night Vale* Transcript. (Interesting because *Welcome to Night Vale*'s surreal and absurd setting fits with the randomness of the AI's output): https://gofile.io/?c=AOTOEs
 
 Kono Sekai ga Game da to Ore dake ga Shitteiru (This World Is a Game, but Only I Know It: volume 1 & 2)
 https://gofile.io/?c=M1Tzye
 
 Goblin Slayer (volume 1 - 8)
 https://gofile.io/?c=BwP9ru
+
+-Bionicle txt (books up to Mahri Nui, handful of lego web series + few lewd fanfics)
+https://gofile.io/?c=dcIruE
+-Witcher books
+https://gofile.io/?c=Qp8dKQ
