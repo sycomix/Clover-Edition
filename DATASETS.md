@@ -33,9 +33,7 @@ The mormon used a dataset of CYOA texts that can still be found in the data fold
 
 There are also references in the code to mechanical turk, a website used to pay thirdworlders to enter data for you for pennies.
 
-Large collection of CYOA smut: https://editthis.info/create_your_own_story/Category:Adult_Stories
-	All in the format of a mediawiki. See https://wiki.installgentoo.com/wiki/Wiki_Backups for info on scraping mediawikis
-	Also see the section on wget 
+Large collection of CYOA text: https://editthis.info/create_your_own_story/ Including an adult category: https://editthis.info/create_your_own_story/Category:Adult_Stories All in the format of a mediawiki. See https://wiki.installgentoo.com/wiki/Wiki_Backups for info on scraping mediawikis. Also see the section on wget. 
 
 Project Gutenberg has over 60,000 public domain books that have been manually transcribed into text files. Most of these books are quite old. Virtually all pre-1920s.
 
