@@ -7,7 +7,7 @@ from transformers import GPT2LMHeadModel, GPT2Tokenizer
 from getconfig import settings, logger
 from story.utils import cut_trailing_sentence
 
-CPU = torch.cuda.is_available() and not settings.getboolean('force-cpu')
+CPU = not torch.cuda.is_available() and not settings.getboolean('force-cpu')
 
 # warnings.filterwarnings("ignore")
 MODEL_CLASSES = {
