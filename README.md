@@ -16,9 +16,10 @@ A fork of AIDungeon2, now with huggingface's transformers repo using pytorch gpt
 #### Features:
 ------------------------
 
-* Half precision floating point using half as much GPU memory
+* Half precision floating point using less GPU memory
 * Complete rewrite of the user interface
  * Color text output
+ * Suggested actions
  * Console Bell when AI finishes
  * Much improved prompt selection
  * Ability to save custom prompts
@@ -45,10 +46,19 @@ python play.py
 (You don't actually need git, just a fast way to clone this repo instead of manually downloading it)
 (If that doesn't work try `python3` instead of python. This also assumes git is installed, but you can download a zip file from github and extract it yourself if you don't want to install git.)
 
-Then you will need to download the model and put it in the models folder. The current magnet torrent linke is here:
+Then you will need to download the model and put it in the models folder rename it to pytorch-gpt2-xl-aid2-v5. The current magnet torrent link is here:
 ```
 magnet:?xt=urn:btih:17dcfe3d12849db04a3f64070489e6ff5fc6f63f&dn=model_v5_pytorch&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce&tr=udp%3a%2f%2fopen.stealth.si%3a80%2fannounce&tr=udp%3a%2f%2fp4p.arenabg.com%3a1337%2fannounce&tr=udp%3a%2f%2ftracker.coppersurfer.tk%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.cyberia.is%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.moeking.me%3a6969%2fannounce&tr=udp%3a%2f%2f9.rarbg.me%3a2710%2fannounce&tr=udp%3a%2f%2ftracker3.itzmx.com%3a6961%2fannounce
 ```
+
+Your model folder should look like this:
+
+    ./models
+    └── pytorch-gpt2-xl-aid2-v5
+        ├── config.json
+        ├── merges.txt
+        ├── pytorch_model.bin
+        └── vocab.json
 
 ##### Color support on Windows (All methods untested. Please report if they do or do not work.):
 
