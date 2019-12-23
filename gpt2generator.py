@@ -7,6 +7,8 @@ from transformers import GPT2LMHeadModel, GPT2Tokenizer
 from getconfig import settings, logger
 from story.utils import cut_trailing_sentence
 
+CPU = torch.cuda.is_available() and not settings.getboolean('force-cpu')
+
 # warnings.filterwarnings("ignore")
 MODEL_CLASSES = {
     "gpt2": (GPT2LMHeadModel, GPT2Tokenizer),
@@ -104,7 +106,7 @@ class GPT2Generator:
         self.top_p = top_p
         self.censor = censor
         self.samples = 1
-        self.dtype = torch.float32 if settings.getboolean('cpu') else torch.float16
+        self.dtype = torch.float32 if CPU else torch.float16
         self.repetition_penalty = repetition_penalty
         self.batch_size = 1
         self.stop_token = None
@@ -112,7 +114,7 @@ class GPT2Generator:
         self.model_name = "pytorch-gpt2-xl-aid2-v5"
         self.model_dir = "models"
         self.checkpoint_path = os.path.join(self.model_dir, self.model_name)
-        self.device = torch.device("cuda" if torch.cuda.is_available() and not settings.getboolean('cpu') else "cpu")
+        self.device = torch.device("cuda" if not CPU else "cpu")
         logger.info("Using device={}, checkpoint={}".format(self.device, self.checkpoint_path))
 
         # Load tokenizer and model
