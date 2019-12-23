@@ -1,6 +1,13 @@
 # coding: utf-8
 import re
-from difflib import SequenceMatcher
+import logging
+from pyjarowinkler import distance
+
+logger = logging.getLogger(__name__)
+
+
+
+
 
 
 def console_print(text, width=75):
@@ -18,8 +25,26 @@ def console_print(text, width=75):
     print(text)
 
 
+#TODO: get rid if pyjarowinker dependency
 def get_similarity(a, b):
-    return SequenceMatcher(None, a, b).ratio()
+    return distance.get_jaro_distance(
+                            a, b, winkler=True, scaling = 0.1
+                        )
+
+
+def get_num_options(num):
+
+    while True:
+        choice = input("Enter the number of your choice: ")
+        try:
+            result = int(choice)
+            if result >= 0 and result < num:
+                return result
+            else:
+                print("Error invalid choice. ")
+        except ValueError:
+            print("Error invalid choice. ")
+
 
 def player_died(text):
     """
@@ -33,6 +58,7 @@ def player_died(text):
         "you (die|pass away|perish|suffocate|drown|bleed out)",
         "you('ve| have) (died|perished|suffocated|drowned|been (killed|slain))",
         "you (\w* )?(yourself )?to death",
+        "you (\w* )*(collapse|bleed out|chok(e|ed|ing)|drown|dissolve) (\w* )*and (die(|d)|pass away|cease to exist|(\w* )+killed)",
     ]
     return any(re.search(regexp, lower_text) for regexp in you_dead_regexps)
 
@@ -40,12 +66,18 @@ def player_died(text):
 def player_won(text):
     lower_text = text.lower()
     won_phrases = [
-        "you live happily ever after",
-        "you live (forever|eternally|for eternity)",
-        "you (are|become|turn into) (a)? (deity|god)",
-        "you ((go|get) (in)?to|arrive (at|in)) (heaven|paradise)",
+        "you ((\w* )*and |)live happily ever after",
+        "you ((\w* )*and |)live (forever|eternally|for eternity)",
+        "you ((\w* )*and |)(are|become|turn into) ((a|now) )?(deity|god|immortal)",
+        "you ((\w* )*and |)((go|get) (in)?to|arrive (at|in)) (heaven|paradise)",
+        "you ((\w* )*and |)celebrate your (victory|triumph)",
+        "you ((\w* )*and |)retire",
     ]
     return any(re.search(regexp, lower_text) for regexp in won_phrases)
+
+
+def remove_profanity(text):
+    return pf.censor(text)
 
 
 def cut_trailing_quotes(text):
@@ -79,9 +111,42 @@ def cut_trailing_action(text):
         or "You ask" in last_line
         or "you say" in last_line
         or "You say" in last_line
-    ):
+    ) and len(lines) > 1:
         text = "\n".join(lines[0:-1])
     return text
+
+
+def clean_suggested_action(result_raw, min_length=4):
+    result_raw = standardize_punctuation(result_raw)
+
+    # The generations actions carry on into the next prompt, so lets remove the prompt
+    results = result_raw.split("\n")
+    results = [s.strip() for s in results]
+    results = [s for s in results if len(s) > min_length]
+    # Sometimes actions are generated with leading > ! . or ?. Likely the model trying to finish the prompt or start an action.
+    result = results[0].strip().lstrip(" >!.?")
+    result = cut_trailing_quotes(result)
+    logger.debug(
+        "full suggested action '%s'. Cropped: '%s'. Split '%s'",
+        result_raw,
+        result,
+        results,
+    )
+
+    # Often actions are cropped with sentance fragment, lets remove. Or we could just turn up config_act["generate-number"]
+    last_punc = max(result.rfind("."), result.rfind("!"), result.rfind("?"))
+    if (last_punc / (len(result) + 1)) > 0.7:
+        result = result[:last_punc]
+    elif last_punc == len(result):
+        pass
+    else:
+        result += "..."
+
+    # Remove you from start
+    result = first_to_second_person(result)
+    result = re.sub('^ ?[Yy]ou ?', '', result)
+    logger.debug("suggested action after cleaning %s", result)
+    return result
 
 
 def cut_trailing_sentence(text):

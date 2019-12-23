@@ -1,16 +1,31 @@
-import os
 import configparser
 import gc
+import textwrap
+import logging
 from pathlib import Path
 from random import shuffle
 from shutil import get_terminal_size
 
-from generator.gpt2.gpt2_generator import *
 from story.story_manager import *
 from story.utils import *
-import textwrap
+from gpt2generator import GPT2Generator
+
+#silence transformers outputs when loading model
+logging.getLogger("transformers.tokenization_utils").setLevel(logging.WARN)
+logging.getLogger("transformers.modeling_utils").setLevel(logging.WARN)
+logging.getLogger("transformers.configuration_utils").setLevel(logging.WARN)
+
+logging.basicConfig(
+    format='%(asctime)s - %(levelnames)s - %(messages)s',
+    datefmt='%m/%d/%Y %H:%M%S',
+    level=logging.INFO
+)
+logger.setLevel(10)#settings['log-level'])
+
+#TODO: Move all these utilty functions to seperate utily and config file
 
 #add color for windows users that install colorama
+#   It is not necessary to install colorama on most systems, but it does come with pip
 try:
     import colorama
     colorama.init()
@@ -20,13 +35,11 @@ except ModuleNotFoundError:
 with open(Path('interface', 'clover'), 'r', encoding='utf-8') as file:
     print(file.read())
 
-#perhaps all the following should be put in a seperate utils file like original
 config = configparser.ConfigParser()
 config.read('config.ini')
 settings=config["Settings"]
 colors=config["Colors"]
 
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = settings["log-level"]
 
 
 #ECMA-48 set graphics codes for the curious. Check out "man console_codes"
@@ -44,7 +57,7 @@ def getNumberInput(n):
     val=colInput("Enter a number from above (default 0):", colors["selection-prompt"], colors["selection-value"])
     if val=='':
         return 0
-    elif 0>int(val) or int(val)>n:
+    elif not re.match('^\d+$', val) or 0>int(val) or int(val)>n:
         colPrint("Invalid choice.", colors["error"])
         return getNumberInput(n)
     else:
@@ -55,7 +68,9 @@ def selectFile(p=Path('prompts')):
         files=[x for x in p.iterdir()]
         shuffle(files)
         for n in range(len(files)):
-            colPrint('{}: {}'.format(n, re.sub(r'\.txt$', '', files[n].name)), colors["menu"])
+            colPrint(
+                    '{}: {}'.format(n, re.sub(r'\.txt$', '', files[n].name)),
+                    colors["menu"])
         return selectFile(files[getNumberInput(len(files)-1)])
     else:
         with p.open('r', encoding='utf-8') as file:
@@ -63,38 +78,71 @@ def selectFile(p=Path('prompts')):
             rest=file.read()
         return (line1, rest)
 
+#print files done several times and probably deserves own function
 def instructions():
     with open('interface/instructions.txt', 'r', encoding='utf-8') as file:
          colPrint(file.read(), colors["instructions"], False)
 
 def getGenerator():
-    colPrint("\nInitializing AI Engine! (This might take a few minutes)\n", colors["loading-message"])
+    colPrint(
+            "\nInitializing AI Engine! (This might take a few minutes)\n",
+            colors["loading-message"])
     return GPT2Generator(
             generate_num=settings.getint('generate-num'),
-            temperature=settings.getfloat("temp"),
-            top_k=settings.getint("top-keks"),
-            top_p=settings.getfloat("top-p"))
+            temperature=settings.getfloat('temp'),
+            top_k=settings.getint('top-keks'),
+            top_p=settings.getfloat('top-p'),
+            repetition_penalty=settings.getfloat('repetition-penalty')
+        )
     
 if not Path('prompts', 'Anime').exists():
     try:
         import pastebin
     except:
+        logger.warning('Failed to scrape pastebin: %e', e)
         colPrint("Failed to scrape pastebin, possible connection issue.\nTry again later. Continuing without downloading prompts...", colors['error'])
 
+class AIPlayer:
+    def __init__(self, generator):
+        self.generator = generator
+
+    def get_action(self, prompt):
+        result_raw = self.generator.generate_raw(
+                prompt, generate_num=settings.getint('action-generate-num'), temperature=settings.getint('temp'))
+        return clean_suggested_action(result_raw, min_length=settings.getint('action-min-length'))
+
+    def get_actions(self, prompt):
+        suggested_actions = [
+                self.get_action(prompt)
+                for _ in range(settings.getint('action-alternatives')) 
+            ]
+        logger.debug("Suggested actions before filter and dedup %s", suggested_actions)
+        #remove short ones
+        suggested_actions = [
+                s
+                for s in suggested_actions
+                if len(s) > settings.getint('action-min-length')
+            ]
+        #remove dups
+        suggested_actions = list(set(suggested_actions))
+        return suggested_actions
+
 def play():
-    story_manager = UnconstrainedStoryManager(getGenerator())
+    generator = getGenerator()
+    story_manager = UnconstrainedStoryManager(generator)
+    ai_player = AIPlayer(generator)
     print("\n")
 
-    with open("interface/mainTitle.txt", "r", encoding="utf-8") as file:
-        colPrint(file.read(), colors["title"])
+    with open(Path('interface', 'mainTitle.txt'), 'r', encoding='utf-8') as file:
+        colPrint(file.read(), colors['title'])
 
-    with open('interface/subTitle.txt', 'r', encoding="utf-8") as file:
+    with open(Path('interface', 'subTitle.txt'), 'r', encoding='utf-8') as file:
         cols=get_terminal_size()[0]
         for line in file:
             line=re.sub(r'\n', '', line)
             line=line[:cols]
+            #fills in the graphic using reverse video mode substituted into the areas between |'s
             colPrint(re.sub(r'\|[ _]*\|', lambda x: '\x1B[7m'+x.group(0)+'\x1B[27m', line), colors["subtitle"], False)
-        
 
     while True:
         if story_manager.story != None:
@@ -107,32 +155,53 @@ def play():
         if getNumberInput(1) == 1:
             with open(Path('interface', 'prompt-instructions.txt'), 'r', encoding='utf-8') as file:
                 colPrint(file.read(), colors['instructions'], False)
-            context=colInput('Context>', colors['main-prompt'], colors['user-text'])
-            prompt=colInput('Prompt>', colors['main-prompt'], colors['user-text'])
+            context = colInput('Context>', colors['main-prompt'], colors['user-text'])
+            prompt = colInput('Prompt>', colors['main-prompt'], colors['user-text'])
             filename=colInput('Name to save prompt as? (Leave blank for no save): ', colors['query'], colors['user-text'])
             filename=re.sub('-$','',re.sub('^-', '', re.sub('[^a-zA-Z0-9_-]+', '-', filename)))
             if filename != '':
                 with open(Path('prompts', filename+'.txt'), 'w', encoding='utf-8') as f: 
-                    #this saves unix style line endings which might be an issue
-                    #don't know how to do this properly
-                    f.write(context+'\n'+prompt+'\n')
+                    f.write(context+'\n'+prompt)
         else:
             context, prompt = selectFile()
 
         instructions()
 
-        colPrint("\nGenerating story...", colors["loading-message"])
+        print()
+        colPrint("Generating story...", colors['loading-message'])
 
-        story_manager.start_new_story(
-            prompt, context=context
-        )
+        #TODO:seperate out AI generated part of story and print with different color
+        story_manager.start_new_story(prompt, context=context)
         print("\n")
         colPrint(str(story_manager.story), colors["ai-text"])
 
         while True:
+            #Generate suggested actions
+            if settings.getint('action-alternatives') > 0:
+
+                #TODO change this to two messages for different colors
+                action_prompt = (
+                        story_manager.story.results[-1]
+                        if story_manager.story.results
+                        else "\nWhat do you do now?"
+                    ) + "\n>"
+                #can this just be a for loop?
+                suggested_actions = ai_player.get_actions(action_prompt)
+                if len(suggested_actions):
+                    suggested_actions_enum = [
+                            "{}> {}\n".format(i, a) for i, a in enumerate(suggested_actions)
+                        ]
+                    suggested_action = "".join(suggested_actions_enum)
+                    #TODO: check color
+                    colPrint('Suggested actions\n' + suggested_action, colors['selection-value'])
+                    print()
+
             if settings.getboolean('console-bell'):
                 print('\x07', end='')
             action = colInput("> ", colors["main-prompt"], colors["user-text"])
+            
+            #TODO:Clear suggestions and user input
+
             setRegex = re.search('^set ([^ ]+) ([^ ]+)$', action)
             if setRegex:
                 if setRegex.group(1) in settings:
@@ -144,9 +213,6 @@ def play():
                     if colInput('y/n? >', colors['selection-prompt'], colors['selection-value']) == 'y':
                         with open('config.ini', 'w', encoding='utf-8') as file:
                             config.write(file)
-                    del story_manager.generator 
-                    gc.collect()
-                    story_manager.generator = getGenerator() 
                 else:
                     colPrint('Invalid Setting', colors['error'])
                     instructions()
@@ -158,11 +224,11 @@ def play():
                 instructions()
             elif action == "print":
                 print("\nPRINTING\n")
-                colPrint(str(story_manager.story), colors["print-story"])
+                colPrint(str(story_manager.story), colors['print-story'])
             elif action == "revert":
 
-                if len(story_manager.story.actions) is 0:
-                    colPrint("You can't go back any farther. ", colors["error"])
+                if len(story_manager.story.actions) == 0:
+                    colPrint("You can't go back any farther. ", colors['error'])
                     continue
 
                 story_manager.story.actions = story_manager.story.actions[:-1]
@@ -225,5 +291,5 @@ def play():
                 else:
                     colPrint(result, colors["ai-text"])
 
-
+#TODO: there's no reason for this to be enclosed in a function
 play()
