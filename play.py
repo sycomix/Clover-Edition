@@ -169,7 +169,8 @@ def play():
                         if story_manager.story.results
                         else "\nWhat do you do now?"
                     ) + "\n>"
-                #can this just be a for loop?
+                # (cloveranon) can this just be a for loop?
+                # (AccidentallyOP) yes, and it would look nicer to see them progress, but you might get duplicates
                 suggested_actions = ai_player.get_actions(action_prompt)
                 if len(suggested_actions):
                     suggested_actions_enum = [
