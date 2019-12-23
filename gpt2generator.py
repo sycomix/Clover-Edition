@@ -7,7 +7,7 @@ from transformers import GPT2LMHeadModel, GPT2Tokenizer
 from getconfig import settings, logger
 from story.utils import cut_trailing_sentence
 
-CPU = not torch.cuda.is_available() and not settings.getboolean('force-cpu')
+CPU = (not torch.cuda.is_available()) or settings.getboolean('force-cpu')
 
 # warnings.filterwarnings("ignore")
 MODEL_CLASSES = {
@@ -116,7 +116,7 @@ class GPT2Generator:
         self.checkpoint_path = os.path.join(self.model_dir, self.model_name)
         assert os.path.exists(self.checkpoint_path), "Make sure to download the pytorch v5 model and put it in "+self.checkpoint_path
         self.device = torch.device("cuda" if not CPU else "cpu")
-        logger.info("Using device={}, checkpoint={}".format(self.device, self.checkpoint_path))
+        logger.info("Using device={}, checkpoint={}, dtype={}".format(self.device, self.checkpoint_path, self.dtype))
 
         # Load tokenizer and model
         model_class, tokenizer_class = MODEL_CLASSES["gpt2"]
@@ -124,21 +124,6 @@ class GPT2Generator:
         self.model = model_class.from_pretrained(self.checkpoint_path)
         self.model.to(self.device).to(self.dtype)
         self.model.eval()
-
-        # context_tokens = self.tokenizer.encode(' ', add_special_tokens=False)
-        context_tokens = [
-            self.tokenizer.pad_token_type_id,
-            self.tokenizer.pad_token_type_id,
-        ]
-        out = self.sample_sequence(context_tokens).tolist()
-        # out = out[:, len(context_tokens):].tolist()
-        for o in out:
-            text = self.tokenizer.decode(o, clean_up_tokenization_spaces=True)
-            if self.stop_token:
-                index = text.find(self.stop_token)
-                if index == -1:
-                    index = None
-                text = text[:index]
 
     def sample_sequence(self, context_tokens=None, generate_num=None, temperature=None):
         generate_num = generate_num if (generate_num is not None) else self.generate_num
