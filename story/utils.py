@@ -1,12 +1,10 @@
 # coding: utf-8
 import re
-import logging
+#TODO: try to get rid of this
 from pyjarowinkler import distance
 
-logger = logging.getLogger(__name__)
 
-
-
+from getconfig import logger
 
 
 
@@ -82,7 +80,7 @@ def remove_profanity(text):
 
 def cut_trailing_quotes(text):
     num_quotes = text.count('"')
-    if num_quotes % 2 is 0:
+    if num_quotes % 2 == 0:
         return text
     else:
         final_ind = text.rfind('"')
@@ -222,7 +220,7 @@ def mapping_variation_pairs(mapping):
     )
 
     # Change you it's before a punctuation
-    if mapping[0] is "you":
+    if mapping[0] == "you":
         mapping = ("you", "me")
     mapping_list.append((" " + mapping[0] + ",", " " + mapping[1] + ","))
     mapping_list.append((" " + mapping[0] + "\?", " " + mapping[1] + "\?"))

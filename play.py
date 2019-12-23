@@ -1,31 +1,19 @@
-import configparser
 import gc
 import textwrap
-import logging
 from pathlib import Path
 from random import shuffle
 from shutil import get_terminal_size
 
+from getconfig import settings, colors, logger
 from story.story_manager import *
 from story.utils import *
 from gpt2generator import GPT2Generator
 
-#silence transformers outputs when loading model
-logging.getLogger("transformers.tokenization_utils").setLevel(logging.WARN)
-logging.getLogger("transformers.modeling_utils").setLevel(logging.WARN)
-logging.getLogger("transformers.configuration_utils").setLevel(logging.WARN)
 
-logging.basicConfig(
-    format='%(asctime)s - %(levelnames)s - %(messages)s',
-    datefmt='%m/%d/%Y %H:%M%S',
-    level=logging.INFO
-)
-logger.setLevel(10)#settings['log-level'])
-
-#TODO: Move all these utilty functions to seperate utily and config file
+#TODO: Move all these utilty functions to seperate utily file
 
 #add color for windows users that install colorama
-#   It is not necessary to install colorama on most systems, but it does come with pip
+#   It is not necessary to install colorama on most systems
 try:
     import colorama
     colorama.init()
@@ -34,12 +22,6 @@ except ModuleNotFoundError:
 
 with open(Path('interface', 'clover'), 'r', encoding='utf-8') as file:
     print(file.read())
-
-config = configparser.ConfigParser()
-config.read('config.ini')
-settings=config["Settings"]
-colors=config["Colors"]
-
 
 
 #ECMA-48 set graphics codes for the curious. Check out "man console_codes"
@@ -108,7 +90,7 @@ class AIPlayer:
 
     def get_action(self, prompt):
         result_raw = self.generator.generate_raw(
-                prompt, generate_num=settings.getint('action-generate-num'), temperature=settings.getint('temp'))
+                prompt, generate_num=settings.getint('action-generate-num'), temperature=settings.getint('action-temp'))
         return clean_suggested_action(result_raw, min_length=settings.getint('action-min-length'))
 
     def get_actions(self, prompt):

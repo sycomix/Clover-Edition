@@ -4,7 +4,8 @@ import torch.nn.functional as F
 
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
-from story.utils import cut_trailing_sentence, logger
+from getconfig import settings, logger
+from story.utils import cut_trailing_sentence
 
 # warnings.filterwarnings("ignore")
 MODEL_CLASSES = {
@@ -103,17 +104,15 @@ class GPT2Generator:
         self.top_p = top_p
         self.censor = censor
         self.samples = 1
-        self.dtype = torch.half
+        self.dtype = torch.float32 if settings.getboolean('cpu') else torch.float16
         self.repetition_penalty = repetition_penalty
         self.batch_size = 1
         self.stop_token = None
 
         self.model_name = "pytorch-gpt2-xl-aid2-v5"
-        # self.model_name = "model_v5_pytorch_half"
         self.model_dir = "models"
         self.checkpoint_path = os.path.join(self.model_dir, self.model_name)
-        # self.checkpoint_path = 'gpt2' # DEBUG quick test of a smaller untrained model
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() and not settings.getboolean('cpu') else "cpu")
         logger.info("Using device={}, checkpoint={}".format(self.device, self.checkpoint_path))
 
         # Load tokenizer and model
