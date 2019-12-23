@@ -1,6 +1,7 @@
 # AIDungeon2
 ## Clover Edition
-### Coming: Soon.
+### Pytorch Edition
+#### Coming: Soon.
 
 In 2016, Donald Trump ran for president on a campaign of Making Anime Real. Four years later this promise is finally being fullfilled. Behold AIDungeon(no space): Clover Edition. The only video game where you can truly Do Anything:
 
@@ -9,12 +10,13 @@ In 2016, Donald Trump ran for president on a campaign of Making Anime Real. Four
 
 --insert screenshots here--
 
-A fork of AIDungeon2.
+A fork of AIDungeon2, now with huggingface's transformers repo using pytorch gpt2.
 
 
 #### Features:
 ------------------------
 
+* Half precision floating point using half as much GPU memory
 * Complete rewrite of the user interface
  * Color text output
  * Console Bell when AI finishes
@@ -29,18 +31,19 @@ A fork of AIDungeon2.
 
 --insert colab instructions/guide here--
 
-To play the game locally, it is recommended that you have an nVidia GPU with 12 GB or more of memory, and CUDA installed. If you do not have such a GPU, each turn can take about a minute.
+To play with GPU, you need an NVIDA GPU with >4 GB of memory (exact minimum requirements still very untested), and CUDA installed. On CPU response times vary from 30 to 90 seconds, which is slow but usable.
 
 Windows Installer is hopefully coming someday. I'm not 100% sure how to do it. In the meantime you can manually install pretty easily:
 
-Install python (version 3.7 or lower), tensorflow (1.14 or possibly 1.15 are known to work), numpy, and regex (e.g. `pip install numpy` (or `pip3`) from the command line, after installing python. Windows users may need to add it to their PATH. Look up how to do these things if you don't know, it's not too hard). Windows users may want to install another module called "colorama", if it is not already installed. See color support section. Then:
+Install python, pytorch, numpy, and regex (e.g. `pip install numpy` (or `pip3`) from the command line, after installing python. Windows users may need to add it to their PATH. Look up how to do these things if you don't know, it's not too hard). Windows users may want to install another module called "colorama", if it is not already installed. See color support section. Then:
 ```
-git clone "https://github.com/cloveranon/Clover-Edition/"
+#git clone "https://github.com/cloveranon/Clover-Edition/"
+git clone <THIS_URL>
 cd Clover-Edition
 python play.py
 ```
+(You don't actually need git, just a fast way to clone this repo instead of manually downloading it)
 (If that doesn't work try `python3` instead of python. This also assumes git is installed, but you can download a zip file from github and extract it yourself if you don't want to install git.)
-(Tell me if you have a problem installing regex. Any version will work so far as I know. I want to remove it. It is used only twice in the code to do something that can be trivially done with pythons built in regular expressions.)
 
 ##### Color support on Windows (All methods untested. Please report if they do or do not work.):
 
