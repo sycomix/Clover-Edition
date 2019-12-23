@@ -229,6 +229,8 @@ def play():
                     action = ""
                     result = story_manager.act(action)
                     colPrint(result, colors["ai-text"])
+                elif action in [str(i) for i in range(len(suggested_actions))]:
+                    action = suggested_actions[int(action)]
 
                 elif action[0] == '"':
                     action = "You say " + action
