@@ -45,6 +45,11 @@ python play.py
 (You don't actually need git, just a fast way to clone this repo instead of manually downloading it)
 (If that doesn't work try `python3` instead of python. This also assumes git is installed, but you can download a zip file from github and extract it yourself if you don't want to install git.)
 
+Then you will need to download the model and put it in the models folder. The current magnet torrent linke is here:
+```
+magnet:?xt=urn:btih:17dcfe3d12849db04a3f64070489e6ff5fc6f63f&dn=model_v5_pytorch&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce&tr=udp%3a%2f%2fopen.stealth.si%3a80%2fannounce&tr=udp%3a%2f%2fp4p.arenabg.com%3a1337%2fannounce&tr=udp%3a%2f%2ftracker.coppersurfer.tk%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.cyberia.is%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.moeking.me%3a6969%2fannounce&tr=udp%3a%2f%2f9.rarbg.me%3a2710%2fannounce&tr=udp%3a%2f%2ftracker3.itzmx.com%3a6961%2fannounce
+```
+
 ##### Color support on Windows (All methods untested. Please report if they do or do not work.):
 
 * Install a python package called `colorama` and it should work. This may already be installed by pip. Which I believe is installed automatically with python. Tell me if color works out of the box on windows now.
