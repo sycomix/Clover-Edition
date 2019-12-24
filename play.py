@@ -109,8 +109,7 @@ class AIPlayer:
         return clean_suggested_action(result_raw, min_length=settings.getint('action-min-length'))
 
 
-def play():
-    generator = getGenerator()
+def play(generator):
     story_manager = UnconstrainedStoryManager(generator)
     ai_player = AIPlayer(generator)
     print("\n")
@@ -317,5 +316,8 @@ def play():
                         colPrint("Sorry about that...where were we?", colors["query"])
                 colPrint(result, colors["ai-text"])
 
-#TODO: there's no reason for this to be enclosed in a function
-play()
+
+# This is here for rapid development, without reloading the model. You import play into a jupyternotebook with autoreload
+if __name__ == "__main__":
+    generator = getGenerator()
+    play(generator)
