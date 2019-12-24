@@ -1,4 +1,5 @@
 import gc
+import random
 import textwrap
 from pathlib import Path
 from random import shuffle
@@ -235,20 +236,46 @@ def play():
                 elif action in [str(i) for i in range(len(suggested_actions))]:
                     action = suggested_actions[int(action)]
 
-                elif action[0] == '"':
-                    action = "You say " + action
+                # Roll a 20 sided dice to make things interesting
+                d = random.randint(1, 20)
+                logger.debug("roll d20=%s", d)
+                if action[0] == '"':
+                    if d == 1:
+                        verbs_say_d01 = ["mumble", "prattle", "incoherently say", "whine", "ramble", "wheeze"]
+                        verb = random.sample(verbs_say_d01, 1)[0]
+                        action = "You "+verb+" " + action
+                    elif d == 20:
+                        verbs_say_d20 = ["successfully", "persuasively", "expertly", "conclusively", "dramatically", "adroitly", "aptly"]
+                        verb = random.sample(verbs_say_d20, 1)[0]
+                        action = "You "+verb+" say " + action
+                    else:
+                        action = "You say " + action
 
                 else:
                     action = action.strip()
-                    action = action[0].lower() + action[1:]
-
-                    if "You" not in action[:6] and "I" not in action[:6]:
-                        action = "You " + action
+                    action = first_to_second_person(action)
+                    if not action.lower().startswith("you ") and not action.lower().startswith("i "):
+                        action = action[0].lower() + action[1:]
+                        # roll a d20
+                        if d == 1:
+                            verb_action_d01 = ["disastrously", "incompetently", "dangerously", "stupidly", "horribly", "miserably", "sadly"]
+                            verb = random.sample(verb_action_d01, 1)[0]
+                            action = "You "+verb+" fail to " + action
+                        elif d < 5:
+                            action = "You start to " + action
+                        elif d < 10:
+                            action = "You attempt to " + action
+                        elif d < 15:
+                            action = "You try to " + action
+                        elif d < 20:
+                            action = "You " + action
+                        else:
+                            verb_action_d20 = ["successfully", "expertly", "conclusively", "adroitly", "aptly", "masterfully"]
+                            verb = random.sample(verb_action_d20, 1)[0]
+                            action = "You "+verb+" " + action
 
                     if action[-1] not in [".", "?", "!"]:
                         action = action + "."
-
-                    action = first_to_second_person(action)
 
                     action = "\n> " + action + "\n"
 

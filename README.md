@@ -21,6 +21,7 @@ A fork of AIDungeon2, now with huggingface's transformers repo using pytorch gpt
 * Complete rewrite of the user interface
  * Color text output
  * Suggested actions
+ * Roll 20 sided dice for speech or action
  * Console Bell when AI finishes
  * Much improved prompt selection
  * Ability to save custom prompts
