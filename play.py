@@ -3,6 +3,7 @@ with open(Path('interface', 'start-message.txt'), 'r') as file:
     print('\x1B[7m'+file.read()+'\x1B[27m')
 import gc
 import random
+import torch
 import textwrap
 from random import shuffle
 from shutil import get_terminal_size
