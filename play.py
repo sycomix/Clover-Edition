@@ -279,7 +279,7 @@ def play():
 
                     action = "\n> " + action + "\n"
 
-                colPrint("\n>> " + action.lstrip(' >'), colors["transformed-user-text"])
+                colPrint("\n>> " + action.lstrip().lstrip('> \n'), colors["transformed-user-text"])
                 result = "\n" + story_manager.act(action)
                 if len(story_manager.story.results) >= 2:
                     similarity = get_similarity(
