@@ -65,11 +65,12 @@ def sample_sequence(
     context = torch.tensor(context, dtype=torch.long, device=device)
     context = context.unsqueeze(0).repeat(num_samples, 1)
     generated = context
+    next_token = context
+    outputs = None
     with torch.no_grad():
-        # for _ in tqdm(range(length), leave=False, desc='generating'):
         for _ in range(length):
-
-            inputs = {"input_ids": generated}
+            past = outputs[1] if outputs is not None else None
+            inputs = {"input_ids": next_token, 'past': past}
 
             outputs = model(
                 **inputs
@@ -114,7 +115,8 @@ class GPT2Generator:
         self.model_name = "pytorch-gpt2-xl-aid2-v5"
         self.model_dir = "models"
         self.checkpoint_path = os.path.join(self.model_dir, self.model_name)
-        assert os.path.exists(self.checkpoint_path), "Make sure to download the pytorch v5 model and put it in "+self.checkpoint_path
+        assert os.path.exists(self.checkpoint_path), "Make sure to download the pytorch v5 model and put it in " + self.checkpoint_path
+        self.checkpoint_path = "gpt2"
         self.device = torch.device("cuda" if not CPU else "cpu")
         logger.info("Using device={}, checkpoint={}, dtype={}".format(self.device, self.checkpoint_path, self.dtype))
 
