@@ -38,7 +38,7 @@ To play with GPU, you need an NVIDA GPU with >4 GB of memory (exact minimum requ
 
 Windows Installer is hopefully coming someday. I'm not 100% sure how to do it. In the meantime you can manually install pretty easily:
 
-Install python, pytorch, and `transformers` (e.g. `pip install pytorch` (or `pip3`) from the command line, after installing python. Windows users may need to add it to their PATH. Look up how to do these things if you don't know, it's not too hard). Windows users may want to install another module called "colorama", if it is not already installed. If you see `[27m` glyphs, the color codes aren't working, see  the color support section. Then:
+Install python, pytorch (`torch`), and `transformers` (e.g. `pip install torch` (or `pip3`) from the command line, after installing python. Windows users may need to add it to their PATH. Look up how to do these things if you don't know, it's not too hard). Windows users may want to install another module called "colorama", if it is not already installed. If you see `[27m` glyphs, the color codes aren't working, see  the color support section. Then:
 ```
 #git clone "https://github.com/cloveranon/Clover-Edition/"
 git clone <THIS_URL>
