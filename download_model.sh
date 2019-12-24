@@ -4,11 +4,10 @@ BASE_DIR="$(pwd)"
 
 BASE_DIR="$(pwd)"
 MODELS_DIRECTORY=models
-MODEL_VERSION=model_v5
 
+MODEL_VERSION=pytorch-gpt2-xl-aid2-v5
 MODEL_DIRECTORY="${MODELS_DIRECTORY}"
 
-MODEL_NAME=pytorch-gpt2-xl-aid2-v5
 MODEL_TORRENT_URL="https://raw.githubusercontent.com/AccidentallyOnPurpose/pytorch-AIDungeon/f692e39d84b21d39da9819142165a05a03030892/generator/gpt2/models/model_v5_pytorch.torrent"
 MODEL_TORRENT_BASENAME="$(basename "${MODEL_TORRENT_URL}")"
 
@@ -33,7 +32,7 @@ download_torrent() {
       --disable-ipv6 \
       "${MODEL_TORRENT_BASENAME}"
     echo "Download Complete!"
-    mv "${MODEL_TORRENT_BASENAME%.*}" $MODEL_NAME
+    mv "${MODEL_TORRENT_BASENAME%.*}" $MODEL_VERSION
     fi
 }
 
@@ -43,7 +42,7 @@ redownload () {
 	download_torrent
 }
 
-if [[ -d "${MODEL_DIRECTORY}" ]]; then
+if [[ -d "${MODEL_DIRECTORY}/${MODEL_VERSION}" ]]; then
 	ANSWER="n"
 	echo "AIDungeon2 Model appears to be downloaded."
 	echo "Would you like to redownload?"
