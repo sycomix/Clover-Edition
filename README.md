@@ -9,15 +9,13 @@ In 2016, Donald Trump ran for president on a campaign of Making Anime Real. Four
 ![img](https://i.4cdn.org/v/1576564400002.png)
 ![img](http://i.imgur.com/NqC0lxG.png)
 
---insert screenshots here--
 
-A fork of AIDungeon2, now with huggingface's transformers repo using pytorch gpt2.
+A fork of AIDungeon2, now driven by huggingface's transformers repository using PyTorch GPT2.
 
 
 #### Features:
 ------------------------
 
-* Half precision floating point using less GPU memory
 * Complete rewrite of the user interface
  * Color text output
  * Suggested actions
@@ -27,6 +25,7 @@ A fork of AIDungeon2, now with huggingface's transformers repo using pytorch gpt
  * Ability to save custom prompts
 * A much larger library of fan made starting prompts
 * Better config file
+* Half precision floating point using less GPU memory (you still need 8GB+)
 * Eventually hope to improve the AI itself, but this will take some time
 
 #### Installation Instructions:
@@ -54,14 +53,13 @@ Windows users *may* want to install another module called "colorama". Though it 
 
 Then to install just download this repo. Github has a download option somewhere. Or you can use the git command `git clone "https://github.com/cloveranon/Clover-Edition/"`
 
-Then you will need to download the model. Put it in the models folder. Rename it to `pytorch-gpt2-xl-aid2-v5` until we support arbitrary model names. The current torrent file and magnet links are here:
+Then you will need to download the model. Put it in the models folder. Rename it to `pytorch-gpt2-xl-aid2-v5` until we support arbitrary model names. The current torrent file and magnet links are here, please seed them if you have a seedbox or homelab:
 
-[Torrent File](https://github.com/AccidentallyOnPurpose/pytorch-AIDungeon/blob/f692e39d84/generator/gpt2/models/model_v5_pytorch.torrent?raw=true) [Magnet Link](magnet:?xt=urn:btih:17dcfe3d12849db04a3f64070489e6ff5fc6f63f&dn=model_v5_pytorch&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce&tr=udp%3a%2f%2fopen.stealth.si%3a80%2fannounce&tr=udp%3a%2f%2fp4p.arenabg.com%3a1337%2fannounce&tr=udp%3a%2f%2ftracker.coppersurfer.tk%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.cyberia.is%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.moeking.me%3a6969%2fannounce&tr=udp%3a%2f%2f9.rarbg.me%3a2710%2fannounce&tr=udp%3a%2f%2ftracker3.itzmx.com%3a6961%2fannounce)
+[Torrent File](https://github.com/AccidentallyOnPurpose/pytorch-AIDungeon/blob/f692e39d84/generator/gpt2/models/model_v5_pytorch.torrent?raw=true) 
 
-```
-magnet:?xt=urn:btih:17dcfe3d12849db04a3f64070489e6ff5fc6f63f&dn=model_v5_pytorch&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce&tr=udp%3a%2f%2fopen.stealth.si%3a80%2fannounce&tr=udp%3a%2f%2fp4p.arenabg.com%3a1337%2fannounce&tr=udp%3a%2f%2ftracker.coppersurfer.tk%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.cyberia.is%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.moeking.me%3a6969%2fannounce&tr=udp%3a%2f%2f9.rarbg.me%3a2710%2fannounce&tr=udp%3a%2f%2ftracker3.itzmx.com%3a6961%2fannounce
-```
-Your model folder should look like this:
+[Magnet Link](magnet:?xt=urn:btih:17dcfe3d12849db04a3f64070489e6ff5fc6f63f&dn=model_v5_pytorch&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce&tr=udp%3a%2f%2fopen.stealth.si%3a80%2fannounce&tr=udp%3a%2f%2fp4p.arenabg.com%3a1337%2fannounce&tr=udp%3a%2f%2ftracker.coppersurfer.tk%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.cyberia.is%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.moeking.me%3a6969%2fannounce&tr=udp%3a%2f%2f9.rarbg.me%3a2710%2fannounce&tr=udp%3a%2f%2ftracker3.itzmx.com%3a6961%2fannounce)
+
+Once downloaded your model folder should look like this:
 ```
     ./models
     └── pytorch-gpt2-xl-aid2-v5
