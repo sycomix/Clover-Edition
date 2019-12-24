@@ -64,7 +64,7 @@ class Story:
     def add_to_story(self, action, story_block):
         self.actions.append(action)
         self.results.append(story_block)
-        if (len(str(self)) > 3900):  # (Fix some mem errors. From RTech, max story of 3900 characters for GTX 2080 ti 11GB
+        if len(self.actions) > 10000:
             self.actions.pop(1)
             self.results.pop(1)
 
@@ -72,17 +72,24 @@ class Story:
 
         mem_ind = self.memory
         if len(self.results) < 2:
-            latest_result = self.story_start
+            latest_results = [self.story_start]
         else:
-            latest_result = self.context
-        while mem_ind > 0:
+            latest_results = [self.context]
+        latest_result = ''
 
-            if len(self.results) >= mem_ind:
-                latest_result += self.actions[-mem_ind] + self.results[-mem_ind]
-
-            mem_ind -= 1
-
-        return latest_result
+        if mem_ind < len(self.results):
+            # When we have to much history we will take the last 10, and sample randomly from the rest
+            # first take last mem_ind//2
+            all_inds = list(range(len(self.results)))
+            last = all_inds[-mem_ind//2:]
+            first = all_inds[:mem_ind//2]
+            inds = sorted(last + random.sample(first, mem_ind//2))
+        else:
+            inds = range(len(self.results))
+        logger.debug("Using history indices %s", inds)
+        for i in inds:
+            latest_result += self.actions[i] + self.results[i]
+        return latest_results + [latest_result]
 
     def __str__(self):
         story_list = [self.story_start]
