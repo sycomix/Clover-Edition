@@ -38,22 +38,34 @@ To play with GPU, you need an NVIDA GPU with >4 GB of memory (exact minimum requ
 
 Windows Installer is hopefully coming someday. I'm not 100% sure how to do it. In the meantime you can manually install pretty easily:
 
-Install python, pytorch (`torch`), and `transformers` (e.g. `pip install torch` (or `pip3`) from the command line, after installing python. Windows users may need to add it to their PATH. Look up how to do these things if you don't know, it's not too hard). Windows users may want to install another module called "colorama", if it is not already installed. If you see `[27m` glyphs, the color codes aren't working, see  the color support section. Then:
-```
-#git clone "https://github.com/cloveranon/Clover-Edition/"
-git clone <THIS_URL>
-cd Clover-Edition
-python play.py
-```
-(You don't actually need git, just a fast way to clone this repo instead of manually downloading it)
-(If that doesn't work try `python3` instead of python. This also assumes git is installed, but you can download a zip file from github and extract it yourself if you don't want to install git.)
+Install python, pytorch (`torch`), and `transformers`. Windows users may need to add the location of pip and python to their `PATH` variable manually (look up how to do that, it's not that hard.) Instructions to install pytorch can be found [here](https://pytorch.org/get-started/locally/). You do not need to install the package "torchvision". On Windows, with CUDA 10 and python 3, the command should look like this:
 
-Then you will need to download the model and put it in the models folder rename it to pytorch-gpt2-xl-aid2-v5. The current torrent file and magnet links are here:
+```
+pip3 install torch -f https://download.pytorch.org/whl/torch_stable.html
+```
+
+Then:
+```
+pip3 install transformers
+```
+That should cover all the dependencies needed to run Clover-Edition.
+
+Windows users *may* want to install another module called "colorama". Though it may already be installed. If you see `[27m` glyphs, the color codes aren't working See  the color support section.
+
+Then to install just download this repo. Github has a download option somewhere. Or you can use the git command `git clone "https://github.com/cloveranon/Clover-Edition/"`
+
+Then you will need to download the model. Put it in the models folder. Rename it to `pytorch-gpt2-xl-aid2-v5` until we support arbitrary model names. The current torrent file and magnet links are here:
 
 [Torrent File](https://github.com/AccidentallyOnPurpose/pytorch-AIDungeon/blob/f692e39d84/generator/gpt2/models/model_v5_pytorch.torrent?raw=true) [Magnet Link](magnet:?xt=urn:btih:17dcfe3d12849db04a3f64070489e6ff5fc6f63f&dn=model_v5_pytorch&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce&tr=udp%3a%2f%2fopen.stealth.si%3a80%2fannounce&tr=udp%3a%2f%2fp4p.arenabg.com%3a1337%2fannounce&tr=udp%3a%2f%2ftracker.coppersurfer.tk%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.cyberia.is%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.moeking.me%3a6969%2fannounce&tr=udp%3a%2f%2f9.rarbg.me%3a2710%2fannounce&tr=udp%3a%2f%2ftracker3.itzmx.com%3a6961%2fannounce)
 
 ```
 magnet:?xt=urn:btih:17dcfe3d12849db04a3f64070489e6ff5fc6f63f&dn=model_v5_pytorch&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce&tr=udp%3a%2f%2fopen.stealth.si%3a80%2fannounce&tr=udp%3a%2f%2fp4p.arenabg.com%3a1337%2fannounce&tr=udp%3a%2f%2ftracker.coppersurfer.tk%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.cyberia.is%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.moeking.me%3a6969%2fannounce&tr=udp%3a%2f%2f9.rarbg.me%3a2710%2fannounce&tr=udp%3a%2f%2ftracker3.itzmx.com%3a6961%2fannounce
+```
+
+To play, just enter the folder and run "play.py" with python3. From the command line:
+```
+cd Clover-Edition
+python3 play.py
 ```
 
 Your model folder should look like this:
