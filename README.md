@@ -44,9 +44,9 @@ Install python, pytorch (`torch`), and `transformers`. Windows users may need to
 pip3 install torch -f https://download.pytorch.org/whl/torch_stable.html
 ```
 
-Then:
+Then install `transformers` and `pyjarowinkler`:
 ```
-pip3 install transformers
+pip3 install transformers pyjarowinkler
 ```
 That should cover all the dependencies needed to run Clover-Edition.
 
