@@ -1,7 +1,9 @@
+from pathlib import Path
+with open(Path('interface', 'start-message.txt'), 'r') as file:
+    print('\x1B[7m'+file.read()+'\x1B[27m')
 import gc
 import random
 import textwrap
-from pathlib import Path
 from random import shuffle
 from shutil import get_terminal_size
 
@@ -64,7 +66,7 @@ def selectFile(p=Path('prompts')):
         for n in range(len(files)):
             colPrint(
                     '{}: {}'.format(n, re.sub(r'\.txt$', '', files[n].name)),
-                    colors["menu"])
+                    colors['menu'])
         return selectFile(files[getNumberInput(len(files)-1)])
     else:
         with p.open('r', encoding='utf-8') as file:
@@ -80,13 +82,13 @@ def instructions():
 def getGenerator():
     colPrint(
             "\nInitializing AI Engine! (This might take a few minutes)\n",
-            colors["loading-message"])
+            colors['loading-message'])
     return GPT2Generator(
             generate_num=settings.getint('generate-num'),
             temperature=settings.getfloat('temp'),
             top_k=settings.getint('top-keks'),
             top_p=settings.getfloat('top-p'),
-            repetition_penalty=settings.getfloat('repetition-penalty')
+            repetition_penalty=settings.getfloat('rep-pen')
         )
     
 if not Path('prompts', 'Anime').exists():

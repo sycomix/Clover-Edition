@@ -9,3 +9,9 @@ removed useless dependencies
 added text wrapping
 added ability to save custom prompts
 added color support on windows via colorama
+changed to use pytorch gpt using the transformers module
+added ability to use 16bit mode on GPU to save significant VRAM
+added suggested actions
+added "d20" randomization of action sucess/failure
+added repetitiveness penalty for AI
+probably a lot of stuff I forgot to add here...

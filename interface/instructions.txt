@@ -8,9 +8,10 @@ The following commands can be entered for any action:
   "print"             Prints a transcript of your adventure (without extra newline formatting)
   "help"              Prints these instructions again
   "set SETTING VALUE" Sets the specified setting to the specified value.:
+       temp            Higher values make the AI more random. Default: 0.4
+       rep-pen         Controls how repetitive the AI is allowed to be. Default: 1.2
        text-wrap-width Maximum width of lines printed by computer. Default: 80
        console-bell    Beep after AI generates text? Default: on
-       temp            Higher values make the AI more random. Default: 0.4
        top-keks        Number of words the AI can randomly choose. Default: 20
        generate-num    Default: 60
        top-p           Default: 0.9
