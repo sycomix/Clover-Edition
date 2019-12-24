@@ -1,4 +1,4 @@
 numpy
 regex
-torch==1.2.0
+torch==1.2.0 @ https://download.pytorch.org/whl/cu100/torch-1.2.0-cp37-cp37m-win_amd64.whlpip ##Install link PyTorch provides installes CUDA 9.2 build. This picks the correct CUDA 10.0 build.
 pyjarowinkler
