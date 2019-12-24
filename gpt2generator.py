@@ -202,7 +202,7 @@ class GPT2Generator:
             out = out[:, len(context_tokens) :].tolist()
             for o in out:
                 generated += 1
-                text = self.tokenizer.decode(o, clean_up_tokenization_spaces=True)
+                text = self.tokenizer.decode(o, clean_up_tokenization_spaces=True, skip_special_tokens=True)
                 if self.stop_token:
                     index = text.find(self.stop_token)
                     if index == -1:
