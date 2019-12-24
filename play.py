@@ -177,6 +177,7 @@ def play():
                 colPrint('Suggested actions:', colors['selection-value'])
                 action_suggestion_lines = 1
                 for i in range(settings.getint('action-alternatives')):
+                    # FIXME it might be better to pass in a longer history
                     suggested_action = ai_player.get_action(action_prompt)
                     suggested_actions.append(suggested_action)
                     suggestion = '{}> {}'.format(i, suggested_action)

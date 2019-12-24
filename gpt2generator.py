@@ -159,11 +159,11 @@ class GPT2Generator:
 
         # prompt = second_to_first_person(prompt)
 
-        logger.debug("AFTER PROMPT_REPLACE: `%s`", repr(prompt))
+        # logger.debug("AFTER PROMPT_REPLACE: `%s`", repr(prompt))
         return prompt
 
     def result_replace(self, result):
-        logger.debug("BEFORE RESULT_REPLACE: `%s`", repr(result))
+        # logger.debug("BEFORE RESULT_REPLACE: `%s`", repr(result))
 
         result = cut_trailing_sentence(result)
         if len(result) == 0:
@@ -187,6 +187,7 @@ class GPT2Generator:
         # TODO instead of taking last 1024, take first X and last Y
         # crop context to avoid going of the GPT2 max context size of 1024
         if len(context_tokens) > self.max_history_tokens:
+            # FIXME it would be better to pass in a list of strings so we can cut some out, and a truncation strategy https://github.com/huggingface/transformers/blob/ce50305e5b8c8748b81b0c8f5539a337b6a995b9/src/transformers/tokenization_utils.py#L791
             first = self.max_history_tokens // 4
             last = self.max_history_tokens - first
             context_tokens = context_tokens[:first] + context_tokens[-last:]
