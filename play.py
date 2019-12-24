@@ -169,17 +169,13 @@ def play():
                         if story_manager.story.results
                         else "\nWhat do you do now?"
                     ) + "\n>"
-                # (cloveranon) can this just be a for loop?
-                # (AccidentallyOP) yes, and it would look nicer to see them progress, but you might get duplicates
-                suggested_actions = ai_player.get_actions(action_prompt)
-                if len(suggested_actions):
-                    suggested_actions_enum = [
-                            "{}> {}\n".format(i, a) for i, a in enumerate(suggested_actions)
-                        ]
-                    suggested_action = "".join(suggested_actions_enum)
-                    #TODO: check color
-                    colPrint('Suggested actions\n' + suggested_action, colors['selection-value'])
-                    print()
+                suggested_actions = []
+                colPrint('Suggested actions:', colors['selection-value'])
+                for i in range(settings.getint('action-alternatives')):
+                    suggested_action = ai_player.get_action(action_prompt)
+                    suggested_actions.append(suggested_action)
+                    colPrint('{}> {}'.format(i, suggested_action), colors['selection-value'])
+                print()
 
             if settings.getboolean('console-bell'):
                 print('\x07', end='')
@@ -228,6 +224,7 @@ def play():
             else:
                 if action == "":
                     action = ""
+                    colPrint("\n>> " + action.lstrip(), colors["transformed-user-text"])
                     result = story_manager.act(action)
                     colPrint(result, colors["ai-text"])
                 elif action in [str(i) for i in range(len(suggested_actions))]:
