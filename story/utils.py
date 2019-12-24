@@ -122,7 +122,7 @@ def clean_suggested_action(result_raw, min_length=4):
     results = [s.strip() for s in results]
     results = [s for s in results if len(s) > min_length]
     # Sometimes actions are generated with leading > ! . or ?. Likely the model trying to finish the prompt or start an action.
-    result = results[0].strip().lstrip(" >!.?")
+    result = results[0].strip().lstrip(" >!.?") if len(results) else ''
     result = cut_trailing_quotes(result)
     logger.debug(
         "full suggested action '%s'. Cropped: '%s'. Split '%s'",
