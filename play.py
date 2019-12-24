@@ -167,16 +167,14 @@ def play(generator):
             if settings.getint('action-alternatives') > 0:
 
                 #TODO change this to two messages for different colors
-                action_prompt = (
-                        story_manager.story.results[-1]
-                        if story_manager.story.results
-                        else "\nWhat do you do now?"
-                    ) + "\n>"
                 suggested_actions = []
                 colPrint('Suggested actions:', colors['selection-value'])
                 action_suggestion_lines = 1
                 for i in range(settings.getint('action-alternatives')):
                     # FIXME it might be better to pass in a longer history
+                    story_manager.story_context()  # This should be within the loop as it has a random sampling element
+                    action_prompt[-1] += '> '
+                    logger.debug("action_prompt %s", action_prompt)
                     suggested_action = ai_player.get_action(action_prompt)
                     suggested_actions.append(suggested_action)
                     suggestion = '{}> {}'.format(i, suggested_action)
@@ -238,7 +236,12 @@ def play(generator):
                 # Options to select a suggestion action
                 if action in [str(i) for i in range(len(suggested_actions))]:
                     action = suggested_actions[int(action)]
+
+                action = action.strip()
                 
+                # Crop actions to a max length
+                action = action[:4096]
+                                
                 if action != "":
 
                     # Roll a 20 sided dice to make things interesting
@@ -259,7 +262,6 @@ def play(generator):
                         else:
                             action = "You say " + action
                     else:
-                        action = action.strip()
                         action = first_to_second_person(action)
                         if not action.lower().startswith("you ") and not action.lower().startswith("i "):
                             action = action[0].lower() + action[1:]

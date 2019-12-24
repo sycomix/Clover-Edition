@@ -3,7 +3,7 @@ import os
 import subprocess
 import uuid
 from subprocess import Popen
-
+import random
 from story.utils import *
 
 
@@ -164,7 +164,7 @@ class StoryManager:
     def start_new_story(
         self, story_prompt, context="", game_state=None, upload_story=False
     ):
-        block = self.generator.generate(context + story_prompt)
+        block = self.generator.generate([context, story_prompt])
         block = cut_trailing_sentence(block)
         self.story = Story(
             context + story_prompt + block,
@@ -210,7 +210,7 @@ class UnconstrainedStoryManager(StoryManager):
         return result
 
     def generate_result(self, action):
-        block = self.generator.generate(self.story_context() + action)
+        block = self.generator.generate(self.story_context()+[action])
         return block
 
 
@@ -321,7 +321,7 @@ class ConstrainedStoryManager(StoryManager):
     def generate_action_result(self, prompt, phrase, options=None):
 
         action_result = (
-            phrase + " " + self.generator.generate(prompt + " " + phrase, options)
+            phrase + " " + self.generator.generate(prompt + [phrase], options)
         )
         action, result = split_first_sentence(action_result)
         return action, result
