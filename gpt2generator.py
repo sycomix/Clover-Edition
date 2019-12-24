@@ -224,6 +224,6 @@ class GPT2Generator:
         result = text
         result = self.result_replace(result)
         if len(result) == 0:
-            return self.generate(prompt)
-
+            logger.warn("Model generated empty text %s.", result)
+            # return self.generate(prompt) # Woah recursion!
         return result
