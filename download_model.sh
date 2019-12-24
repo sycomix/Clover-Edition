@@ -3,13 +3,13 @@ cd "$(dirname "${0}")"
 BASE_DIR="$(pwd)"
 
 BASE_DIR="$(pwd)"
-MODELS_DIRECTORY=generator/gpt2/models
+MODELS_DIRECTORY=models
 MODEL_VERSION=model_v5
 
 MODEL_DIRECTORY="${MODELS_DIRECTORY}"
 
-MODEL_NAME=model-550
-MODEL_TORRENT_URL="https://github.com/AIDungeon/AIDungeon/files/3935881/model_v5.torrent.zip"
+MODEL_NAME=pytorch-gpt2-xl-aid2-v5
+MODEL_TORRENT_URL="https://raw.githubusercontent.com/AccidentallyOnPurpose/pytorch-AIDungeon/f692e39d84b21d39da9819142165a05a03030892/generator/gpt2/models/model_v5_pytorch.torrent"
 MODEL_TORRENT_BASENAME="$(basename "${MODEL_TORRENT_URL}")"
 
 download_torrent() {
@@ -17,7 +17,6 @@ download_torrent() {
   mkdir -p "${MODEL_DIRECTORY}"
   cd "${MODEL_DIRECTORY}"
   wget "${MODEL_TORRENT_URL}"
-  unzip "${MODEL_TORRENT_BASENAME}"
   which aria2c > /dev/null
   if [ $? == 0 ]; then
     echo -e "\n\n==========================================="
@@ -32,8 +31,9 @@ download_torrent() {
       --seed-time=0 \
       --summary-interval=15 \
       --disable-ipv6 \
-      "${MODEL_TORRENT_BASENAME%.*}"
+      "${MODEL_TORRENT_BASENAME}"
     echo "Download Complete!"
+    mv "${MODEL_TORRENT_BASENAME%.*}" $MODEL_NAME
     fi
 }
 
