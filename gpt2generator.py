@@ -116,6 +116,7 @@ class GPT2Generator:
         self.batch_size = 1
         self.stop_token = None
         self.max_history_tokens = 256
+        self.stop_token = '<|endoftext|>'
 
         self.model_name = "pytorch-gpt2-xl-aid2-v5"
         self.model_dir = "models"
