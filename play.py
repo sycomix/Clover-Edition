@@ -25,15 +25,26 @@ with open(Path('interface', 'clover'), 'r', encoding='utf-8') as file:
 
 
 #ECMA-48 set graphics codes for the curious. Check out "man console_codes"
-def colPrint(str, col='0', wrap=True):
+def colPrint(str, col='0', wrap=True, end=None):
         if wrap and settings.getint('text-wrap-width') > 1:
             str = textwrap.fill(str, settings.getint('text-wrap-width'), replace_whitespace=False)
-        print("\x1B[{}m{}\x1B[{}m".format(col, str, colors["default"]))
+        print("\x1B[{}m{}\x1B[{}m".format(col, str, colors["default"]), end=end)
 
 def colInput(str, col1=colors["default"], col2=colors["default"]):
     val=input("\x1B[{}m{}\x1B[0m\x1B[{}m".format(col1,str,col1))
     print('\x1B[0m', end='')
     return val
+
+def clear_lines(n):
+    """Clear the last line in the terminal."""
+    screen_code = "\033[1A[\033[2K"  # up one line, and clear line
+    for _ in range(n):
+        print(screen_code, end="")
+
+def count_printed_lines(text):
+    """For a prompt, work out how many console lines it took up with wrapping."""
+    width = settings.getint("text-wrap-width")
+    return sum([(len(ss) // width) + 1 for ss in text.split("\n")])
 
 def getNumberInput(n):
     val=colInput("Enter a number from above (default 0):", colors["selection-prompt"], colors["selection-value"])
@@ -178,14 +189,19 @@ def play():
                         ]
                     suggested_action = "".join(suggested_actions_enum)
                     #TODO: check color
-                    colPrint('Suggested actions\n' + suggested_action, colors['selection-value'])
+                    action_suggestion_prompt = 'Suggested actions\n' + suggested_action
+                    colPrint(action_suggestion_prompt, colors['selection-value'])
                     print()
 
             if settings.getboolean('console-bell'):
                 print('\x07', end='')
             action = colInput("> ", colors["main-prompt"], colors["user-text"])
             
-            #TODO:Clear suggestions and user input
+            # Clear suggestions and user input
+            action_and_suggestion_lines = count_printed_lines(action_suggestion_prompt) + count_printed_lines('> '+action)
+            clear_lines(action_and_suggestion_lines+1)
+
+            colPrint("\n> " + action.rstrip(), colors["user-text"], end="")
 
             setRegex = re.search('^set ([^ ]+) ([^ ]+)$', action)
             if setRegex:
@@ -250,6 +266,7 @@ def play():
 
                     action = "\n> " + action + "\n"
 
+                colPrint("\n>> " + action.lstrip(), colors["transformed-user-text"])
                 result = "\n" + story_manager.act(action)
                 if len(story_manager.story.results) >= 2:
                     similarity = get_similarity(
