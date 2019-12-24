@@ -29,7 +29,10 @@ Once you have a bunch of scraped html files, you can convert them to txt files u
 
 # Datasets
 ------------------------
-The mormon used a dataset of CYOA texts that can still be found in the data folder of this repo. There are references to other datasets as well. A script used to scrape the /r/writingprompts subreddit, a subreddit where people post short stories. That would be good data if anyone can scrape it properly. Unfortunately reddit's API only shows the last 2,000 posts in any subreddit leaving the vast majority of posts hidden.
+The mormon used a dataset of CYOA texts that can still be found in the data folder of this repo. There are references to other datasets as well. 
+
+For example a script used to scrape the /r/writingprompts subreddit, a subreddit where people post short stories. We can get these files pre-scraped by facebook: 
+https://github.com/pytorch/fairseq/tree/master/examples/stories
 
 There are also references in the code to mechanical turk, a website used to pay thirdworlders to enter data for you for pennies.
 
