@@ -8,8 +8,8 @@ MODELS_DIRECTORY=models
 MODEL_VERSION=pytorch-gpt2-xl-aid2-v5
 MODEL_DIRECTORY="${MODELS_DIRECTORY}"
 
-MODEL_TORRENT_URL="https://raw.githubusercontent.com/AccidentallyOnPurpose/pytorch-AIDungeon/f692e39d84b21d39da9819142165a05a03030892/generator/gpt2/models/model_v5_pytorch.torrent"
-MODEL_TORRENT_BASENAME="$(basename "${MODEL_TORRENT_URL}")"
+MODEL_TORRENT_URL="https://raw.githubusercontent.com/cloveranon/Clover-Edition/master/model.torrent"
+MODEL_TORRENT_BASENAME=model_v5_pytorch #"$(basename "${MODEL_TORRENT_URL}")"
 
 download_torrent() {
   echo "Creating directories."
