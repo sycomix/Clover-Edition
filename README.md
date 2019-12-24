@@ -7,6 +7,7 @@ In 2016, Donald Trump ran for president on a campaign of Making Anime Real. Four
 
 ![img](https://i.4cdn.org/v/1576830028034.png)
 ![img](https://i.4cdn.org/v/1576564400002.png)
+![img](http://i.imgur.com/H6H1obK.png)
 
 --insert screenshots here--
 
