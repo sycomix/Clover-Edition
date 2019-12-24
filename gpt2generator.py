@@ -65,12 +65,16 @@ def sample_sequence(
     context = torch.tensor(context, dtype=torch.long, device=device)
     context = context.unsqueeze(0).repeat(num_samples, 1)
     generated = context
+    USE_PAST = False
     next_token = context
     outputs = None
     with torch.no_grad():
         for _ in range(length):
-            past = outputs[1] if outputs is not None else None
-            inputs = {"input_ids": next_token, 'past': past}
+            if USE_PAST:
+                past = outputs[1] if outputs is not None else None
+                inputs = {"input_ids": next_token, 'past': past}
+            else:
+                inputs = {"input_ids": generated}
 
             outputs = model(
                 **inputs
@@ -111,12 +115,15 @@ class GPT2Generator:
         self.repetition_penalty = repetition_penalty
         self.batch_size = 1
         self.stop_token = None
+        self.max_history_tokens = 256
 
         self.model_name = "pytorch-gpt2-xl-aid2-v5"
         self.model_dir = "models"
         self.checkpoint_path = os.path.join(self.model_dir, self.model_name)
         assert os.path.exists(self.checkpoint_path), "Make sure to download the pytorch v5 model and put it in " + self.checkpoint_path
-        # self.checkpoint_path = "gpt2"
+        if os.environ.get("DEBUG_GPT2", False):
+            self.checkpoint_path = "gpt2"
+            logger.warning("using DEBUG_GPT2 MODE! This is just for devs to quickly check a small GPT2 model with poor output")
         self.device = torch.device("cuda" if not CPU else "cpu")
         logger.info("Using device={}, checkpoint={}, dtype={}".format(self.device, self.checkpoint_path, self.dtype))
 
@@ -177,7 +184,12 @@ class GPT2Generator:
 
     def generate_raw(self, prompt, generate_num=None, temperature=None):
         context_tokens = self.tokenizer.encode(prompt, add_special_tokens=False)
-        context_tokens = context_tokens[-1024:]  # crop context to avoid going of the GPT2 max context size of 1024
+        # TODO instead of taking last 1024, take first X and last Y
+        # crop context to avoid going of the GPT2 max context size of 1024
+        if len(context_tokens) > self.max_history_tokens:
+            first = self.max_history_tokens // 4
+            last = self.max_history_tokens - first
+            context_tokens = context_tokens[:first] + context_tokens[-last:]
 
         generated = 0
         for _ in range(self.samples // self.batch_size):
