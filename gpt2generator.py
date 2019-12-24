@@ -116,7 +116,7 @@ class GPT2Generator:
         self.model_dir = "models"
         self.checkpoint_path = os.path.join(self.model_dir, self.model_name)
         assert os.path.exists(self.checkpoint_path), "Make sure to download the pytorch v5 model and put it in " + self.checkpoint_path
-        # self.checkpoint_path = "gpt2"
+        self.checkpoint_path = "gpt2"
         self.device = torch.device("cuda" if not CPU else "cpu")
         logger.info("Using device={}, checkpoint={}, dtype={}".format(self.device, self.checkpoint_path, self.dtype))
 
@@ -177,6 +177,7 @@ class GPT2Generator:
 
     def generate_raw(self, prompt, generate_num=None, temperature=None):
         context_tokens = self.tokenizer.encode(prompt, add_special_tokens=False)
+        context_tokens = context_tokens[-1024:]  # crop context to avoid going of the GPT2 max context size of 1024
 
         generated = 0
         for _ in range(self.samples // self.batch_size):
