@@ -61,6 +61,16 @@ Then you will need to download the model. Put it in the models folder. Rename it
 ```
 magnet:?xt=urn:btih:17dcfe3d12849db04a3f64070489e6ff5fc6f63f&dn=model_v5_pytorch&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce&tr=udp%3a%2f%2fopen.stealth.si%3a80%2fannounce&tr=udp%3a%2f%2fp4p.arenabg.com%3a1337%2fannounce&tr=udp%3a%2f%2ftracker.coppersurfer.tk%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.cyberia.is%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.moeking.me%3a6969%2fannounce&tr=udp%3a%2f%2f9.rarbg.me%3a2710%2fannounce&tr=udp%3a%2f%2ftracker3.itzmx.com%3a6961%2fannounce
 ```
+Your model folder should look like this:
+```
+    ./models
+    └── pytorch-gpt2-xl-aid2-v5
+        ├── config.json
+        ├── merges.txt
+        ├── pytorch_model.bin
+        └── vocab.json
+```
+
 
 To play, just enter the folder and run "play.py" with python3. From the command line:
 ```
@@ -68,14 +78,6 @@ cd Clover-Edition
 python3 play.py
 ```
 
-Your model folder should look like this:
-
-    ./models
-    └── pytorch-gpt2-xl-aid2-v5
-        ├── config.json
-        ├── merges.txt
-        ├── pytorch_model.bin
-        └── vocab.json
 
 ##### Color support on Windows (All methods untested. Please report if they do or do not work.):
 
