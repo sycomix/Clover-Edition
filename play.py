@@ -128,6 +128,10 @@ def play():
     colPrint("Go to https://github.com/cloveranon/Clover-Edition/ or email cloveranon@nuke.africa for bug reports, help, and feature requests.", colors['subsubtitle'])
 
     while True:
+        # May be needed to avoid out of mem
+        gc.collect()
+        torch.cuda.empty_cache()
+        
         if story_manager.story != None:
             del story_manager.story
 
