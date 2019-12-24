@@ -230,59 +230,63 @@ def play():
                 continue
 
             else:
-                if action == "":
-                    action = ""
-                    colPrint("\n>> " + action.lstrip(), colors["transformed-user-text"])
-                    result = story_manager.act(action)
-                    colPrint(result, colors["ai-text"])
-                elif action in [str(i) for i in range(len(suggested_actions))]:
+                # Options to select a suggestion action
+                if action in [str(i) for i in range(len(suggested_actions))]:
                     action = suggested_actions[int(action)]
+                
+                if action != "":
 
-                # Roll a 20 sided dice to make things interesting
-                d = random.randint(1, 20)
-                logger.debug("roll d20=%s", d)
-                if action[0] == '"':
-                    if d == 1:
-                        verbs_say_d01 = ["mumble", "prattle", "incoherently say", "whine", "ramble", "wheeze"]
-                        verb = random.sample(verbs_say_d01, 1)[0]
-                        action = "You "+verb+" " + action
-                    elif d == 20:
-                        verbs_say_d20 = ["successfully", "persuasively", "expertly", "conclusively", "dramatically", "adroitly", "aptly"]
-                        verb = random.sample(verbs_say_d20, 1)[0]
-                        action = "You "+verb+" say " + action
-                    else:
-                        action = "You say " + action
-
-                else:
-                    action = action.strip()
-                    action = first_to_second_person(action)
-                    if not action.lower().startswith("you ") and not action.lower().startswith("i "):
-                        action = action[0].lower() + action[1:]
-                        # roll a d20
-                        if d == 1:
-                            verb_action_d01 = ["disastrously", "incompetently", "dangerously", "stupidly", "horribly", "miserably", "sadly"]
-                            verb = random.sample(verb_action_d01, 1)[0]
-                            action = "You "+verb+" fail to " + action
-                        elif d < 5:
-                            action = "You start to " + action
-                        elif d < 10:
-                            action = "You attempt to " + action
-                        elif d < 15:
-                            action = "You try to " + action
-                        elif d < 20:
-                            action = "You " + action
+                    # Roll a 20 sided dice to make things interesting
+                    d = random.randint(1, 20)
+                    logger.debug("roll d20=%s", d)
+                    if action[0] == '"':
+                        if settings.getboolean("action-d20"):
+                            if d == 1:
+                                adjectives_say_d01 = ["mumble", "prattle", "incoherently say", "whine", "ramble", "wheeze"]
+                                adjective = random.sample(adjectives_say_d01, 1)[0]
+                                action = "You "+adjective+" " + action
+                            elif d == 20:
+                                adjectives_say_d20 = ["successfully", "persuasively", "expertly", "conclusively", "dramatically", "adroitly", "aptly"]
+                                adjective = random.sample(adjectives_say_d20, 1)[0]
+                                action = "You "+adjective+" say " + action
+                            else:
+                                action = "You say " + action
                         else:
-                            verb_action_d20 = ["successfully", "expertly", "conclusively", "adroitly", "aptly", "masterfully"]
-                            verb = random.sample(verb_action_d20, 1)[0]
-                            action = "You "+verb+" " + action
+                            action = "You say " + action
+                    else:
+                        action = action.strip()
+                        action = first_to_second_person(action)
+                        if not action.lower().startswith("you ") and not action.lower().startswith("i "):
+                            action = action[0].lower() + action[1:]
+                            # roll a d20
+                            if settings.getboolean("action-d20"):
+                                if d == 1:
+                                    adjective_action_d01 = ["disastrously", "incompetently", "dangerously", "stupidly", "horribly", "miserably", "sadly"]
+                                    adjective = random.sample(adjective_action_d01, 1)[0]
+                                    action = "You "+adjective+" fail to " + action
+                                elif d < 5:
+                                    action = "You attempt to " + action
+                                elif d < 10:
+                                    action = "You try to " + action
+                                elif d < 15:
+                                    action = "You start to " + action
+                                elif d < 20:
+                                    action = "You " + action
+                                else:
+                                    adjective_action_d20 = ["successfully", "expertly", "conclusively", "adroitly", "aptly", "masterfully"]
+                                    adjective = random.sample(adjective_action_d20, 1)[0]
+                                    action = "You " + adjective + " " + action
+                            else:
+                                action = "You " + action
 
-                    if action[-1] not in [".", "?", "!"]:
-                        action = action + "."
+                        if action[-1] not in [".", "?", "!"]:
+                            action = action + "."
 
-                    action = "\n> " + action + "\n"
+                action = "\n> " + action + "\n"
 
                 colPrint("\n>> " + action.lstrip().lstrip('> \n'), colors["transformed-user-text"])
                 result = "\n" + story_manager.act(action)
+                
                 if len(story_manager.story.results) >= 2:
                     similarity = get_similarity(
                         story_manager.story.results[-1], story_manager.story.results[-2]
@@ -305,10 +309,7 @@ def play():
                         break
                     else:
                         colPrint("Sorry about that...where were we?", colors["query"])
-                        colPrint(result, colors["ai-text"])
-
-                else:
-                    colPrint(result, colors["ai-text"])
+                colPrint(result, colors["ai-text"])
 
 #TODO: there's no reason for this to be enclosed in a function
 play()
