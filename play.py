@@ -172,7 +172,7 @@ def play(generator):
                 action_suggestion_lines = 1
                 for i in range(settings.getint('action-alternatives')):
                     # FIXME it might be better to pass in a longer history
-                    story_manager.story_context()  # This should be within the loop as it has a random sampling element
+                    action_prompt = story_manager.story_context()  # This should be within the loop as it has a random sampling element
                     action_prompt[-1] += '> '
                     logger.debug("action_prompt %s", action_prompt)
                     suggested_action = ai_player.get_action(action_prompt)
