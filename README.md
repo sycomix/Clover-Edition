@@ -27,7 +27,8 @@ A fork of AIDungeon2, now driven by huggingface's transformers repository using 
 * A much larger library of fan made starting prompts
 * Better config file
 * Repetition Penalty to reduce AI looping behavior
-* Half precision floating point using less GPU memory (you still need 8GB+)
+* Half precision floating point using less GPU memory (you still need ~~11~~ ~~8~~ 4-6GB)
+* Lots of changes to story history sampling/truncation to hopefully stay on track with longer games
 * Eventually hope to improve the AI itself, but this will take some time
 
 #### Installation Instructions:

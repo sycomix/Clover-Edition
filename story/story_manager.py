@@ -3,7 +3,7 @@ import os
 import subprocess
 import uuid
 from subprocess import Popen
-
+import random
 from story.utils import *
 
 
@@ -64,7 +64,7 @@ class Story:
     def add_to_story(self, action, story_block):
         self.actions.append(action)
         self.results.append(story_block)
-        if (len(str(self)) > 3900):  # (Fix some mem errors. From RTech, max story of 3900 characters for GTX 2080 ti 11GB
+        if len(self.actions) > 10000:
             self.actions.pop(1)
             self.results.pop(1)
 
@@ -72,17 +72,24 @@ class Story:
 
         mem_ind = self.memory
         if len(self.results) < 2:
-            latest_result = self.story_start
+            latest_results = [self.story_start]
         else:
-            latest_result = self.context
-        while mem_ind > 0:
+            latest_results = [self.context]
+        latest_result = ''
 
-            if len(self.results) >= mem_ind:
-                latest_result += self.actions[-mem_ind] + self.results[-mem_ind]
-
-            mem_ind -= 1
-
-        return latest_result
+        if mem_ind < len(self.results):
+            # When we have to much history we will take the last 10, and sample randomly from the rest
+            # first take last mem_ind//2
+            all_inds = list(range(len(self.results)))
+            first = all_inds[:-mem_ind//2]
+            last = all_inds[-mem_ind//2:]
+            inds = sorted(random.sample(first, mem_ind//2)+last)
+        else:
+            inds = range(len(self.results))
+        logger.debug("Using history indices %s", inds)
+        for i in inds:
+            latest_result += self.actions[i] + self.results[i]
+        return latest_results + [latest_result]
 
     def __str__(self):
         story_list = [self.story_start]
@@ -157,7 +164,7 @@ class StoryManager:
     def start_new_story(
         self, story_prompt, context="", game_state=None, upload_story=False
     ):
-        block = self.generator.generate(context + story_prompt)
+        block = self.generator.generate([context, story_prompt])
         block = cut_trailing_sentence(block)
         self.story = Story(
             context + story_prompt + block,
@@ -203,7 +210,7 @@ class UnconstrainedStoryManager(StoryManager):
         return result
 
     def generate_result(self, action):
-        block = self.generator.generate(self.story_context() + action)
+        block = self.generator.generate(self.story_context()+[action])
         return block
 
 
@@ -314,7 +321,7 @@ class ConstrainedStoryManager(StoryManager):
     def generate_action_result(self, prompt, phrase, options=None):
 
         action_result = (
-            phrase + " " + self.generator.generate(prompt + " " + phrase, options)
+            phrase + " " + self.generator.generate(prompt + [phrase], options)
         )
         action, result = split_first_sentence(action_result)
         return action, result

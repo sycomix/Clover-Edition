@@ -105,12 +105,11 @@ class AIPlayer:
 
     def get_action(self, prompt):
         result_raw = self.generator.generate_raw(
-                prompt, generate_num=settings.getint('action-generate-num'), temperature=settings.getint('action-temp'))
+                prompt, generate_num=settings.getint('action-generate-num'), temperature=settings.getfloat('action-temp'))
         return clean_suggested_action(result_raw, min_length=settings.getint('action-min-length'))
 
 
-def play():
-    generator = getGenerator()
+def play(generator):
     story_manager = UnconstrainedStoryManager(generator)
     ai_player = AIPlayer(generator)
     print("\n")
@@ -168,16 +167,22 @@ def play():
             if settings.getint('action-alternatives') > 0:
 
                 #TODO change this to two messages for different colors
-                action_prompt = (
-                        story_manager.story.results[-1]
-                        if story_manager.story.results
-                        else "\nWhat do you do now?"
-                    ) + "\n>"
                 suggested_actions = []
                 colPrint('Suggested actions:', colors['selection-value'])
                 action_suggestion_lines = 1
                 for i in range(settings.getint('action-alternatives')):
-                    # FIXME it might be better to pass in a longer history
+                    # New way, passes in whole history, but causes looping and glitching
+                    # TODO try this but with a lower action temperature?
+                    # action_prompt = story_manager.story_context()  # This should be within the loop as it has a random sampling element
+                    # action_prompt[-1] += '\n>'
+
+                    # OLD reliable way of generating action suggestions. Only give the model the last story result
+                    action_prompt = (
+                        story_manager.story.results[-1]
+                        if story_manager.story.results
+                        else "\nWhat do you do now?"
+                    ) + "\n>"
+                    logger.debug("action_prompt %s", action_prompt)
                     suggested_action = ai_player.get_action(action_prompt)
                     suggested_actions.append(suggested_action)
                     suggestion = '{}> {}'.format(i, suggested_action)
@@ -239,7 +244,12 @@ def play():
                 # Options to select a suggestion action
                 if action in [str(i) for i in range(len(suggested_actions))]:
                     action = suggested_actions[int(action)]
+
+                action = action.strip()
                 
+                # Crop actions to a max length
+                action = action[:4096]
+                                
                 if action != "":
 
                     # Roll a 20 sided dice to make things interesting
@@ -260,7 +270,6 @@ def play():
                         else:
                             action = "You say " + action
                     else:
-                        action = action.strip()
                         action = first_to_second_person(action)
                         if not action.lower().startswith("you ") and not action.lower().startswith("i "):
                             action = action[0].lower() + action[1:]
@@ -317,5 +326,8 @@ def play():
                         colPrint("Sorry about that...where were we?", colors["query"])
                 colPrint(result, colors["ai-text"])
 
-#TODO: there's no reason for this to be enclosed in a function
-play()
+
+# This is here for rapid development, without reloading the model. You import play into a jupyternotebook with autoreload
+if __name__ == "__main__":
+    generator = getGenerator()
+    play(generator)

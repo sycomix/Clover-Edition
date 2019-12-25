@@ -1,4 +1,5 @@
 import os
+import itertools
 import torch
 import torch.nn.functional as F
 
@@ -65,7 +66,7 @@ def sample_sequence(
     context = torch.tensor(context, dtype=torch.long, device=device)
     context = context.unsqueeze(0).repeat(num_samples, 1)
     generated = context
-    USE_PAST = False
+    USE_PAST = True
     next_token = context
     outputs = None
     with torch.no_grad():
@@ -100,6 +101,11 @@ def sample_sequence(
             generated = torch.cat((generated, next_token), dim=1)
     return generated
 
+def truncate_multiple_sequences(seqs, max_len=100):
+    """Truncate multiple sequences, longest first, removing first."""
+    while sum(len(s) for s in seqs) > max_len:
+        longest = sorted(seqs, key=len, reverse=True)[0]
+        longest.pop(0)
 
 class GPT2Generator:
     def __init__(
@@ -114,8 +120,8 @@ class GPT2Generator:
         self.dtype = torch.float32 if CPU else torch.float16
         self.repetition_penalty = repetition_penalty
         self.batch_size = 1
-        self.stop_token = None
-        self.max_history_tokens = 256
+        self.max_history_tokens = 1024 - generate_num
+        self.stop_token = '<|endoftext|>'
 
         self.model_name = "pytorch-gpt2-xl-aid2-v5"
         self.model_dir = "models"
@@ -131,7 +137,7 @@ class GPT2Generator:
         model_class, tokenizer_class = MODEL_CLASSES["gpt2"]
         self.tokenizer = tokenizer_class.from_pretrained(self.checkpoint_path)
         self.model = model_class.from_pretrained(self.checkpoint_path)
-        self.model.to(self.device).to(self.dtype)
+        self.model.to(self.dtype).to(self.device)
         self.model.eval()
 
     def sample_sequence(self, context_tokens=None, generate_num=None, temperature=None):
@@ -183,14 +189,13 @@ class GPT2Generator:
         return result
 
     def generate_raw(self, prompt, generate_num=None, temperature=None):
-        context_tokens = self.tokenizer.encode(prompt, add_special_tokens=False)
-        # TODO instead of taking last 1024, take first X and last Y
-        # crop context to avoid going of the GPT2 max context size of 1024
-        if len(context_tokens) > self.max_history_tokens:
-            # FIXME it would be better to pass in a list of strings so we can cut some out, and a truncation strategy https://github.com/huggingface/transformers/blob/ce50305e5b8c8748b81b0c8f5539a337b6a995b9/src/transformers/tokenization_utils.py#L791
-            first = self.max_history_tokens // 4
-            last = self.max_history_tokens - first
-            context_tokens = context_tokens[:first] + context_tokens[-last:]
+        # the prompt is a list of strings, encode each one tok tokens, then truncate the longest ones
+        context_tokens = [self.tokenizer.encode(p, add_special_tokens=False, max_length=self.max_history_tokens) for p in prompt]
+        truncate_multiple_sequences(context_tokens, self.max_history_tokens)
+        context_tokens = list(itertools.chain(*context_tokens))
+
+        if os.environ.get("DEBUG_GPT2", False):
+            logger.debug("Text passing into model %s", self.tokenizer.decode(context_tokens, clean_up_tokenization_spaces=True, skip_special_tokens=True))
 
         generated = 0
         for _ in range(self.samples // self.batch_size):
@@ -202,7 +207,7 @@ class GPT2Generator:
             out = out[:, len(context_tokens) :].tolist()
             for o in out:
                 generated += 1
-                text = self.tokenizer.decode(o, clean_up_tokenization_spaces=True)
+                text = self.tokenizer.decode(o, clean_up_tokenization_spaces=True, skip_special_tokens=True)
                 if self.stop_token:
                     index = text.find(self.stop_token)
                     if index == -1:
@@ -212,7 +217,7 @@ class GPT2Generator:
 
     def generate(self, prompt, options=None, seed=1):
 
-        prompt = self.prompt_replace(prompt)
+        prompt = [self.prompt_replace(p) for p in prompt]
 
         logger.debug("Prompt is: `%s`", repr(prompt))
 
@@ -223,6 +228,6 @@ class GPT2Generator:
         result = text
         result = self.result_replace(result)
         if len(result) == 0:
-            return self.generate(prompt)
-
+            logger.warn("Model generated empty text %s.", result)
+            # return self.generate(prompt) # Woah recursion!
         return result
