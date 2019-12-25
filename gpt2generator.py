@@ -62,6 +62,7 @@ def sample_sequence(
     xlm_mask_token=None,
     xlm_lang=None,
     device="cpu",
+    stop_tokens=None
 ):
     context = torch.tensor(context, dtype=torch.long, device=device)
     context = context.unsqueeze(0).repeat(num_samples, 1)
@@ -70,7 +71,7 @@ def sample_sequence(
     next_token = context
     outputs = None
     with torch.no_grad():
-        for _ in range(length):
+        for j in range(length):
             if USE_PAST:
                 past = outputs[1] if outputs is not None else None
                 inputs = {"input_ids": next_token, 'past': past}
@@ -86,8 +87,8 @@ def sample_sequence(
 
             # repetition penalty from CTRL (https://arxiv.org/abs/1909.05858)
             for i in range(num_samples):
-                for _ in set(generated[i].tolist()):
-                    next_token_logits[i, _] /= repetition_penalty
+                for k in set(generated[i].tolist()):
+                    next_token_logits[i, k] /= repetition_penalty
 
             filtered_logits = top_k_top_p_filtering(
                 next_token_logits, top_k=top_k, top_p=top_p
@@ -98,6 +99,9 @@ def sample_sequence(
                 next_token = torch.multinomial(
                     F.softmax(filtered_logits, dim=-1), num_samples=1
                 )
+            if j>10 and (next_token[0][0] in stop_tokens):
+                logger.debug("Stopping generation as we found stop tokens. One of %s, in '%s'. token generated %s", stop_tokens, next_token, j)
+                break
             generated = torch.cat((generated, next_token), dim=1)
     return generated
 
@@ -140,7 +144,7 @@ class GPT2Generator:
         self.model.to(self.dtype).to(self.device)
         self.model.eval()
 
-    def sample_sequence(self, context_tokens=None, generate_num=None, temperature=None):
+    def sample_sequence(self, context_tokens=None, generate_num=None, temperature=None, stop_tokens=None):
         generate_num = generate_num if (generate_num is not None) else self.generate_num
         temperature = temperature if (temperature is not None) else self.temp
         out = sample_sequence(
@@ -153,7 +157,8 @@ class GPT2Generator:
             top_p=self.top_p,
             repetition_penalty=self.repetition_penalty,
             num_samples=self.samples,
-            device=self.device
+            device=self.device,
+            stop_tokens=stop_tokens,
             # batch_size=self.batch_size,
         )
         return out
@@ -188,7 +193,7 @@ class GPT2Generator:
 
         return result
 
-    def generate_raw(self, prompt, generate_num=None, temperature=None):
+    def generate_raw(self, prompt, generate_num=None, temperature=None, stop_tokens=None):
         # the prompt is a list of strings, encode each one tok tokens, then truncate the longest ones
         context_tokens = [self.tokenizer.encode(p, add_special_tokens=False, max_length=self.max_history_tokens) for p in prompt]
         truncate_multiple_sequences(context_tokens, self.max_history_tokens)
@@ -202,7 +207,8 @@ class GPT2Generator:
             out = self.sample_sequence(
                 context_tokens,
                 generate_num=generate_num,
-                temperature=temperature
+                temperature=temperature,
+                stop_tokens=stop_tokens
             )
             out = out[:, len(context_tokens) :].tolist()
             for o in out:
@@ -221,15 +227,16 @@ class GPT2Generator:
 
         logger.debug("Prompt is: `%s`", repr(prompt))
 
-        text = self.generate_raw(prompt)
+        text = self.generate_raw(prompt, stop_tokens=self.tokenizer.encode(['>', '<|endoftext|>']))
 
-        logger.debug("Generated result is: `%s`", repr(text))
+        logger.debug("Generated result is: `%s`", repr(text)
+        )
 
         result = text
         result = self.result_replace(result)
         if len(result) == 0:
             if (depth < 4):
-                logger.debug("Model generated empty text trying again", depth)
+                logger.debug("Model generated empty text trying again %s", depth)
                 return self.generate([' {}'.format(depth)] + prompt, depth=depth + 1)
             else:
                 logger.warn("Model generated empty text %s times. Try another action", depth)

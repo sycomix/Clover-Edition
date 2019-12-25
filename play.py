@@ -51,6 +51,7 @@ def count_printed_lines(text):
     return sum([(len(ss) // width) + 1 for ss in text.split("\n")])
 
 def getNumberInput(n):
+    bell()
     val=colInput("Enter a number from above (default 0):", colors["selection-prompt"], colors["selection-value"])
     if val=='':
         return 0
@@ -105,9 +106,17 @@ class AIPlayer:
 
     def get_action(self, prompt):
         result_raw = self.generator.generate_raw(
-                prompt, generate_num=settings.getint('action-generate-num'), temperature=settings.getfloat('action-temp'))
+                prompt,
+                generate_num=settings.getint('action-generate-num'),
+                temperature=settings.getfloat('action-temp'),
+                # stop_tokens=self.generator.tokenizer.encode(['\n', '>', '<|endoftext|>'])
+                stop_tokens=self.generator.tokenizer.encode(['>', '<|endoftext|>'])
+                )
         return clean_suggested_action(result_raw, min_length=settings.getint('action-min-length'))
 
+def bell():
+    if settings.getboolean('console-bell'):
+        print('\x07', end='')
 
 def play(generator):
     story_manager = UnconstrainedStoryManager(generator)
@@ -164,7 +173,7 @@ def play(generator):
 
         while True:
             #Generate suggested actions
-            act_alts = settings.getint('action-alternatives')
+            act_alts = settings.getint('action-sugg')
             if act_alts > 0:
 
                 #TODO change this to two messages for different colors
@@ -172,28 +181,15 @@ def play(generator):
                 colPrint('Suggested actions:', colors['selection-value'])
                 action_suggestion_lines = 1
                 for i in range(act_alts):
-                    # New way, passes in whole history, but causes looping and glitching
-                    # TODO try this but with a lower action temperature?
-                    # if i <= (act_alts//2):
-
                     # While we want the story to be on track, but not to on track that it loops
                     # the actions can be quite random, and this helps inject some user curated randomness
                     # and prevent loops. So lets make the actions quite random, and prevent duplicates while we are at it
-
                     action_prompt = story_manager.story_context(
                         mem_ind=random.randint(1, 6),
                         sample=random.randint(0, 1),
                         include_prompt=random.randint(0, 1)
                     )
-                    action_prompt[-1] += '\n>'
-                    # else:
-                    #     # OLD reliable way of generating action suggestions. Only give the model the last story result
-                    #     action_prompt = (
-                    #         story_manager.story.results[-1]
-                    #         if story_manager.story.results
-                    #         else "\nWhat do you do now?"
-                    #     ) + "\n>"
-                    logger.debug("action_prompt %s", action_prompt)
+                    action_prompt[-1] = action_prompt[-1].strip() + '\n> You'
                     suggested_action = ai_player.get_action(action_prompt)
                     suggested_actions.append(suggested_action)
                     suggestion = '{}> {}'.format(i, suggested_action)
@@ -201,12 +197,11 @@ def play(generator):
                     action_suggestion_lines += count_printed_lines(suggestion)
                 print()
 
-            if settings.getboolean('console-bell'):
-                print('\x07', end='')
-            action = colInput("> ", colors["main-prompt"], colors["user-text"])
+            bell()
+            action = colInput("You >", colors["main-prompt"], colors["user-text"])
             
             # Clear suggestions and user input
-            if settings.getint('action-sugg') > 0:
+            if act_alts > 0:
                 action_suggestion_lines += count_printed_lines('> '+action) + 1
                 clear_lines(action_suggestion_lines)
 

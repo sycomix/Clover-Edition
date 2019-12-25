@@ -200,8 +200,12 @@ class StoryManager:
     def json_story(self):
         return self.story.to_json()
 
-    def story_context(self, mem_ind=None, sample=False):
-        return self.story.latest_result(mem_ind=mem_ind, sample=sample)
+    def story_context(self, mem_ind=None, sample=False, include_prompt=True):
+        s = self.story.latest_result(mem_ind=mem_ind, sample=sample)
+        if not include_prompt:
+            s = s[1:]
+        logger.info("Generated action mem_ind={}, sample={}, include_prompt={}".format(mem_ind, sample, include_prompt))
+        return s
 
 
 class UnconstrainedStoryManager(StoryManager):
