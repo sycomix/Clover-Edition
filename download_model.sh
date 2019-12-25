@@ -36,9 +36,9 @@ download_torrent() {
       --summary-interval=15 \
       --disable-ipv6 \
       ${MODEL_TORRENT_NAME}
+    mv "${MODEL_TORRENT_BASENAME}" "${MODEL_VERSION}"
     sha1sum -c ${MODEL_SHA_NAME}
     echo "Download Complete!"
-    mv "${MODEL_TORRENT_BASENAME}" "${MODEL_VERSION}"
     fi
 }
 
