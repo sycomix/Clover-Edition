@@ -136,7 +136,7 @@ class GPT2Generator:
         model_class, tokenizer_class = MODEL_CLASSES["gpt2"]
         self.tokenizer = tokenizer_class.from_pretrained(self.checkpoint_path)
         self.model = model_class.from_pretrained(self.checkpoint_path)
-        self.model.to(self.device).to(self.dtype)
+        self.model.to(self.dtype).to(self.device)
         self.model.eval()
 
     def sample_sequence(self, context_tokens=None, generate_num=None, temperature=None):
@@ -193,7 +193,7 @@ class GPT2Generator:
         truncate_multiple_sequences(context_tokens, self.max_history_tokens)
         context_tokens = list(itertools.chain(*context_tokens))
 
-        logger.debug("Text passing into model %s", self.tokenizer.decode(o, clean_up_tokenization_spaces=True, skip_special_tokens=True))
+        logger.debug("Text passing into model %s", self.tokenizer.decode(context_tokens, clean_up_tokenization_spaces=True, skip_special_tokens=True))
 
         generated = 0
         for _ in range(self.samples // self.batch_size):
