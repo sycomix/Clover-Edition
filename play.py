@@ -241,9 +241,10 @@ def play(generator):
                 continue
 
             else:
-                # Options to select a suggestion action
-                if action in [str(i) for i in range(len(suggested_actions))]:
-                    action = suggested_actions[int(action)]
+                if act_alts > 0:
+                    # Options to select a suggestion action
+                    if action in [str(i) for i in range(len(suggested_actions))]:
+                        action = suggested_actions[int(action)]
 
                 action = action.strip()
                 
