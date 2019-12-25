@@ -8,7 +8,7 @@ import textwrap
 from random import shuffle
 from shutil import get_terminal_size
 
-from getconfig import settings, colors, logger
+from getconfig import config, settings, colors, logger
 from story.story_manager import *
 from story.utils import *
 from gpt2generator import GPT2Generator
@@ -115,7 +115,7 @@ def play(generator):
     print("\n")
 
     with open(Path('interface', 'mainTitle.txt'), 'r', encoding='utf-8') as file:
-        colPrint(file.read(), colors['title'])
+        colPrint(file.read(), colors['title'], wrap=False)
 
     with open(Path('interface', 'subTitle.txt'), 'r', encoding='utf-8') as file:
         cols=get_terminal_size()[0]
@@ -174,16 +174,25 @@ def play(generator):
                 for i in range(act_alts):
                     # New way, passes in whole history, but causes looping and glitching
                     # TODO try this but with a lower action temperature?
-                    if i <= (act_alts//2):
-                        action_prompt = story_manager.story_context(mem_ind=4, sample=True)  # This should be within the loop as it has a random sampling element
-                        action_prompt[-1] += '\n>'
-                    else:
-                        # OLD reliable way of generating action suggestions. Only give the model the last story result
-                        action_prompt = (
-                            story_manager.story.results[-1]
-                            if story_manager.story.results
-                            else "\nWhat do you do now?"
-                        ) + "\n>"
+                    # if i <= (act_alts//2):
+
+                    # While we want the story to be on track, but not to on track that it loops
+                    # the actions can be quite random, and this helps inject some user curated randomness
+                    # and prevent loops. So lets make the actions quite random, and prevent duplicates while we are at it
+
+                    action_prompt = story_manager.story_context(
+                        mem_ind=random.randint(1, 6),
+                        sample=random.randint(0, 1),
+                        include_prompt=random.randint(0, 1)
+                    )
+                    action_prompt[-1] += '\n>'
+                    # else:
+                    #     # OLD reliable way of generating action suggestions. Only give the model the last story result
+                    #     action_prompt = (
+                    #         story_manager.story.results[-1]
+                    #         if story_manager.story.results
+                    #         else "\nWhat do you do now?"
+                    #     ) + "\n>"
                     logger.debug("action_prompt %s", action_prompt)
                     suggested_action = ai_player.get_action(action_prompt)
                     suggested_actions.append(suggested_action)
@@ -197,7 +206,7 @@ def play(generator):
             action = colInput("> ", colors["main-prompt"], colors["user-text"])
             
             # Clear suggestions and user input
-            if settings.getint('action-alternatives') > 0:
+            if settings.getint('action-sugg') > 0:
                 action_suggestion_lines += count_printed_lines('> '+action) + 1
                 clear_lines(action_suggestion_lines)
 
@@ -243,9 +252,10 @@ def play(generator):
                 continue
 
             else:
-                # Options to select a suggestion action
-                if action in [str(i) for i in range(len(suggested_actions))]:
-                    action = suggested_actions[int(action)]
+                if act_alts > 0:
+                    # Options to select a suggestion action
+                    if action in [str(i) for i in range(len(suggested_actions))]:
+                        action = suggested_actions[int(action)]
 
                 action = action.strip()
                 
