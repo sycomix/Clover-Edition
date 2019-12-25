@@ -8,7 +8,7 @@ import textwrap
 from random import shuffle
 from shutil import get_terminal_size
 
-from getconfig import settings, colors, logger
+from getconfig import config, settings, colors, logger
 from story.story_manager import *
 from story.utils import *
 from gpt2generator import GPT2Generator
