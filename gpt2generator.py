@@ -66,7 +66,7 @@ def sample_sequence(
     context = torch.tensor(context, dtype=torch.long, device=device)
     context = context.unsqueeze(0).repeat(num_samples, 1)
     generated = context
-    USE_PAST = False
+    USE_PAST = True
     next_token = context
     outputs = None
     with torch.no_grad():
@@ -194,6 +194,7 @@ class GPT2Generator:
         truncate_multiple_sequences(context_tokens, self.max_history_tokens)
         context_tokens = list(itertools.chain(*context_tokens))
 
+        if os.environ.get("DEBUG_GPT2", False):
         logger.debug("Text passing into model %s", self.tokenizer.decode(context_tokens, clean_up_tokenization_spaces=True, skip_special_tokens=True))
 
         generated = 0

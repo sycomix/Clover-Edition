@@ -81,9 +81,9 @@ class Story:
             # When we have to much history we will take the last 10, and sample randomly from the rest
             # first take last mem_ind//2
             all_inds = list(range(len(self.results)))
+            first = all_inds[:-mem_ind//2]
             last = all_inds[-mem_ind//2:]
-            first = all_inds[:mem_ind//2]
-            inds = sorted(last + random.sample(first, mem_ind//2))
+            inds = sorted(random.sample(first, mem_ind//2)+last)
         else:
             inds = range(len(self.results))
         logger.debug("Using history indices %s", inds)
