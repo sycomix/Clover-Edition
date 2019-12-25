@@ -1,13 +1,14 @@
 # AIDungeon2
 ## Clover Edition
 ### Pytorch Edition
-#### Coming: Soon.
 
-In 2016, Donald Trump ran for president on a campaign of Making Anime Real. Four years later this promise is finally being fullfilled. Behold AIDungeon(no space): Clover Edition. The only video game where you can truly Do Anything:
+In 2016, Donald Trump ran for president on a campaign of Making Anime Real. Four years later this promise is finally being fullfilled. Behold AID2: Clover Edition. The only video game where you can truly Do Anything:
 
 ![img](https://i.4cdn.org/v/1576830028034.png)
 ![img](https://i.4cdn.org/v/1576564400002.png)
 ![img](http://i.imgur.com/NqC0lxG.png)
+
+Also take a look at [AIDungeonPastes](https://aidungeonpastes.github.io/AID2-Art/) for some drawn gameplay examples.
 
 
 A fork of AIDungeon2, now driven by huggingface's transformers repository using PyTorch GPT2.
@@ -17,14 +18,15 @@ A fork of AIDungeon2, now driven by huggingface's transformers repository using 
 ------------------------
 
 * Complete rewrite of the user interface
- * Color text output
- * Suggested actions
- * Roll 20 sided dice for speech or action
- * Console Bell when AI finishes
- * Much improved prompt selection
- * Ability to save custom prompts
+  * Color text output
+  * Suggested actions
+  * Roll 20 sided dice for speech or action
+  * Console Bell when AI finishes
+  * Much improved prompt selection
+  * Ability to save custom prompts
 * A much larger library of fan made starting prompts
 * Better config file
+* Repetition Penalty to reduce AI looping behavior
 * Half precision floating point using less GPU memory (you still need ~~11~~ ~~8~~ 4-6GB)
 * Lots of changes to story history sampling/truncation to hopefully stay on track with longer games
 * Eventually hope to improve the AI itself, but this will take some time
