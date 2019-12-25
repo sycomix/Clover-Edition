@@ -164,24 +164,26 @@ def play(generator):
 
         while True:
             #Generate suggested actions
-            if settings.getint('action-alternatives') > 0:
+            act_alts = settings.getint('action-alternatives')
+            if act_alts > 0:
 
                 #TODO change this to two messages for different colors
                 suggested_actions = []
                 colPrint('Suggested actions:', colors['selection-value'])
                 action_suggestion_lines = 1
-                for i in range(settings.getint('action-alternatives')):
+                for i in range(act_alts):
                     # New way, passes in whole history, but causes looping and glitching
                     # TODO try this but with a lower action temperature?
-                    action_prompt = story_manager.story_context()  # This should be within the loop as it has a random sampling element
-                    action_prompt[-1] += '\n>'
-
-                    # OLD reliable way of generating action suggestions. Only give the model the last story result
-                    # action_prompt = (
-                    #     story_manager.story.results[-1]
-                    #     if story_manager.story.results
-                    #     else "\nWhat do you do now?"
-                    # ) + "\n>"
+                    if i <= (act_alts//2):
+                        action_prompt = story_manager.story_context(mem_ind=4, sample=True)  # This should be within the loop as it has a random sampling element
+                        action_prompt[-1] += '\n>'
+                    else:
+                        # OLD reliable way of generating action suggestions. Only give the model the last story result
+                        action_prompt = (
+                            story_manager.story.results[-1]
+                            if story_manager.story.results
+                            else "\nWhat do you do now?"
+                        ) + "\n>"
                     logger.debug("action_prompt %s", action_prompt)
                     suggested_action = ai_player.get_action(action_prompt)
                     suggested_actions.append(suggested_action)

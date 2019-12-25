@@ -68,19 +68,21 @@ class Story:
             self.actions.pop(1)
             self.results.pop(1)
 
-    def latest_result(self):
-
-        mem_ind = self.memory
+    def latest_result(self, mem_ind=None, sample=False):
+        mem_ind = mem_ind if mem_ind is not None else self.memory
         if len(self.results) < 2:
             latest_results = [self.story_start]
         else:
             latest_results = [self.context]
         latest_result = ''
 
-        if mem_ind < len(self.results):
+        all_inds = list(range(len(self.results)))
+        if sample:
+            n = min(mem_ind, len(all_inds))
+            inds = sorted(random.sample(all_inds, n))
+        elif mem_ind < len(self.results):
             # When we have to much history we will take the last 10, and sample randomly from the rest
             # first take last mem_ind//2
-            all_inds = list(range(len(self.results)))
             first = all_inds[:-mem_ind//2]
             last = all_inds[-mem_ind//2:]
             inds = sorted(random.sample(first, mem_ind//2)+last)
@@ -198,8 +200,8 @@ class StoryManager:
     def json_story(self):
         return self.story.to_json()
 
-    def story_context(self):
-        return self.story.latest_result()
+    def story_context(self, mem_ind=None, sample=False):
+        return self.story.latest_result(mem_ind=mem_ind, sample=sample)
 
 
 class UnconstrainedStoryManager(StoryManager):
