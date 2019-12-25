@@ -164,13 +164,13 @@ def play(generator):
 
         while True:
             #Generate suggested actions
-            if settings.getint('action-alternatives') > 0:
+            if settings.getint('action-sugg') > 0:
 
                 #TODO change this to two messages for different colors
                 suggested_actions = []
                 colPrint('Suggested actions:', colors['selection-value'])
                 action_suggestion_lines = 1
-                for i in range(settings.getint('action-alternatives')):
+                for i in range(settings.getint('action-sugg')):
                     # New way, passes in whole history, but causes looping and glitching
                     # TODO try this but with a lower action temperature?
                     # action_prompt = story_manager.story_context()  # This should be within the loop as it has a random sampling element
@@ -195,7 +195,7 @@ def play(generator):
             action = colInput("> ", colors["main-prompt"], colors["user-text"])
             
             # Clear suggestions and user input
-            if settings.getint('action-alternatives') > 0:
+            if settings.getint('action-sugg') > 0:
                 action_suggestion_lines += count_printed_lines('> '+action) + 1
                 clear_lines(action_suggestion_lines)
 
@@ -241,7 +241,7 @@ def play(generator):
                 continue
 
             else:
-                if act_alts > 0:
+                if settings.getint('action-sugg') > 0:
                     # Options to select a suggestion action
                     if action in [str(i) for i in range(len(suggested_actions))]:
                         action = suggested_actions[int(action)]

@@ -16,3 +16,6 @@ The following commands can be entered for any action:
        generate-num    Default: 60
        top-p           Default: 0.9
        log-level       Default: 3
+       num-sugg        How many actions to generate, 0 is off. Default: 4
+       action-d20      Make actions difficult. Default: on
+       action-temp     How random the suggested actions are. Default: 1
