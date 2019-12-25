@@ -125,6 +125,7 @@ def play(generator):
             #fills in the graphic using reverse video mode substituted into the areas between |'s
             colPrint(re.sub(r'\|[ _]*\|', lambda x: '\x1B[7m'+x.group(0)+'\x1B[27m', line), colors["subtitle"], False)
 
+    print()
     colPrint("Go to https://github.com/cloveranon/Clover-Edition/ or email cloveranon@nuke.africa for bug reports, help, and feature requests.", colors['subsubtitle'])
 
     while True:
