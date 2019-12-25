@@ -173,15 +173,15 @@ def play(generator):
                 for i in range(settings.getint('action-alternatives')):
                     # New way, passes in whole history, but causes looping and glitching
                     # TODO try this but with a lower action temperature?
-                    # action_prompt = story_manager.story_context()  # This should be within the loop as it has a random sampling element
-                    # action_prompt[-1] += '\n>'
+                    action_prompt = story_manager.story_context()  # This should be within the loop as it has a random sampling element
+                    action_prompt[-1] += '\n>'
 
                     # OLD reliable way of generating action suggestions. Only give the model the last story result
-                    action_prompt = (
-                        story_manager.story.results[-1]
-                        if story_manager.story.results
-                        else "\nWhat do you do now?"
-                    ) + "\n>"
+                    # action_prompt = (
+                    #     story_manager.story.results[-1]
+                    #     if story_manager.story.results
+                    #     else "\nWhat do you do now?"
+                    # ) + "\n>"
                     logger.debug("action_prompt %s", action_prompt)
                     suggested_action = ai_player.get_action(action_prompt)
                     suggested_actions.append(suggested_action)
