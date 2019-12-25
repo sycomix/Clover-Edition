@@ -215,7 +215,7 @@ class GPT2Generator:
                     text = text[:index]
         return text
 
-    def generate(self, prompt, options=None, seed=1):
+    def generate(self, prompt, options=None, seed=1, depth=0):
 
         prompt = [self.prompt_replace(p) for p in prompt]
 
@@ -227,7 +227,8 @@ class GPT2Generator:
 
         result = text
         result = self.result_replace(result)
-        if len(result) == 0:
-            logger.warn("Model generated empty text %s.", result)
-            # return self.generate(prompt) # Woah recursion!
+        if (len(result) == 0) and (depth < 4):
+            return self.generate(prompt, depth=depth + 1)
+            logger.debug("Model generated empty text trying again", depth)
+        logger.warn("Model generated empty text %s times. Try another action", depth)
         return result
