@@ -29,6 +29,8 @@ pip_install () {
 		fi
 		python3 -m venv ./venv
 	fi
+	commit_hash=$(git log --pretty=format:'%h' -n 1)
+	echo "You are using https://github.com/cloveranon/Clover-Edition/commit/${commit_hash}"
 	source "${BASE_DIR}/venv/bin/activate"
 	pip install --upgrade pip setuptools
 	pip install -r "${BASE_DIR}/requirements.txt"
