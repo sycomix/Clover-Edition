@@ -230,5 +230,6 @@ class GPT2Generator:
         if (len(result) == 0) and (depth < 4):
             return self.generate(prompt, depth=depth + 1)
             logger.debug("Model generated empty text trying again", depth)
-        logger.warn("Model generated empty text %s times. Try another action", depth)
+        else:
+            logger.warn("Model generated empty text %s times. Try another action", depth)
         return result
