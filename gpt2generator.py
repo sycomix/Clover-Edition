@@ -195,7 +195,7 @@ class GPT2Generator:
         context_tokens = list(itertools.chain(*context_tokens))
 
         if os.environ.get("DEBUG_GPT2", False):
-        logger.debug("Text passing into model %s", self.tokenizer.decode(context_tokens, clean_up_tokenization_spaces=True, skip_special_tokens=True))
+            logger.debug("Text passing into model %s", self.tokenizer.decode(context_tokens, clean_up_tokenization_spaces=True, skip_special_tokens=True))
 
         generated = 0
         for _ in range(self.samples // self.batch_size):
