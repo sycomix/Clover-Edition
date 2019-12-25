@@ -109,7 +109,7 @@ class AIPlayer:
                 prompt,
                 generate_num=settings.getint('action-generate-num'),
                 temperature=settings.getfloat('action-temp'),
-                stop_tokens=self.generator.tokenizer.encode(['\n', '>', '<|endoftext|>'])
+                stop_tokens=self.generator.tokenizer.encode(['<|endoftext|>', '\n', '>'])
                 # stop_tokens=self.generator.tokenizer.encode(['>', '<|endoftext|>'])
                 )
         return clean_suggested_action(result_raw, min_length=settings.getint('action-min-length'))

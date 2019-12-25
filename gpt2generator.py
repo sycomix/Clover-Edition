@@ -99,10 +99,10 @@ def sample_sequence(
                 next_token = torch.multinomial(
                     F.softmax(filtered_logits, dim=-1), num_samples=1
                 )
-            if j>4 and (next_token[0][0] in stop_tokens):
+            generated = torch.cat((generated, next_token), dim=1)
+            if (stop_tokens is not None) and (j>4) and (next_token[0][0] in stop_tokens):
                 logger.debug("Stopping generation as we found stop tokens. One of `%s`, in '%s'. token generated `%s`", stop_tokens, next_token, j)
                 break
-            generated = torch.cat((generated, next_token), dim=1)
     return generated
 
 def truncate_multiple_sequences(seqs, max_len=100):
@@ -219,6 +219,12 @@ class GPT2Generator:
                     if index == -1:
                         index = None
                     text = text[:index]
+                if stop_tokens is not None:
+                    for stop_token in stop_tokens:
+                        index = text.find(self.stop_token)
+                        if index == -1:
+                            index = None
+                        text = text[:index]
         return text
 
     def generate(self, prompt, options=None, seed=1, depth=0):
@@ -227,7 +233,7 @@ class GPT2Generator:
 
         logger.debug("Prompt is: `%s`", repr(prompt))
 
-        text = self.generate_raw(prompt, stop_tokens=self.tokenizer.encode(['>', '<|endoftext|>']))
+        text = self.generate_raw(prompt, stop_tokens=self.tokenizer.encode(['<|endoftext|>', '>']))
 
         logger.debug("Generated result is: `%s`", repr(text)
         )
