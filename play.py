@@ -1,4 +1,5 @@
 from pathlib import Path
+#remove this in a few days
 with open(Path('interface', 'start-message.txt'), 'r') as file:
     print('\x1B[7m'+file.read()+'\x1B[27m')
 import gc
@@ -123,7 +124,7 @@ def play(generator):
             line=re.sub(r'\n', '', line)
             line=line[:cols]
             #fills in the graphic using reverse video mode substituted into the areas between |'s
-            colPrint(re.sub(r'\|[ _]*\|', lambda x: '\x1B[7m'+x.group(0)+'\x1B[27m', line), colors["subtitle"], False)
+            colPrint(re.sub(r'\|[ _]*(\||$)', lambda x: '\x1B[7m'+x.group(0)+'\x1B[27m', line), colors['subtitle'], False)
 
     print()
     colPrint("Go to https://github.com/cloveranon/Clover-Edition/ or email cloveranon@nuke.africa for bug reports, help, and feature requests.", colors['subsubtitle'])
@@ -138,7 +139,7 @@ def play(generator):
 
         print("\n\n")
 
-        colPrint("0: Pick Prompt From File (Default if you type nothing)\n1: Write Custom Prompt", colors["menu"])
+        colPrint("0: Pick Prompt From File (Default if you type nothing)\n1: Write Custom Prompt", colors['menu'])
 
         if getNumberInput(1) == 1:
             with open(Path('interface', 'prompt-instructions.txt'), 'r', encoding='utf-8') as file:
