@@ -105,7 +105,7 @@ class AIPlayer:
 
     def get_action(self, prompt):
         result_raw = self.generator.generate_raw(
-                prompt, generate_num=settings.getint('action-generate-num'), temperature=settings.getint('action-temp'))
+                prompt, generate_num=settings.getint('action-generate-num'), temperature=settings.getfloat('action-temp'))
         return clean_suggested_action(result_raw, min_length=settings.getint('action-min-length'))
 
 
