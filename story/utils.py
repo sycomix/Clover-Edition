@@ -24,10 +24,11 @@ def console_print(text, width=75):
 
 
 #TODO: get rid if pyjarowinker dependency
+# (AOP) You could use a simpler method, but this has been reported by RebootTech as a much more accurate way to compare strings. It also helps clean up the history. So it will hurt ability to check for looping
 def get_similarity(a, b):
+    if len(a)==0 or len(b)==0: return 1
     return distance.get_jaro_distance(
-                            a, b, winkler=True, scaling = 0.1
-                        )
+                            a, b, winkler=True, scaling = 0.1)
 
 
 def get_num_options(num):
