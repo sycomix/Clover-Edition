@@ -8,6 +8,8 @@ MODEL_VERSION=pytorch-gpt2-xl-aid2-v5
 
 # torrent to download
 MODEL_TORRENT_URL="https://raw.githubusercontent.com/cloveranon/Clover-Edition/master/model.torrent"
+MODEL_SHA_URL="https://raw.githubusercontent.com/cloveranon/Clover-Edition/master/model.sha"
+MODEL_SHA_NAME=$(basename $MODEL_TORRENT_SHA)
 MODEL_TORRENT_NAME=$(basename $MODEL_TORRENT_URL)
 
 # The name of the (source) folder when the torrent downloads
@@ -18,6 +20,7 @@ download_torrent() {
   mkdir -p "${MODELS_DIRECTORY}"
   cd "${MODELS_DIRECTORY}"
   wget "${MODEL_TORRENT_URL}"
+  wget "${MODEL_SHA_URL}"
   which aria2c > /dev/null
   if [ $? == 0 ]; then
     echo -e "\n\n==========================================="
@@ -33,6 +36,7 @@ download_torrent() {
       --summary-interval=15 \
       --disable-ipv6 \
       ${MODEL_TORRENT_NAME}
+    sha1sum -c ${MODEL_SHA_NAME}
     echo "Download Complete!"
     mv "${MODEL_TORRENT_BASENAME}" "${MODEL_VERSION}"
     fi
