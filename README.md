@@ -25,7 +25,7 @@ A fork of AIDungeon2, now driven by huggingface's transformers repository using 
  * Ability to save custom prompts
 * A much larger library of fan made starting prompts
 * Better config file
-* Half precision floating point using less GPU memory (you still need 8GB+)
+* Half precision floating point using less GPU memory (you still need ~~11~~ ~~8~~ 4-6GB)
 * Eventually hope to improve the AI itself, but this will take some time
 
 #### Installation Instructions:
