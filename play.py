@@ -115,7 +115,7 @@ def play(generator):
     print("\n")
 
     with open(Path('interface', 'mainTitle.txt'), 'r', encoding='utf-8') as file:
-        colPrint(file.read(), colors['title'])
+        colPrint(file.read(), colors['title'], wrap=False)
 
     with open(Path('interface', 'subTitle.txt'), 'r', encoding='utf-8') as file:
         cols=get_terminal_size()[0]
