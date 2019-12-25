@@ -2,19 +2,21 @@
 cd "$(dirname "${0}")"
 BASE_DIR="$(pwd)"
 
-BASE_DIR="$(pwd)"
+# destination folder inside models directory
 MODELS_DIRECTORY=models
-
 MODEL_VERSION=pytorch-gpt2-xl-aid2-v5
-MODEL_DIRECTORY="${MODELS_DIRECTORY}"
 
+# torrent to download
 MODEL_TORRENT_URL="https://raw.githubusercontent.com/cloveranon/Clover-Edition/master/model.torrent"
-MODEL_TORRENT_BASENAME=model_v5_pytorch #"$(basename "${MODEL_TORRENT_URL}")"
+MODEL_TORRENT_NAME=$(basename $MODEL_TORRENT_URL)
+
+# The name of the (source) folder when the torrent downloads
+MODEL_TORRENT_BASENAME=model_v5_pytorch 
 
 download_torrent() {
   echo "Creating directories."
-  mkdir -p "${MODEL_DIRECTORY}"
-  cd "${MODEL_DIRECTORY}"
+  mkdir -p "${MODELS_DIRECTORY}"
+  cd "${MODELS_DIRECTORY}"
   wget "${MODEL_TORRENT_URL}"
   which aria2c > /dev/null
   if [ $? == 0 ]; then
@@ -30,19 +32,20 @@ download_torrent() {
       --seed-time=0 \
       --summary-interval=15 \
       --disable-ipv6 \
-      "${MODEL_TORRENT_BASENAME}"
+      ${MODEL_TORRENT_NAME}
     echo "Download Complete!"
-    mv "${MODEL_TORRENT_BASENAME%.*}" $MODEL_VERSION
+    mv "${MODEL_TORRENT_BASENAME}" "${MODEL_VERSION}"
     fi
 }
 
 redownload () {
 	echo "Deleting $MODEL_DIRECTORY"
-	rm -rf ${MODEL_DIRECTORY}
+	rm -rf ${MODELS_DIRECTORY}
 	download_torrent
 }
+ls "${MODELS_DIRECTORY}/${MODEL_VERSION}"
 
-if [[ -d "${MODEL_DIRECTORY}/${MODEL_VERSION}" ]]; then
+if [[ -d "${MODELS_DIRECTORY}/${MODEL_VERSION}" ]]; then
 	ANSWER="n"
 	echo "AIDungeon2 Model appears to be downloaded."
 	echo "Would you like to redownload?"
