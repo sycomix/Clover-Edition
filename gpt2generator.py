@@ -235,7 +235,7 @@ class GPT2Generator:
         result = text
         result = self.result_replace(result)
         if len(result) == 0:
-            if (depth < 4):
+            if (depth < 20):
                 logger.debug("Model generated empty text trying again %s", depth)
                 return self.generate([' {}'.format(depth)] + prompt, depth=depth + 1)
             else:

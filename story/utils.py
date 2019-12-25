@@ -136,10 +136,6 @@ def clean_suggested_action(result_raw, min_length=4):
     last_punc = max(result.rfind("."), result.rfind("!"), result.rfind("?"))
     if (last_punc / (len(result) + 1)) > 0.7:
         result = result[:last_punc]
-    elif last_punc == len(result):
-        pass
-    else:
-        result += "..."
 
     # Remove you from start
     result = first_to_second_person(result)
