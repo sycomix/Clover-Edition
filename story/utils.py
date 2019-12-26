@@ -144,6 +144,13 @@ def clean_suggested_action(result_raw, min_length=4):
     return result
 
 
+def fix_trailing_quotes(text):
+    num_quotes = text.count('"')
+    if num_quotes % 2 == 0:
+        return text
+    else:
+        return text + '"'
+
 def cut_trailing_sentence(text, allow_action=False):
     text = standardize_punctuation(text)
     last_punc = max(text.rfind("."), text.rfind("!"), text.rfind("?"))
