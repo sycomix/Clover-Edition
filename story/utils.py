@@ -1,6 +1,7 @@
 # coding: utf-8
 import re
-#TODO: try to get rid of this
+
+# TODO: try to get rid of this
 from pyjarowinkler import distance
 import torch
 import random
@@ -34,12 +35,12 @@ def console_print(text, width=75):
     print(text)
 
 
-#TODO: get rid if pyjarowinker dependency
+# TODO: get rid if pyjarowinker dependency
 # (AOP) You could use a simpler method, but this has been reported by RebootTech as a much more accurate way to compare strings. It also helps clean up the history. So it will hurt ability to check for looping
 def get_similarity(a, b):
-    if len(a)==0 or len(b)==0: return 1
-    return distance.get_jaro_distance(
-                            a, b, winkler=True, scaling = 0.1)
+    if len(a) == 0 or len(b) == 0:
+        return 1
+    return distance.get_jaro_distance(a, b, winkler=True, scaling=0.1)
 
 
 def get_num_options(num):
@@ -136,8 +137,8 @@ def clean_suggested_action(result_raw, min_length=4):
     results = [s for s in results if len(s) > min_length]
 
     # Sometimes actions are generated with leading > ! . or ?. Likely the model trying to finish the prompt or start an action.
-    result = results[0].strip().lstrip(" >!.?") if len(results) else ''
-    
+    result = results[0].strip().lstrip(" >!.?") if len(results) else ""
+
     # result = cut_trailing_quotes(result)
     logger.debug(
         "full suggested action '%s'. Cropped: '%s'. Split '%s'",
@@ -148,7 +149,7 @@ def clean_suggested_action(result_raw, min_length=4):
 
     # Often actions are cropped with sentance fragments, lets remove. Or we could just turn up config_act["generate-number"]
     result = first_to_second_person(result)
-    result = re.sub('^ ?[Yy]ou ?', '', result)
+    result = re.sub("^ ?[Yy]ou ?", "", result)
     logger.debug("suggested action after cleaning `%s`", result)
     return result
 
@@ -159,6 +160,7 @@ def fix_trailing_quotes(text):
         return text
     else:
         return text + '"'
+
 
 def cut_trailing_sentence(text, allow_action=False):
     text = standardize_punctuation(text)
@@ -179,7 +181,7 @@ def cut_trailing_sentence(text, allow_action=False):
         # elif act_token == 0:
         #     last_punc = min(last_punc, act_token)
 
-    text = text[:last_punc+1]
+    text = text[: last_punc + 1]
 
     text = fix_trailing_quotes(text)
     if allow_action:

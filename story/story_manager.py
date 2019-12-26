@@ -7,7 +7,6 @@ import random
 from story.utils import *
 
 
-
 class Story:
     def __init__(
         self, story_start, context="", seed=None, game_state=None, upload_story=False
@@ -77,7 +76,7 @@ class Story:
             latest_results = [self.story_start]
         else:
             latest_results = [self.context]
-        latest_result = ''
+        latest_result = ""
 
         all_inds = list(range(len(self.results)))
         if sample:
@@ -85,13 +84,13 @@ class Story:
             n = max(0, n)
             inds = random.sample(all_inds, n)
             if len(self.results):
-                inds += [len(all_inds)-1]  # Always include the last prompt too
+                inds += [len(all_inds) - 1]  # Always include the last prompt too
         elif mem_ind < len(self.results):
             # When we have to much history we will take the last 10, and sample randomly from the rest
             # first take last mem_ind//2
-            first = all_inds[:-mem_ind//2]
-            last = all_inds[-mem_ind//2:]
-            inds = random.sample(first, mem_ind//2)+last
+            first = all_inds[: -mem_ind // 2]
+            last = all_inds[-mem_ind // 2 :]
+            inds = random.sample(first, mem_ind // 2) + last
         else:
             inds = range(len(self.results))
         logger.debug("Using history indices %s", repr(inds))
@@ -108,7 +107,7 @@ class Story:
 
         return "".join(story_list)
 
-    #delet this
+    # delet this
     def to_json(self):
         story_dict = {}
         story_dict["story_start"] = self.story_start
@@ -211,7 +210,11 @@ class StoryManager:
         s = self.story.latest_result(mem_ind=mem_ind, sample=sample)
         if not include_prompt:
             s = s[1:]
-        logger.info("Generated action mem_ind={}, sample={}, include_prompt={}".format(mem_ind, sample, include_prompt))
+        logger.info(
+            "Generated action mem_ind={}, sample={}, include_prompt={}".format(
+                mem_ind, sample, include_prompt
+            )
+        )
         return s
 
 
@@ -223,7 +226,7 @@ class UnconstrainedStoryManager(StoryManager):
         return result
 
     def generate_result(self, action):
-        block = self.generator.generate(self.story_context()+[action])
+        block = self.generator.generate(self.story_context() + [action])
         return block
 
 
