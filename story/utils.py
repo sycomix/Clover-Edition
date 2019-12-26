@@ -141,7 +141,7 @@ def clean_suggested_action(result_raw, min_length=4):
 
     # result = cut_trailing_quotes(result)
     logger.debug(
-        "full suggested action '%s'. Cropped: '%s'. Split '%s'",
+        "full suggested action '%r'. Cropped: '%r'. Split '%r'",
         result_raw,
         result,
         results,
@@ -151,7 +151,7 @@ def clean_suggested_action(result_raw, min_length=4):
     result = first_to_second_person(result)
     # Sometimes the suggestion start with "You" we will add that on later anyway so remove it here
     result = re.sub("^ ?[Yy]ou ?", "", result)
-    logger.debug("suggested action after cleaning `%s`", result)
+    logger.debug("suggested action after cleaning `%r`", result)
     return result
 
 

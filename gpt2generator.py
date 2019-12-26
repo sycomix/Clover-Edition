@@ -217,7 +217,7 @@ class GPT2Generator:
             result = result[0].lower() + result[1:]
 
         logger.debug(
-            "AFTER RESULT_REPLACE: `%s`. allow_action=%s", repr(result), allow_action
+            "AFTER RESULT_REPLACE: `%r`. allow_action=%r", repr(result), allow_action
         )
 
         return result
@@ -237,7 +237,7 @@ class GPT2Generator:
 
         # if os.environ.get("DEBUG_GPT2", False):
         logger.debug(
-            "Text passing into model `%s`",
+            "Text passing into model `%r`",
             self.tokenizer.decode(
                 context_tokens,
                 clean_up_tokenization_spaces=True,
@@ -273,17 +273,17 @@ class GPT2Generator:
         return text
 
     def generate(self, prompt, options=None, seed=None, depth=0):
-        logger.debug("BEFORE PROMPT_REPLACE: `%s`", prompt)
+        logger.debug("BEFORE PROMPT_REPLACE: `%r`", prompt)
 
         prompt = [self.prompt_replace(p) for p in prompt]
 
-        # logger.debug("AFTER PROMPT_REPLACE is: `%s`", repr(prompt))
+        # logger.debug("AFTER PROMPT_REPLACE is: `%r`", repr(prompt))
 
         text = self.generate_raw(
             prompt, stop_tokens=self.tokenizer.encode(["<|endoftext|>", ">"])
         )
 
-        logger.debug("Generated result is: `%s`", repr(text))
+        logger.debug("Generated result is: `%r`", repr(text))
 
         result = self.result_replace(text)
 
@@ -292,19 +292,19 @@ class GPT2Generator:
             # happening, lets let it keep action text which starts in ">"
             result = self.result_replace(text, allow_action=True)
             logger.info(
-                "Model generated empty text after formatting `%s`. Trying to format less with allow_action=True. `%s`",
+                "Model generated empty text after formatting `%r`. Trying to format less with allow_action=True. `%r`",
                 text,
                 result,
             )
 
         if len(result) == 0:
             if depth < 20:
-                logger.info("Model generated empty text trying again %s", depth)
+                logger.info("Model generated empty text trying again %r", depth)
                 return self.generate(
                     prompt + [" {}".format(depth)], seed=depth, depth=depth + 1
                 )
             else:
                 logger.warn(
-                    "Model generated empty text %s times. Try another action", depth
+                    "Model generated empty text %r times. Try another action", depth
                 )
         return result
