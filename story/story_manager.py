@@ -24,6 +24,7 @@ class Story:
 
         # Only needed in constrained/cached version
         self.seed = seed
+        set_seed(seed)
         self.choices = []
         self.possible_action_results = None
         self.uuid = None
@@ -44,6 +45,7 @@ class Story:
     def init_from_dict(self, story_dict):
         self.story_start = story_dict["story_start"]
         self.seed = story_dict["seed"]
+        set_seed(seed)
         self.actions = story_dict["actions"]
         self.results = story_dict["results"]
         self.choices = story_dict["choices"]
@@ -68,25 +70,31 @@ class Story:
             self.actions.pop(1)
             self.results.pop(1)
 
-    def latest_result(self):
-
-        mem_ind = self.memory
+    def latest_result(self, mem_ind=None, sample=False):
+        mem_ind = mem_ind if mem_ind is not None else self.memory
         if len(self.results) < 2:
             latest_results = [self.story_start]
         else:
             latest_results = [self.context]
-        latest_result = ''
+        latest_result = ""
 
-        if mem_ind < len(self.results):
+        all_inds = list(range(len(self.results)))
+        if sample:
+            n = min(mem_ind, len(all_inds) - 1)
+            n = max(0, n)
+            inds = random.sample(all_inds, n)
+            if len(self.results):
+                inds += [len(all_inds) - 1]  # Always include the last prompt too
+        elif mem_ind < len(self.results):
             # When we have to much history we will take the last 10, and sample randomly from the rest
             # first take last mem_ind//2
-            all_inds = list(range(len(self.results)))
-            first = all_inds[:-mem_ind//2]
-            last = all_inds[-mem_ind//2:]
-            inds = sorted(random.sample(first, mem_ind//2)+last)
+            first = all_inds[: -mem_ind // 2]
+            last = all_inds[-mem_ind // 2 :]
+            inds = random.sample(first, mem_ind // 2) + last
         else:
             inds = range(len(self.results))
-        logger.debug("Using history indices %s", inds)
+        logger.debug("Using history indices %s", repr(inds))
+        inds = sorted(set(inds))
         for i in inds:
             latest_result += self.actions[i] + self.results[i]
         return latest_results + [latest_result]
@@ -99,7 +107,7 @@ class Story:
 
         return "".join(story_list)
 
-    #delet this
+    # delet this
     def to_json(self):
         story_dict = {}
         story_dict["story_start"] = self.story_start
@@ -198,8 +206,16 @@ class StoryManager:
     def json_story(self):
         return self.story.to_json()
 
-    def story_context(self):
-        return self.story.latest_result()
+    def story_context(self, mem_ind=None, sample=False, include_prompt=True):
+        s = self.story.latest_result(mem_ind=mem_ind, sample=sample)
+        if not include_prompt:
+            s = s[1:]
+        logger.info(
+            "story_context mem_ind={}, sample={}, include_prompt={}".format(
+                mem_ind, sample, include_prompt
+            )
+        )
+        return s
 
 
 class UnconstrainedStoryManager(StoryManager):
@@ -210,7 +226,7 @@ class UnconstrainedStoryManager(StoryManager):
         return result
 
     def generate_result(self, action):
-        block = self.generator.generate(self.story_context()+[action])
+        block = self.generator.generate(self.story_context() + [action])
         return block
 
 
@@ -223,7 +239,7 @@ class ConstrainedStoryManager(StoryManager):
         self.seed = None
 
     def enable_caching(
-        self, credentials_file=None, seed=0, bucket_name="dungeon-cache"
+        self, credentials_file=None, seed=42, bucket_name="dungeon-cache"
     ):
         self.cache = True
         self.cacher = Cacher(credentials_file, bucket_name)
