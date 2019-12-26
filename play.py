@@ -260,10 +260,11 @@ def play(generator):
                         suggested_action = ai_player.get_action(action_prompt)
                         if suggested_action[0] not in ["'", '"']:
                             suggested_action = '"' + suggested_action + '"'
-                    suggested_actions.append(suggested_action)
-                    suggestion = "{}> {}".format(i, suggested_action)
-                    colPrint(suggestion, colors["selection-value"])
-                    action_suggestion_lines += count_printed_lines(suggestion)
+                    if len(suggested_action.strip())>0:
+                        suggested_actions.append(suggested_action)
+                        suggestion = "{}> {}".format(i, suggested_action)
+                        colPrint(suggestion, colors["selection-value"])
+                        action_suggestion_lines += count_printed_lines(suggestion)
                 print()
 
             bell()
