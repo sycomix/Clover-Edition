@@ -8,8 +8,6 @@ MODEL_VERSION=pytorch-gpt2-xl-aid2-v5
 
 # torrent to download
 MODEL_TORRENT_URL="https://raw.githubusercontent.com/cloveranon/Clover-Edition/master/model.torrent"
-MODEL_SHA_URL="https://raw.githubusercontent.com/cloveranon/Clover-Edition/master/model.sha1"
-MODEL_SHA_NAME=$(basename "$MODEL_TORRENT_SHA")
 MODEL_TORRENT_NAME=$(basename "$MODEL_TORRENT_URL")
 
 # The name of the (source) folder when the torrent downloads
@@ -20,8 +18,6 @@ download_torrent() {
   mkdir -p "${MODELS_DIRECTORY}"
   cd "${MODELS_DIRECTORY}"
   wget "${MODEL_TORRENT_URL}"
-  wget "${MODEL_SHA_URL}"
-  #what is the purpose of this?
   which aria2c > /dev/null
   if [ $? == 0 ]; then
     echo -e "\n\n==========================================="
@@ -42,8 +38,6 @@ download_torrent() {
       --stderr true \
       "${MODEL_TORRENT_NAME}"
     mv "${MODEL_TORRENT_BASENAME}" "${MODEL_VERSION}"
-    #this is redundant with --check-integrity enabled I believe
-    sha1sum -c ${MODEL_SHA_NAME}
     echo "Download Complete!"
   else
     echo 'System can not find the program "aria2c" in PATH' >> /dev/stderr
