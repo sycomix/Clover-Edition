@@ -240,7 +240,7 @@ class GPT2Generator:
 
         result = self.result_replace(text)
         if len(result) == 0:
-            result = result_replace(text, allow_action=True)
+            result = self.result_replace(text, allow_action=True)
             logger.debug("Model generated empty text `%s`. Trying to cut less with allow_action `%s`", text, result)
         
         if len(result) == 0:
