@@ -41,6 +41,7 @@ is_command() {
 }
 
 system_package_install() {
+	#why is this list duplicated?
 	PACKAGES=(aria2 git unzip wget)
 	if is_command 'apt-get'; then
 		sudo apt-get install ${PACKAGES[@]}
@@ -63,8 +64,8 @@ system_package_install() {
 
 install_aid () {
 #	version_check
-	pip_install
 	system_package_install
+	pip_install
 }
 
 install_aid
