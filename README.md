@@ -93,7 +93,7 @@ python3 play.py
 * Install a python package called `colorama` and it should work. This may already be installed by pip. Which I believe is installed automatically with python. Tell me if color works out of the box on windows now.
 * Install a windows program called "ansi.sys"
 * Windows 10 users can edit a registry key (look up `Registry Editor`) at `HKEY_CURRENT_USER\Console\VirtualTerminalLevel` to `1` to permanently enable color support
-* user a bat program to enable the `ENABLE_VIRTUAL_TERMINAL_PROCESSING` flag via the `SetConsoleMode` API (not sure what the exact .bat command would be), then run the python script. (If someone figures this out I can put it in the repo and windows users can just run it without doing anything.)
+* use a bat program to enable the `ENABLE_VIRTUAL_TERMINAL_PROCESSING` flag via the `SetConsoleMode` API (not sure what the exact .bat command would be), then run the python script. (If someone figures this out I can put it in the repo and windows users can just run it without doing anything.)
 * use the new "Windows Terminal" which allegedly supports color by default and is in beta. You currently have to install it from the windows store until it is officially released
 
 #### Datasets and retraining the AI
