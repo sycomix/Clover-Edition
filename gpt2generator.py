@@ -173,10 +173,11 @@ class GPT2Generator:
         # logger.debug("AFTER PROMPT_REPLACE: `%s`", repr(prompt))
         return prompt
 
-    def result_replace(self, result):
+    def result_replace(self, result, allow_action=False):
         # logger.debug("BEFORE RESULT_REPLACE: `%s`", repr(result))
 
-        result = cut_trailing_sentence(result)
+        result = cut_trailing_sentence(result, allow_action=allow_action)
+        
         if len(result) == 0:
             return ""
         first_letter_capitalized = result[0].isupper()
@@ -189,7 +190,7 @@ class GPT2Generator:
         if not first_letter_capitalized:
             result = result[0].lower() + result[1:]
 
-        logger.debug("nAFTER RESULT_REPLACE: `%s`", repr(result))
+        logger.debug("AFTER RESULT_REPLACE: `%s`. allow_action=%s", repr(result), allow_action)
 
         return result
 
@@ -199,8 +200,8 @@ class GPT2Generator:
         truncate_multiple_sequences(context_tokens, self.max_history_tokens)
         context_tokens = list(itertools.chain(*context_tokens))
 
-        if os.environ.get("DEBUG_GPT2", False):
-            logger.debug("Text passing into model `%s`", self.tokenizer.decode(context_tokens, clean_up_tokenization_spaces=True, skip_special_tokens=True))
+        # if os.environ.get("DEBUG_GPT2", False):
+        logger.debug("Text passing into model `%s`", self.tokenizer.decode(context_tokens, clean_up_tokenization_spaces=True, skip_special_tokens=True))
 
         generated = 0
         for _ in range(self.samples // self.batch_size):
@@ -235,15 +236,17 @@ class GPT2Generator:
 
         text = self.generate_raw(prompt, stop_tokens=self.tokenizer.encode(['<|endoftext|>', '>']))
 
-        logger.debug("Generated result is: `%s`", repr(text)
-        )
+        logger.debug("Generated result is: `%s`", repr(text))
 
-        result = text
-        result = self.result_replace(result)
+        result = self.result_replace(text)
+        if len(result) == 0:
+            result = result_replace(text, allow_action=True)
+            logger.debug("Model generated empty text `%s`. Trying to cut less with allow_action `%s`", text, result)
+        
         if len(result) == 0:
             if (depth < 20):
                 logger.debug("Model generated empty text trying again %s", depth)
-                return self.generate([' {}'.format(depth)] + prompt, depth=depth + 1)
+                return self.generate(prompt + [' {}'.format(depth)], seed=depth, depth=depth + 1)
             else:
                 logger.warn("Model generated empty text %s times. Try another action", depth)
         return result

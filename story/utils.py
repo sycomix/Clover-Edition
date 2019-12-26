@@ -144,19 +144,20 @@ def clean_suggested_action(result_raw, min_length=4):
     return result
 
 
-def cut_trailing_sentence(text):
+def cut_trailing_sentence(text, allow_action=False):
     text = standardize_punctuation(text)
     last_punc = max(text.rfind("."), text.rfind("!"), text.rfind("?"))
     if last_punc <= 0:
         last_punc = len(text) - 1
 
-    et_token = text.find("<")
-    if et_token > 0:
-        last_punc = min(last_punc, et_token - 1)
+    if not allow_action:
+        et_token = text.find("<")
+        if et_token > 0:
+            last_punc = min(last_punc, et_token - 1)
 
-    act_token = text.find(">")
-    if act_token > 0:
-        last_punc = min(last_punc, act_token - 1)
+        act_token = text.find(">")
+        if act_token > 0:
+            last_punc = min(last_punc, act_token - 1)
 
     text = text[:last_punc]
 
