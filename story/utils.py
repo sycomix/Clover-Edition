@@ -1,11 +1,23 @@
 # coding: utf-8
 import re
-#TODO: try to get rid of this
-from pyjarowinkler import distance
 
+# TODO: try to get rid of this
+from pyjarowinkler import distance
+import torch
+import random
 
 from getconfig import logger
 
+
+def set_seed(seed):
+    """Sets the seed for all used libraries that take it."""
+    # Make sure you don't use 0 as a seed since some libraries will ignore it.
+    if seed:
+        # np.random.seed(seed)  # not using numpy right now
+        random.seed(a=seed, version=2)
+        torch.manual_seed(seed)
+        if args.n_gpu > 0:
+            torch.cuda.manual_seed_all(seed)
 
 
 def console_print(text, width=75):
@@ -23,12 +35,12 @@ def console_print(text, width=75):
     print(text)
 
 
-#TODO: get rid if pyjarowinker dependency
+# TODO: get rid if pyjarowinker dependency
 # (AOP) You could use a simpler method, but this has been reported by RebootTech as a much more accurate way to compare strings. It also helps clean up the history. So it will hurt ability to check for looping
 def get_similarity(a, b):
-    if len(a)==0 or len(b)==0: return 1
-    return distance.get_jaro_distance(
-                            a, b, winkler=True, scaling = 0.1)
+    if len(a) == 0 or len(b) == 0:
+        return 1
+    return distance.get_jaro_distance(a, b, winkler=True, scaling=0.1)
 
 
 def get_num_options(num):
@@ -116,39 +128,42 @@ def cut_trailing_action(text):
 
 
 def clean_suggested_action(result_raw, min_length=4):
-    result_raw = standardize_punctuation(result_raw)
+    result_cleaned = standardize_punctuation(result_raw)
+    result_cleaned = cut_trailing_sentence(result_cleaned, allow_action=True)
 
     # The generations actions carry on into the next prompt, so lets remove the prompt
-    results = result_raw.split("\n")
+    results = result_cleaned.split("\n")
     results = [s.strip() for s in results]
     results = [s for s in results if len(s) > min_length]
+
     # Sometimes actions are generated with leading > ! . or ?. Likely the model trying to finish the prompt or start an action.
-    result = results[0].strip().lstrip(" >!.?") if len(results) else ''
-    result = cut_trailing_quotes(result)
+    result = results[0].strip().lstrip(" >!.?") if len(results) else ""
+
+    # result = cut_trailing_quotes(result)
     logger.debug(
-        "full suggested action '%s'. Cropped: '%s'. Split '%s'",
+        "full suggested action '%r'. Cropped: '%r'. Split '%r'",
         result_raw,
         result,
         results,
     )
 
-    # Often actions are cropped with sentance fragment, lets remove. Or we could just turn up config_act["generate-number"]
-    last_punc = max(result.rfind("."), result.rfind("!"), result.rfind("?"))
-    if (last_punc / (len(result) + 1)) > 0.7:
-        result = result[:last_punc]
-    elif last_punc == len(result):
-        pass
-    else:
-        result += "..."
-
-    # Remove you from start
+    # Often actions are cropped with sentance fragments, lets remove. Or we could just turn up config_act["generate-number"]
     result = first_to_second_person(result)
-    result = re.sub('^ ?[Yy]ou ?', '', result)
-    logger.debug("suggested action after cleaning %s", result)
+    # Sometimes the suggestion start with "You" we will add that on later anyway so remove it here
+    result = re.sub("^ ?[Yy]ou ?", "", result)
+    logger.debug("suggested action after cleaning `%r`", result)
     return result
 
 
-def cut_trailing_sentence(text):
+def fix_trailing_quotes(text):
+    num_quotes = text.count('"')
+    if num_quotes % 2 == 0:
+        return text
+    else:
+        return text + '"'
+
+
+def cut_trailing_sentence(text, allow_action=False):
     text = standardize_punctuation(text)
     last_punc = max(text.rfind("."), text.rfind("!"), text.rfind("?"))
     if last_punc <= 0:
@@ -157,15 +172,21 @@ def cut_trailing_sentence(text):
     et_token = text.find("<")
     if et_token > 0:
         last_punc = min(last_punc, et_token - 1)
+    # elif et_token == 0:
+    #     last_punc = min(last_punc, et_token)
 
-    act_token = text.find(">")
-    if act_token > 0:
-        last_punc = min(last_punc, act_token - 1)
+    if allow_action:
+        act_token = text.find(">")
+        if act_token > 0:
+            last_punc = min(last_punc, act_token - 1)
+        # elif act_token == 0:
+        #     last_punc = min(last_punc, act_token)
 
-    text = text[:last_punc]
+    text = text[: last_punc + 1]
 
-    text = cut_trailing_quotes(text)
-    text = cut_trailing_action(text)
+    text = fix_trailing_quotes(text)
+    if allow_action:
+        text = cut_trailing_action(text)
     return text
 
 

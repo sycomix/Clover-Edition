@@ -16,6 +16,7 @@ MODEL_CLASSES = {
     "gpt2": (GPT2LMHeadModel, GPT2Tokenizer),
 }
 
+
 def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-float("Inf")):
     """ Filter a distribution of logits using top-k and/or nucleus (top-p) filtering
         Args:
@@ -63,6 +64,7 @@ def sample_sequence(
     xlm_mask_token=None,
     xlm_lang=None,
     device="cpu",
+    stop_tokens=None,
 ):
     context = torch.tensor(context, dtype=torch.long, device=device)
     context = context.unsqueeze(0).repeat(num_samples, 1)
@@ -71,10 +73,10 @@ def sample_sequence(
     next_token = context
     outputs = None
     with torch.no_grad():
-        for _ in range(length):
+        for j in range(length):
             if USE_PAST:
                 past = outputs[1] if outputs is not None else None
-                inputs = {"input_ids": next_token, 'past': past}
+                inputs = {"input_ids": next_token, "past": past}
             else:
                 inputs = {"input_ids": generated}
 
@@ -87,8 +89,8 @@ def sample_sequence(
 
             # repetition penalty from CTRL (https://arxiv.org/abs/1909.05858)
             for i in range(num_samples):
-                for _ in set(generated[i].tolist()):
-                    next_token_logits[i, _] /= repetition_penalty
+                for k in set(generated[i].tolist()):
+                    next_token_logits[i, k] /= repetition_penalty
 
             filtered_logits = top_k_top_p_filtering(
                 next_token_logits, top_k=top_k, top_p=top_p
@@ -100,13 +102,27 @@ def sample_sequence(
                     F.softmax(filtered_logits, dim=-1), num_samples=1
                 )
             generated = torch.cat((generated, next_token), dim=1)
+            if (
+                (stop_tokens is not None)
+                and (j > 4)
+                and (next_token[0][0] in stop_tokens)
+            ):
+                logger.debug(
+                    "Stopping generation as we found stop tokens. One of `%s`, in '%s'. token generated `%s`",
+                    stop_tokens,
+                    next_token,
+                    j,
+                )
+                break
     return generated
+
 
 def truncate_multiple_sequences(seqs, max_len=100):
     """Truncate multiple sequences, longest first, removing first."""
     while sum(len(s) for s in seqs) > max_len:
         longest = sorted(seqs, key=len, reverse=True)[0]
         longest.pop(0)
+
 
 class GPT2Generator:
     def __init__(
@@ -122,12 +138,15 @@ class GPT2Generator:
         self.repetition_penalty = repetition_penalty
         self.batch_size = 1
         self.max_history_tokens = 1024 - generate_num
-        self.stop_token = '<|endoftext|>'
+        self.stop_token = "<|endoftext|>"
 
         self.model_name = "pytorch-gpt2-xl-aid2-v5"
         self.model_dir = "models"
         self.checkpoint_path = os.path.join(self.model_dir, self.model_name)
-        assert os.path.exists(self.checkpoint_path), "Make sure to download the pytorch v5 model and put it in " + self.checkpoint_path
+        assert os.path.exists(self.checkpoint_path), (
+            "Make sure to download the pytorch v5 model and put it in "
+            + self.checkpoint_path
+        )
         if os.environ.get("DEBUG_GPT2", False):
             self.checkpoint_path = "gpt2"
             logger.warning("using DEBUG_GPT2 MODE! This is just for devs to quickly check a small GPT2 model with poor output")
@@ -141,7 +160,9 @@ class GPT2Generator:
         self.model.to(self.dtype).to(self.device)
         self.model.eval()
 
-    def sample_sequence(self, context_tokens=None, generate_num=None, temperature=None):
+    def sample_sequence(
+        self, context_tokens=None, generate_num=None, temperature=None, stop_tokens=None
+    ):
         generate_num = generate_num if (generate_num is not None) else self.generate_num
         temperature = temperature if (temperature is not None) else self.temp
         out = sample_sequence(
@@ -154,25 +175,24 @@ class GPT2Generator:
             top_p=self.top_p,
             repetition_penalty=self.repetition_penalty,
             num_samples=self.samples,
-            device=self.device
+            device=self.device,
+            stop_tokens=stop_tokens,
             # batch_size=self.batch_size,
         )
         return out
 
     def prompt_replace(self, prompt):
-        logger.debug("BEFORE PROMPT_REPLACE: `%s`", repr(prompt))
         if len(prompt) > 0 and prompt[-1] == " ":
             prompt = prompt[:-1]
 
         # prompt = second_to_first_person(prompt)
-
-        # logger.debug("AFTER PROMPT_REPLACE: `%s`", repr(prompt))
         return prompt
 
-    def result_replace(self, result):
+    def result_replace(self, result, allow_action=False):
         # logger.debug("BEFORE RESULT_REPLACE: `%s`", repr(result))
 
-        result = cut_trailing_sentence(result)
+        result = cut_trailing_sentence(result, allow_action=allow_action)
+
         if len(result) == 0:
             return ""
         first_letter_capitalized = result[0].isupper()
@@ -185,53 +205,95 @@ class GPT2Generator:
         if not first_letter_capitalized:
             result = result[0].lower() + result[1:]
 
-        logger.debug("nAFTER RESULT_REPLACE: `%s`", repr(result))
+        logger.debug(
+            "AFTER RESULT_REPLACE: `%r`. allow_action=%r", repr(result), allow_action
+        )
 
         return result
 
-    def generate_raw(self, prompt, generate_num=None, temperature=None):
+    def generate_raw(
+        self, prompt, generate_num=None, temperature=None, stop_tokens=None
+    ):
         # the prompt is a list of strings, encode each one tok tokens, then truncate the longest ones
-        context_tokens = [self.tokenizer.encode(p, add_special_tokens=False, max_length=self.max_history_tokens) for p in prompt]
+        context_tokens = [
+            self.tokenizer.encode(
+                p, add_special_tokens=False, max_length=self.max_history_tokens
+            )
+            for p in prompt
+        ]
         truncate_multiple_sequences(context_tokens, self.max_history_tokens)
         context_tokens = list(itertools.chain(*context_tokens))
 
-        if os.environ.get("DEBUG_GPT2", False):
-            logger.debug("Text passing into model %s", self.tokenizer.decode(context_tokens, clean_up_tokenization_spaces=True, skip_special_tokens=True))
+        # if os.environ.get("DEBUG_GPT2", False):
+        logger.debug(
+            "Text passing into model `%r`",
+            self.tokenizer.decode(
+                context_tokens,
+                clean_up_tokenization_spaces=True,
+                skip_special_tokens=True,
+            ),
+        )
 
         generated = 0
         for _ in range(self.samples // self.batch_size):
             out = self.sample_sequence(
                 context_tokens,
                 generate_num=generate_num,
-                temperature=temperature
+                temperature=temperature,
+                stop_tokens=stop_tokens,
             )
             out = out[:, len(context_tokens) :].tolist()
             for o in out:
                 generated += 1
-                text = self.tokenizer.decode(o, clean_up_tokenization_spaces=True, skip_special_tokens=True)
+                text = self.tokenizer.decode(
+                    o, clean_up_tokenization_spaces=True, skip_special_tokens=True
+                )
                 if self.stop_token:
                     index = text.find(self.stop_token)
                     if index == -1:
                         index = None
                     text = text[:index]
+                if stop_tokens is not None:
+                    for stop_token in stop_tokens:
+                        index = text.find(self.stop_token)
+                        if index == -1:
+                            index = None
+                        text = text[:index]
         return text
 
-    def generate(self, prompt, options=None, seed=1, depth=0):
+    def generate(self, prompt, options=None, seed=None, depth=0):
+        logger.debug("BEFORE PROMPT_REPLACE: `%r`", prompt)
 
         prompt = [self.prompt_replace(p) for p in prompt]
 
-        logger.debug("Prompt is: `%s`", repr(prompt))
+        # logger.debug("AFTER PROMPT_REPLACE is: `%r`", repr(prompt))
 
-        text = self.generate_raw(prompt)
+        text = self.generate_raw(
+            prompt, stop_tokens=self.tokenizer.encode(["<|endoftext|>", ">"])
+        )
 
-        logger.debug("Generated result is: `%s`", repr(text))
+        logger.debug("Generated result is: `%r`", repr(text))
 
-        result = text
-        result = self.result_replace(result)
+        result = self.result_replace(text)
+
+        if (depth > 2) and len(result) == 0:
+            # Sometimes it keeps generating a story startng with an action (">"), if it's tried a few times and it keeps
+            # happening, lets let it keep action text which starts in ">"
+            result = self.result_replace(text, allow_action=True)
+            logger.info(
+                "Model generated empty text after formatting `%r`. Trying to format less with allow_action=True. `%r`",
+                text,
+                result,
+            )
+
         if len(result) == 0:
-            if (depth < 20):
-                logger.debug("Model generated empty text trying again %s", depth)
-                return self.generate([' {}'.format(depth)] + prompt, depth=depth + 1)
+            if depth < 20:
+                logger.info("Model generated empty text trying again %r", depth)
+                return self.generate(
+                    prompt + [" {}".format(depth)], seed=depth, depth=depth + 1
+                )
             else:
-                logger.warn("Model generated empty text %s times. Try another action", depth)
+                logger.warn(
+                    "Model generated empty text %r times. Try another action", depth
+                )
         return result
