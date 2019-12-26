@@ -8,9 +8,9 @@ MODEL_VERSION=pytorch-gpt2-xl-aid2-v5
 
 # torrent to download
 MODEL_TORRENT_URL="https://raw.githubusercontent.com/cloveranon/Clover-Edition/master/model.torrent"
-MODEL_SHA_URL="https://raw.githubusercontent.com/cloveranon/Clover-Edition/master/model.sha"
-MODEL_SHA_NAME=$(basename $MODEL_TORRENT_SHA)
-MODEL_TORRENT_NAME=$(basename $MODEL_TORRENT_URL)
+MODEL_SHA_URL="https://raw.githubusercontent.com/cloveranon/Clover-Edition/master/model.sha1"
+MODEL_SHA_NAME=$(basename "$MODEL_TORRENT_SHA")
+MODEL_TORRENT_NAME=$(basename "$MODEL_TORRENT_URL")
 
 # The name of the (source) folder when the torrent downloads
 MODEL_TORRENT_BASENAME=model_v5_pytorch 
@@ -51,7 +51,7 @@ ls "${MODELS_DIRECTORY}/${MODEL_VERSION}"
 
 if [[ -d "${MODELS_DIRECTORY}/${MODEL_VERSION}" ]]; then
 	ANSWER="n"
-	echo "AIDungeon2 Model appears to be downloaded."
+	echo "Clover-Edition Model appears to be downloaded."
 	echo "Would you like to redownload?"
 	echo "WARNING: This will remove the current model![y/N]"
 	read ANSWER

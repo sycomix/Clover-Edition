@@ -1,7 +1,7 @@
 from pathlib import Path
-
-with open(Path("interface", "start-message.txt"), "r") as file:
-    print("\x1B[7m" + file.read() + "\x1B[27m")
+#remove this in a few days
+with open(Path('interface', 'start-message.txt'), 'r') as file:
+    print('\x1B[7m'+file.read()+'\x1B[27m')
 import gc
 import random
 import torch
@@ -169,21 +169,13 @@ def play(generator):
     with open(Path("interface", "subTitle.txt"), "r", encoding="utf-8") as file:
         cols = get_terminal_size()[0]
         for line in file:
-            line = re.sub(r"\n", "", line)
-            line = line[:cols]
-            # fills in the graphic using reverse video mode substituted into the areas between |'s
-            colPrint(
-                re.sub(
-                    r"\|[ _]*\|", lambda x: "\x1B[7m" + x.group(0) + "\x1B[27m", line
-                ),
-                colors["subtitle"],
-                False,
-            )
+            line=re.sub(r'\n', '', line)
+            line=line[:cols]
+            #fills in the graphic using reverse video mode substituted into the areas between |'s
+            colPrint(re.sub(r'\|[ _]*(\||$)', lambda x: '\x1B[7m'+x.group(0)+'\x1B[27m', line), colors['subtitle'], False)
 
-    colPrint(
-        "Go to https://github.com/cloveranon/Clover-Edition/ or email cloveranon@nuke.africa for bug reports, help, and feature requests.",
-        colors["subsubtitle"],
-    )
+    print()
+    colPrint("Go to https://github.com/cloveranon/Clover-Edition/ or email cloveranon@nuke.africa for bug reports, help, and feature requests.", colors['subsubtitle'])
 
     while True:
         # May be needed to avoid out of mem
@@ -195,10 +187,7 @@ def play(generator):
 
         print("\n\n")
 
-        colPrint(
-            "0: Pick Prompt From File (Default if you type nothing)\n1: Write Custom Prompt",
-            colors["menu"],
-        )
+        colPrint("0: Pick Prompt From File (Default if you type nothing)\n1: Write Custom Prompt", colors['menu'])
 
         if getNumberInput(1) == 1:
             with open(
