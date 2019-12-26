@@ -83,18 +83,19 @@ class Story:
         if sample:
             n = min(mem_ind, len(all_inds) - 1)
             n = max(0, n)
-            inds = sorted(random.sample(all_inds, n))
+            inds = random.sample(all_inds, n)
             if len(self.results):
-                inds += [len(all_inds)]  # Always include the last prompt too
+                inds += [len(all_inds)-1]  # Always include the last prompt too
         elif mem_ind < len(self.results):
             # When we have to much history we will take the last 10, and sample randomly from the rest
             # first take last mem_ind//2
             first = all_inds[:-mem_ind//2]
             last = all_inds[-mem_ind//2:]
-            inds = sorted(random.sample(first, mem_ind//2)+last)
+            inds = random.sample(first, mem_ind//2)+last
         else:
             inds = range(len(self.results))
         logger.debug("Using history indices %s", repr(inds))
+        inds = sorted(set(inds))
         for i in inds:
             latest_result += self.actions[i] + self.results[i]
         return latest_results + [latest_result]
