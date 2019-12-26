@@ -2,10 +2,18 @@
 import re
 #TODO: try to get rid of this
 from pyjarowinkler import distance
-
+import torch
+import random
 
 from getconfig import logger
 
+
+def set_seed(seed):
+    """Sets the seed for all used libraries that take it."""
+    random.seed(a=seed, version=2)
+    torch.manual_seed(seed)
+    if args.n_gpu > 0:
+        torch.cuda.manual_seed_all(seed)
 
 
 def console_print(text, width=75):

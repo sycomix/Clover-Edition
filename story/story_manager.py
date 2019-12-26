@@ -7,6 +7,7 @@ import random
 from story.utils import *
 
 
+
 class Story:
     def __init__(
         self, story_start, context="", seed=None, game_state=None, upload_story=False
@@ -24,6 +25,7 @@ class Story:
 
         # Only needed in constrained/cached version
         self.seed = seed
+        set_seed(seed)
         self.choices = []
         self.possible_action_results = None
         self.uuid = None
@@ -78,8 +80,11 @@ class Story:
 
         all_inds = list(range(len(self.results)))
         if sample:
-            n = min(mem_ind, len(all_inds))
+            n = min(mem_ind, len(all_inds) - 1)
+            n = max(0, n)
             inds = sorted(random.sample(all_inds, n))
+            if len(self.results):
+                inds += [len(all_inds)]  # Always include the last prompt too
         elif mem_ind < len(self.results):
             # When we have to much history we will take the last 10, and sample randomly from the rest
             # first take last mem_ind//2
