@@ -44,7 +44,9 @@ download_torrent() {
     #this is redundant with --check-integrity enabled I believe
     sha1sum -c ${MODEL_SHA_NAME}
     echo "Download Complete!"
-    fi
+  else
+    echo 'System can not find the program "aria2c" in PATH' >> /dev/stderr
+  fi
 }
 
 redownload () {
