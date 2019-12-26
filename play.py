@@ -189,7 +189,10 @@ def play(generator):
                         sample=random.randint(0, 1),
                         include_prompt=random.randint(0, 1)
                     )
-                    action_prompt[-1] = action_prompt[-1].strip() + '\n> You'
+                    if random.randint(0, 1)==0:
+                        action_prompt[-1] = action_prompt[-1].strip() + '\n> You try to'
+                    else:
+                        action_prompt[-1] = action_prompt[-1].strip() + '\n> You say '
                     suggested_action = ai_player.get_action(action_prompt)
                     suggested_actions.append(suggested_action)
                     suggestion = '{}> {}'.format(i, suggested_action)
