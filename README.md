@@ -36,6 +36,8 @@ A fork of AIDungeon2, now driven by huggingface's transformers repository using 
 
 --insert colab instructions/guide here--
 
+Video walkthrough of Windows install:
+
 [![Install AI Dungeon Locally - Clover Edition w/Pytorch](images/install-video-screenshot.png)](https://www.youtube.com/watch?v=X3jd4c8rHAA "Install AI Dungeon Locally - Clover Edition w/Pytorch")
 
 To play with GPU, you need an NVIDA GPU with >4 GB of memory (exact minimum requirements still very untested), and CUDA installed. On CPU response times vary from 30 to 90 seconds, which is slow but usable.
