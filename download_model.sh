@@ -29,12 +29,13 @@ download_torrent() {
     echo "It will take a while to get up to speed."
     echo "DHT errors are normal."
     echo -e "===========================================\n"
-    #we may want to adjust seed time so people are forced to seed this
+    #the seed time might be too aggressive, but we need people to seed!
     aria2c \
       --max-connection-per-server 16 \
       --split 64 \
       --bt-max-peers 500 \
-      --seed-time=0 \
+      --seed-ratio=1.0 \
+      --seed-time=120 \
       --summary-interval=15 \
       --disable-ipv6 \
       --check-integrity \
