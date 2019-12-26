@@ -93,7 +93,7 @@ class Story:
             inds = sorted(random.sample(first, mem_ind//2)+last)
         else:
             inds = range(len(self.results))
-        logger.debug("Using history indices %s", inds)
+        logger.debug("Using history indices %s", repr(inds))
         for i in inds:
             latest_result += self.actions[i] + self.results[i]
         return latest_results + [latest_result]
