@@ -252,11 +252,14 @@ def play(generator):
                         include_prompt=random.randint(0, 1),
                     )
                     if random.randint(0, 1) == 0:
-                        action_prompt[-1] = action_prompt[-1].strip() + "\n> You try to"
+                        action_prompt[-1] = action_prompt[-1].strip() + "\n> You try to "
+                        suggested_action = ai_player.get_action(action_prompt)
                     else:
                         # This will cause the AI to frequently generate dialouge suggestions
                         action_prompt[-1] = action_prompt[-1].strip() + "\n> You say "
                     suggested_action = ai_player.get_action(action_prompt)
+                        if suggested_action[0] not in ["'", '"']:
+                            suggested_action = '"' + suggested_action + '"'
                     suggested_actions.append(suggested_action)
                     suggestion = "{}> {}".format(i, suggested_action)
                     colPrint(suggestion, colors["selection-value"])
@@ -269,10 +272,11 @@ def play(generator):
             # Clear suggestions and user input
             if act_alts > 0:
                 action_suggestion_lines += count_printed_lines("> " + action) + 1
-                clear_lines(action_suggestion_lines)
+                if not is_notebook:
+                    clear_lines(action_suggestion_lines)
 
-                # Show user input again
-                colPrint("\n> " + action.rstrip(), colors["user-text"], end="")
+                    # Show user input again
+                    colPrint("\n> " + action.rstrip(), colors["user-text"], end="")
 
             setRegex = re.search("^set ([^ ]+) ([^ ]+)$", action)
             if setRegex:
