@@ -27,7 +27,8 @@ pip_install () {
 		if is_command 'apt-get'; then
 			apt-get install python3-venv
 		fi
-		python3 -m venv ./venv
+		#WARNING: Changing to --copies for colab users, not optimal way to do this
+		python3 -m venv --copies ./venv
 	fi
 	commit_hash=$(git log --pretty=format:'%h' -n 1)
 	echo "You are using https://github.com/cloveranon/Clover-Edition/commit/${commit_hash}"
@@ -64,8 +65,9 @@ system_package_install() {
 
 install_aid () {
 #	version_check
-	system_package_install
+	#the order of this may be wrong, changing it back to original for now
 	pip_install
+	system_package_install
 }
 
 install_aid
