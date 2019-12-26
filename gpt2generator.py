@@ -8,7 +8,8 @@ from transformers import GPT2LMHeadModel, GPT2Tokenizer
 from getconfig import settings, logger
 from story.utils import cut_trailing_sentence
 
-CPU = (not torch.cuda.is_available()) or settings.getboolean('force-cpu')
+DTYPE = torch.float32 if  ((not torch.cuda.is_available()) or settings.getboolean('force-cpu')) else torch.float16
+logger.info('Cuda Available: {}    Force CPU: {}    DTYPE: {}'.format(torch.cuda.is_available(), settings.getboolean('force-cpu'), DTYPE))
 
 # warnings.filterwarnings("ignore")
 MODEL_CLASSES = {
@@ -109,7 +110,7 @@ def truncate_multiple_sequences(seqs, max_len=100):
 
 class GPT2Generator:
     def __init__(
-        self, generate_num=60, temperature=0.4, top_k=40, top_p=0.9, censor=False, repetition_penalty=1,
+        self, generate_num=60, temperature=0.4, top_k=40, top_p=0.9, dtype=DTYPE, censor=False, repetition_penalty=1,
     ):
         self.generate_num = generate_num
         self.temp = temperature
@@ -117,7 +118,7 @@ class GPT2Generator:
         self.top_p = top_p
         self.censor = censor
         self.samples = 1
-        self.dtype = torch.float32 if CPU else torch.float16
+        self.dtype = dtype
         self.repetition_penalty = repetition_penalty
         self.batch_size = 1
         self.max_history_tokens = 1024 - generate_num
@@ -130,7 +131,7 @@ class GPT2Generator:
         if os.environ.get("DEBUG_GPT2", False):
             self.checkpoint_path = "gpt2"
             logger.warning("using DEBUG_GPT2 MODE! This is just for devs to quickly check a small GPT2 model with poor output")
-        self.device = torch.device("cuda" if not CPU else "cpu")
+        self.device = torch.device("cuda" if self.dtype==torch.float16 else "cpu")
         logger.info("Using device={}, checkpoint={}, dtype={}".format(self.device, self.checkpoint_path, self.dtype))
 
         # Load tokenizer and model
