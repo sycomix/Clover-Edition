@@ -211,7 +211,7 @@ class StoryManager:
         if not include_prompt:
             s = s[1:]
         logger.info(
-            "Generated action mem_ind={}, sample={}, include_prompt={}".format(
+            "story_context mem_ind={}, sample={}, include_prompt={}".format(
                 mem_ind, sample, include_prompt
             )
         )

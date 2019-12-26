@@ -149,6 +149,7 @@ def clean_suggested_action(result_raw, min_length=4):
 
     # Often actions are cropped with sentance fragments, lets remove. Or we could just turn up config_act["generate-number"]
     result = first_to_second_person(result)
+    # Sometimes the suggestion start with "You" we will add that on later anyway so remove it here
     result = re.sub("^ ?[Yy]ou ?", "", result)
     logger.debug("suggested action after cleaning `%s`", result)
     return result
