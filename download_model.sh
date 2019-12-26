@@ -39,7 +39,7 @@ download_torrent() {
       --summary-interval=15 \
       --disable-ipv6 \
       --check-integrity \
-      --stderr true
+      --stderr true \
       "${MODEL_TORRENT_NAME}"
     mv "${MODEL_TORRENT_BASENAME}" "${MODEL_VERSION}"
     #this is redundant with --check-integrity enabled I believe
