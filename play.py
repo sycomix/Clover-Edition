@@ -247,7 +247,7 @@ def play(generator):
                         # This will cause the AI to frequently generate dialouge suggestions
                         action_prompt[-1] = action_prompt[-1].strip() + "\n> You say "
                         suggested_action = ai_player.get_action(action_prompt)
-                        if suggested_action[0] not in ["'", '"']:
+                        if len(suggested_action) and suggested_action[0] not in ["'", '"']:
                             suggested_action = '"' + suggested_action + '"'
                     if len(suggested_action.strip())>0:
                         suggested_actions.append(suggested_action)
