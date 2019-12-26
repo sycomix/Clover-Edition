@@ -150,19 +150,24 @@ def cut_trailing_sentence(text, allow_action=False):
     if last_punc <= 0:
         last_punc = len(text) - 1
 
-    if not allow_action:
-        et_token = text.find("<")
-        if et_token > 0:
-            last_punc = min(last_punc, et_token - 1)
+    et_token = text.find("<")
+    if et_token > 0:
+        last_punc = min(last_punc, et_token - 1)
+    # elif et_token == 0:
+    #     last_punc = min(last_punc, et_token)
 
+    if allow_action:
         act_token = text.find(">")
         if act_token > 0:
             last_punc = min(last_punc, act_token - 1)
+        # elif act_token == 0:
+        #     last_punc = min(last_punc, act_token)
 
-    text = text[:last_punc]
+    text = text[:last_punc+1]
 
-    text = cut_trailing_quotes(text)
-    text = cut_trailing_action(text)
+    text = fix_trailing_quotes(text)
+    if allow_action:
+        text = cut_trailing_action(text)
     return text
 
 
