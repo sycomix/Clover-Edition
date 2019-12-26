@@ -9,3 +9,4 @@ story*.json
 /generator/gpt2/models/*
 /models/*
 !/models/.gitkeep
+.vscode/
