@@ -61,7 +61,7 @@ def convert_gpt2_checkpoint_to_pytorch(
     pytorch_weights_dump_path += 'half'
     model.half()
     torch.save(model.state_dict(), pytorch_weights_dump_path)
-    with open(pytorch_config_dump_path "w", encoding="utf-8") as f:
+    with open(pytorch_config_dump_path, "w", encoding="utf-8") as f:
         f.write(config.to_json_string())
     print("Save configuration file to {}".format(pytorch_config_dump_path))
 
