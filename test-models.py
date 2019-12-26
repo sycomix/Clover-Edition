@@ -1,23 +1,36 @@
 #a little script to test if 16 bit degrades accuracy of the model. Not a perfect experiment but I think it's good enough
 #must be moved to the clover-edition directory or it will not run
     #I can not figure out why. According to pythons documentation, only the current directory matters, not the placement of the file
+from getconfig import settings
+settings['log-level']=str(min(settings.getint('log-level'), 10))
 from gpt2generator import GPT2Generator
 import torch
 import numpy as np
 import gc
 from pathlib import Path
+import random
+import string
+import time
 
-seed=0
+#seed=0
+seed=int(time.time())%10000
 top_p=0.5
 top_k=0
 temp=0.2
-prompt='1234abcd'
+def randomString(stringLength=12):
+    letters = string.ascii_lowercase+' '+string.digits
+    return ''.join(random.choice(letters) for i in range(stringLength))
+
+prompt='abcd1234'
+#prompt=randomString(12)
+
 
 print('\x1B[0m') #I really am addicted to color output
 with open(Path('interface', 'clover', encoding='utf-8')) as file:
     print(file.read())
 
 print('\x1B[35m')
+random.seed(seed)
 np.random.seed(seed)
 torch.cuda.manual_seed(seed)
 torch.manual_seed(seed)
@@ -27,6 +40,7 @@ print('\n\x1B[34;7m'+gen16.generate_raw(prompt, temperature=temp)+'\x1B[27;35m\n
 del gen16
 gc.collect()
 
+random.seed(seed)
 np.random.seed(seed)
 torch.cuda.manual_seed(seed)
 torch.manual_seed(seed)
