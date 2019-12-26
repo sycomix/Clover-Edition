@@ -240,8 +240,8 @@ def play(generator):
 
                 # TODO change this to two messages for different colors
                 suggested_actions = []
-                colPrint("Suggested actions:", colors["selection-value"])
-                action_suggestion_lines = 1
+                colPrint("\nSuggested actions:", colors["selection-value"])
+                action_suggestion_lines = 2
                 for i in range(act_alts):
                     # While we want the story to be on track, but not to on track that it loops
                     # the actions can be quite random, and this helps inject some user curated randomness
@@ -257,7 +257,7 @@ def play(generator):
                     else:
                         # This will cause the AI to frequently generate dialouge suggestions
                         action_prompt[-1] = action_prompt[-1].strip() + "\n> You say "
-                    suggested_action = ai_player.get_action(action_prompt)
+                        suggested_action = ai_player.get_action(action_prompt)
                         if suggested_action[0] not in ["'", '"']:
                             suggested_action = '"' + suggested_action + '"'
                     suggested_actions.append(suggested_action)
