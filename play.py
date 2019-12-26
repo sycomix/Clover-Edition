@@ -257,7 +257,7 @@ def play(generator):
                 print()
 
             bell()
-            action = colInput("You >", colors["main-prompt"], colors["user-text"])
+            action = colInput("You> ", colors["main-prompt"], colors["user-text"])
 
             # Clear suggestions and user input
             if act_alts > 0:
