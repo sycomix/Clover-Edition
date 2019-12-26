@@ -127,15 +127,18 @@ def cut_trailing_action(text):
 
 
 def clean_suggested_action(result_raw, min_length=4):
-    result_raw = standardize_punctuation(result_raw)
+    result_cleaned = standardize_punctuation(result_raw)
+    result_cleaned = cut_trailing_sentence(result_cleaned, allow_action=True)
 
     # The generations actions carry on into the next prompt, so lets remove the prompt
-    results = result_raw.split("\n")
+    results = result_cleaned.split("\n")
     results = [s.strip() for s in results]
     results = [s for s in results if len(s) > min_length]
+
     # Sometimes actions are generated with leading > ! . or ?. Likely the model trying to finish the prompt or start an action.
     result = results[0].strip().lstrip(" >!.?") if len(results) else ''
-    result = cut_trailing_quotes(result)
+    
+    # result = cut_trailing_quotes(result)
     logger.debug(
         "full suggested action '%s'. Cropped: '%s'. Split '%s'",
         result_raw,
@@ -143,14 +146,10 @@ def clean_suggested_action(result_raw, min_length=4):
         results,
     )
 
-    # Often actions are cropped with sentance fragment, lets remove. Or we could just turn up config_act["generate-number"]
-    last_punc = max(result.rfind("."), result.rfind("!"), result.rfind("?"))
-    if (last_punc / (len(result) + 1)) > 0.7:
-        result = result[:last_punc]
+    # Often actions are cropped with sentance fragments, lets remove. Or we could just turn up config_act["generate-number"]
+    
 
-    # Remove you from start
     result = first_to_second_person(result)
-    result = re.sub('^ ?[Yy]ou ?', '', result)
     logger.debug("suggested action after cleaning `%s`", result)
     return result
 

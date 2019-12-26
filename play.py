@@ -24,8 +24,7 @@ try:
 except ModuleNotFoundError:
     pass
 
-with open(Path('interface', 'clover'), 'r', encoding='utf-8') as file:
-    print(file.read())
+
 
 
 #ECMA-48 set graphics codes for the curious. Check out "man console_codes"
@@ -192,6 +191,7 @@ def play(generator):
                     if random.randint(0, 1)==0:
                         action_prompt[-1] = action_prompt[-1].strip() + '\n> You try to'
                     else:
+                        # This will cause the AI to frequently generate dialouge suggestions
                         action_prompt[-1] = action_prompt[-1].strip() + '\n> You say '
                     suggested_action = ai_player.get_action(action_prompt)
                     suggested_actions.append(suggested_action)
@@ -339,5 +339,7 @@ def play(generator):
 
 # This is here for rapid development, without reloading the model. You import play into a jupyternotebook with autoreload
 if __name__ == "__main__":
+    with open(Path('interface', 'clover'), 'r', encoding='utf-8') as file:
+        print(file.read())
     generator = getGenerator()
     play(generator)
