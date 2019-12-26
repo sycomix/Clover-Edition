@@ -46,6 +46,7 @@ class Story:
     def init_from_dict(self, story_dict):
         self.story_start = story_dict["story_start"]
         self.seed = story_dict["seed"]
+        set_seed(seed)
         self.actions = story_dict["actions"]
         self.results = story_dict["results"]
         self.choices = story_dict["choices"]
@@ -234,7 +235,7 @@ class ConstrainedStoryManager(StoryManager):
         self.seed = None
 
     def enable_caching(
-        self, credentials_file=None, seed=0, bucket_name="dungeon-cache"
+        self, credentials_file=None, seed=42, bucket_name="dungeon-cache"
     ):
         self.cache = True
         self.cacher = Cacher(credentials_file, bucket_name)

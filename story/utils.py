@@ -10,10 +10,13 @@ from getconfig import logger
 
 def set_seed(seed):
     """Sets the seed for all used libraries that take it."""
-    random.seed(a=seed, version=2)
-    torch.manual_seed(seed)
-    if args.n_gpu > 0:
-        torch.cuda.manual_seed_all(seed)
+    # Make sure you don't use 0 as a seed since some libraries will ignore it.
+    if seed:
+        # np.random.seed(seed)  # not using numpy right now
+        random.seed(a=seed, version=2)
+        torch.manual_seed(seed)
+        if args.n_gpu > 0:
+            torch.cuda.manual_seed_all(seed)
 
 
 def console_print(text, width=75):
