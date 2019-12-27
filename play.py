@@ -140,34 +140,39 @@ class AIPlayer:
     def __init__(self, story_manager):
         self.story_manager = story_manager
 
-    def get_action(self, prompt):
+    def get_action(self):
         # While we want the story to be on track, but not to on track that it loops
         # the actions can be quite random, and this helps inject some user curated randomness
         # and prevent loops. So lets make the actions quite random, and prevent duplicates while we are at it
-        mem_ind=random.randint(1, 6)
-        sample=random.randint(0, 1)
-        include_prompt=random.randint(0, 1)
-        predicates = ['You try to', 'You say "']
+
+        # what to feed to model?
+        mem_ind = random.randint(1, 6) # How many steps to include
+        sample = random.randint(0, 1) # Random steps from history?
+        include_prompt = random.randint(0, 1) # Include the initial promts
+        predicates = ['You try to ', 'You say "', 'You start to "']  # The model has to continue from here
+        
         predicate = random.sample(predicates, 1)[0]
-        action_prompt = story_manager.story_context(
-            mem_inds,
+        action_prompt = self.story_manager.story_context(
+            mem_ind,
             sample,
             include_prompt
         )
         action_prompt[-1] = action_prompt[-1].strip() + "\n> "+predicate
 
         result_raw = self.story_manager.generator.generate_raw(
-            prompt,
+            action_prompt,
             generate_num=settings.getint("action-generate-num"),
             temperature=settings.getfloat("action-temp"),
-            stop_tokens=self.generator.tokenizer.encode(["<|endoftext|>", "\n", ">"])
+            stop_tokens=self.story_manager.generator.tokenizer.encode(["<|endoftext|>", "\n", ">"])
             # stop_tokens=self.generator.tokenizer.encode(['>', '<|endoftext|>'])
         )
-        result_raw = predicate + result_raw
-        logger.info("get_action (mem_ind=%s, sample=%s, include_prompt=%s, predicate=`%r`) -> %s", mem_ind, sample, include_prompt, predicate, result_raw)
-        return clean_suggested_action(
+        logger.info("get_action (mem_ind=%s, sample=%s, include_prompt=%s, predicate=`%r`) -> %r", mem_ind, sample, include_prompt, predicate, result_raw)
+        result_raw = clean_suggested_action(
             result_raw, min_length=settings.getint("action-min-length")
         )
+        
+        result_raw = predicate + result_raw
+        return result_raw
 
 
 def bell():
@@ -312,8 +317,8 @@ def play(generator):
                 colPrint("\nSuggested actions:", colors["selection-value"])
                 action_suggestion_lines = 2
                 for i in range(act_alts):
-                    suggested_action = ai_player.get_action(action_prompt)
-                    if len(suggested_action.strip())>0:
+                    suggested_action = ai_player.get_action()
+                    if len(suggested_action.strip()) > 0:
                         suggested_actions.append(suggested_action)
                         suggestion = "{}> {}".format(i, suggested_action)
                         colPrint(suggestion, colors["selection-value"])

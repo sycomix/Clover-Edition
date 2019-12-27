@@ -210,11 +210,11 @@ class StoryManager:
         s = self.story.latest_result(mem_ind=mem_ind, sample=sample)
         if not include_prompt:
             s = s[1:]
-        logger.info(
-            "story_context mem_ind={}, sample={}, include_prompt={}".format(
-                mem_ind, sample, include_prompt
-            )
-        )
+        # logger.debug(
+        #     "story_context mem_ind={}, sample={}, include_prompt={}".format(
+        #         mem_ind, sample, include_prompt
+        #     )
+        # )
         return s
 
 
