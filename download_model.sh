@@ -26,6 +26,7 @@ download_torrent() {
     echo "DHT errors are normal."
     echo -e "===========================================\n"
     #the seed time might be too aggressive, but we need people to seed!
+    #changed --stderr true to just --stderr, but note the official documentation says the first is correct
     aria2c \
       --max-connection-per-server 16 \
       --split 64 \
@@ -35,7 +36,7 @@ download_torrent() {
       --summary-interval=15 \
       --disable-ipv6 \
       --check-integrity \
-      --stderr true \
+      --stderr\
       "${MODEL_TORRENT_NAME}"
     mv "${MODEL_TORRENT_BASENAME}" "${MODEL_VERSION}"
     echo "Download Complete!"
