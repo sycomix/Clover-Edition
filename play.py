@@ -26,12 +26,13 @@ try:
 except ModuleNotFoundError:
     pass
 
+#any documentation on what codes are supported?
 def _is_notebook():
     """Some terminal codes don't work in a colab notebook."""
     # from https://github.com/tqdm/tqdm/blob/master/tqdm/autonotebook.py
     try:
         from IPython import get_ipython
-        if 'IPKernelApp' not in get_ipython().config:  # pragma: no cover
+        if (not get_ipython()) or ('IPKernelApp' not in get_ipython().config):  # pragma: no cover
             raise ImportError("console")
         if 'VSCODE_PID' in os.environ:  # pragma: no cover
             raise ImportError("vscode")
@@ -41,6 +42,7 @@ def _is_notebook():
         return True
 
 is_notebook = _is_notebook()
+logger.info("Notebook detected: {}".format(is_notebook))
 
 # ECMA-48 set graphics codes for the curious. Check out "man console_codes"
 def colPrint(str, col="0", wrap=True, end=None):
