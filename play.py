@@ -268,7 +268,7 @@ def play(generator):
                     clear_lines(action_suggestion_lines)
 
                     # Show user input again
-                    colPrint("\n> " + action.rstrip(), colors["user-text"], end="")
+                    # colPrint("\n> " + action.rstrip(), colors["user-text"], end="")
 
             setRegex = re.search("^set ([^ ]+) ([^ ]+)$", action)
             if setRegex:
@@ -418,7 +418,7 @@ def play(generator):
                 action = "\n> " + action + "\n"
 
                 colPrint(
-                    "\n>> " + action.lstrip().lstrip("> \n"),
+                    "\n>" + action.lstrip().lstrip("> \n"),
                     colors["transformed-user-text"],
                 )
                 result = "\n" + story_manager.act(action)
