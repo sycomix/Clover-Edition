@@ -137,17 +137,34 @@ if not Path("prompts", "Anime").exists():
 
 
 class AIPlayer:
-    def __init__(self, generator):
-        self.generator = generator
+    def __init__(self, story_manager):
+        self.story_manager = story_manager
 
     def get_action(self, prompt):
-        result_raw = self.generator.generate_raw(
+        # While we want the story to be on track, but not to on track that it loops
+        # the actions can be quite random, and this helps inject some user curated randomness
+        # and prevent loops. So lets make the actions quite random, and prevent duplicates while we are at it
+        mem_ind=random.randint(1, 6)
+        sample=random.randint(0, 1)
+        include_prompt=random.randint(0, 1)
+        predicates = ['You try to', 'You say "']
+        predicate = random.sample(predicates, 1)[0]
+        action_prompt = story_manager.story_context(
+            mem_inds,
+            sample,
+            include_prompt
+        )
+        action_prompt[-1] = action_prompt[-1].strip() + "\n> "+predicate
+
+        result_raw = self.story_manager.generator.generate_raw(
             prompt,
             generate_num=settings.getint("action-generate-num"),
             temperature=settings.getfloat("action-temp"),
             stop_tokens=self.generator.tokenizer.encode(["<|endoftext|>", "\n", ">"])
             # stop_tokens=self.generator.tokenizer.encode(['>', '<|endoftext|>'])
         )
+        result_raw = predicate + result_raw
+        logger.info("get_action (mem_ind=%s, sample=%s, include_prompt=%s, predicate=`%r`) -> %s", mem_ind, sample, include_prompt, predicate, result_raw)
         return clean_suggested_action(
             result_raw, min_length=settings.getint("action-min-length")
         )
@@ -157,10 +174,73 @@ def bell():
     if settings.getboolean("console-bell"):
         print("\x07", end="")
 
+def d20ify_speech(action, d):
+    adjectives_say_d01 = [
+        "mumble",
+        "prattle",
+        "incoherently say",
+        "whine",
+        "ramble",
+        "wheeze",
+    ]
+    adjectives_say_d20 = [
+        "successfully",
+        "persuasively",
+        "expertly",
+        "conclusively",
+        "dramatically",
+        "adroitly",
+        "aptly",
+    ]
+    if d == 1:
+        adjective = random.sample(adjectives_say_d01, 1)[0]
+        action = "You " + adjective + " " + action
+    elif d == 20:
+        adjective = random.sample(adjectives_say_d20, 1)[0]
+        action = "You " + adjective + " say " + action
+    return action
+
+def d20ify_action(action, d):
+    adjective_action_d01 = [
+        "disastrously",
+        "incompetently",
+        "dangerously",
+        "stupidly",
+        "horribly",
+        "miserably",
+        "sadly",
+    ]
+    adjective_action_d20 = [
+        "successfully",
+        "expertly",
+        "conclusively",
+        "adroitly",
+        "aptly",
+        "masterfully",
+    ]
+    if d == 1:
+        adjective = random.sample(adjective_action_d01, 1)[
+            0
+        ]
+        action = "You " + adjective + " fail to " + action
+    elif d < 5:
+        action = "You attempt to " + action
+    elif d < 10:
+        action = "You try to " + action
+    elif d < 15:
+        action = "You start to " + action
+    elif d < 20:
+        action = "You " + action
+    else:
+        adjective = random.sample(adjective_action_d20, 1)[
+            0
+        ]
+        action = "You " + adjective + " " + action
+    return action
 
 def play(generator):
     story_manager = UnconstrainedStoryManager(generator)
-    ai_player = AIPlayer(generator)
+    ai_player = AIPlayer(story_manager)
     print("\n")
 
     with open(Path("interface", "mainTitle.txt"), "r", encoding="utf-8") as file:
@@ -232,23 +312,7 @@ def play(generator):
                 colPrint("\nSuggested actions:", colors["selection-value"])
                 action_suggestion_lines = 2
                 for i in range(act_alts):
-                    # While we want the story to be on track, but not to on track that it loops
-                    # the actions can be quite random, and this helps inject some user curated randomness
-                    # and prevent loops. So lets make the actions quite random, and prevent duplicates while we are at it
-                    action_prompt = story_manager.story_context(
-                        mem_ind=random.randint(1, 6),
-                        sample=random.randint(0, 1),
-                        include_prompt=random.randint(0, 1),
-                    )
-                    if random.randint(0, 1) == 0:
-                        action_prompt[-1] = action_prompt[-1].strip() + "\n> You try to "
-                        suggested_action = ai_player.get_action(action_prompt)
-                    else:
-                        # This will cause the AI to frequently generate dialouge suggestions
-                        action_prompt[-1] = action_prompt[-1].strip() + "\n> You say "
-                        suggested_action = ai_player.get_action(action_prompt)
-                        if len(suggested_action) and suggested_action[0] not in ["'", '"']:
-                            suggested_action = '"' + suggested_action + '"'
+                    suggested_action = ai_player.get_action(action_prompt)
                     if len(suggested_action.strip())>0:
                         suggested_actions.append(suggested_action)
                         suggestion = "{}> {}".format(i, suggested_action)
@@ -335,33 +399,12 @@ def play(generator):
                     # Roll a 20 sided dice to make things interesting
                     d = random.randint(1, 20)
                     logger.debug("roll d20=%s", d)
-                    if action[0] == '"':
+
+                    # If it says 'You say "' then it's still dialouge. Normalise it by removing `You say `, we will add again soon
+                    action = re.sub("^ ?[Yy]ou [\"']", '"', action)
+                    if any(action.startswith(t) for t in ['"', "'"]):
                         if settings.getboolean("action-d20"):
-                            if d == 1:
-                                adjectives_say_d01 = [
-                                    "mumble",
-                                    "prattle",
-                                    "incoherently say",
-                                    "whine",
-                                    "ramble",
-                                    "wheeze",
-                                ]
-                                adjective = random.sample(adjectives_say_d01, 1)[0]
-                                action = "You " + adjective + " " + action
-                            elif d == 20:
-                                adjectives_say_d20 = [
-                                    "successfully",
-                                    "persuasively",
-                                    "expertly",
-                                    "conclusively",
-                                    "dramatically",
-                                    "adroitly",
-                                    "aptly",
-                                ]
-                                adjective = random.sample(adjectives_say_d20, 1)[0]
-                                action = "You " + adjective + " say " + action
-                            else:
-                                action = "You say " + action
+                            action = d20ify_speech(action, d)
                         else:
                             action = "You say " + action
                     else:
@@ -372,41 +415,7 @@ def play(generator):
                             action = action[0].lower() + action[1:]
                             # roll a d20
                             if settings.getboolean("action-d20"):
-                                if d == 1:
-                                    adjective_action_d01 = [
-                                        "disastrously",
-                                        "incompetently",
-                                        "dangerously",
-                                        "stupidly",
-                                        "horribly",
-                                        "miserably",
-                                        "sadly",
-                                    ]
-                                    adjective = random.sample(adjective_action_d01, 1)[
-                                        0
-                                    ]
-                                    action = "You " + adjective + " fail to " + action
-                                elif d < 5:
-                                    action = "You attempt to " + action
-                                elif d < 10:
-                                    action = "You try to " + action
-                                elif d < 15:
-                                    action = "You start to " + action
-                                elif d < 20:
-                                    action = "You " + action
-                                else:
-                                    adjective_action_d20 = [
-                                        "successfully",
-                                        "expertly",
-                                        "conclusively",
-                                        "adroitly",
-                                        "aptly",
-                                        "masterfully",
-                                    ]
-                                    adjective = random.sample(adjective_action_d20, 1)[
-                                        0
-                                    ]
-                                    action = "You " + adjective + " " + action
+                                action = d20ify_action(action, d)
                             else:
                                 action = "You " + action
 
