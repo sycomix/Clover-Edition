@@ -149,7 +149,7 @@ class AIPlayer:
         mem_ind = random.randint(1, 6) # How many steps to include
         sample = random.randint(0, 1) # Random steps from history?
         include_prompt = random.randint(0, 1) # Include the initial promts
-        predicates = ['You try to ', 'You say "', 'You start to "']  # The model has to continue from here
+        predicates = ['You try to ', 'You say "', 'You start to ', '"']  # The model has to continue from here
         
         predicate = random.sample(predicates, 1)[0]
         action_prompt = self.story_manager.story_context(
@@ -167,12 +167,16 @@ class AIPlayer:
             # stop_tokens=self.generator.tokenizer.encode(['>', '<|endoftext|>'])
         )
         logger.info("get_action (mem_ind=%s, sample=%s, include_prompt=%s, predicate=`%r`) -> %r", mem_ind, sample, include_prompt, predicate, result_raw)
-        result_raw = clean_suggested_action(
-            result_raw, min_length=settings.getint("action-min-length")
+        result = predicate + result_raw.lstrip()
+        result = clean_suggested_action(
+            result, min_length=settings.getint("action-min-length")
         )
-        
-        result_raw = predicate + result_raw
-        return result_raw
+        # Sometimes the suggestion start with "You" we will add that on later anyway so remove it here
+        result = re.sub("^ ?[Yy]ou try to ?", "You ", result)
+        result = re.sub("^ ?[Yy]ou start to ?", "You ", result)
+        result = re.sub("^ ?[Yy]ou say \"", "\"", result)
+        result = re.sub("^ ?[Yy]ou ?", "", result)
+        return result
 
 
 def bell():
@@ -406,8 +410,9 @@ def play(generator):
                     logger.debug("roll d20=%s", d)
 
                     # If it says 'You say "' then it's still dialouge. Normalise it by removing `You say `, we will add again soon
-                    action = re.sub("^ ?[Yy]ou [\"']", '"', action)
-                    if any(action.startswith(t) for t in ['"', "'"]):
+                    action = re.sub("^ ?[Yy]ou say [\"']", '"', action)
+                    logger.info("%r. %r", action, any(action.lstrip().startswith(t) for t in ['"', "'"]))
+                    if any(action.lstrip().startswith(t) for t in ['"', "'"]):
                         if settings.getboolean("action-d20"):
                             action = d20ify_speech(action, d)
                         else:

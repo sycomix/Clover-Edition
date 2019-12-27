@@ -107,7 +107,8 @@ def sample_sequence(
                 and (j > 4)
                 and (next_token[0][0] in stop_tokens)
             ):
-                logger.debug(
+                # Why the minimum tokens, j>X. Because sometimes the models starts with whitespace, which will strip away anyway. Having a minimum amount of tokens before we stop usually means we don't just stop because of "\n " or similar
+                logger.info(
                     "Stopping generation as we found stop tokens. One of `%s`, in '%s'. token generated `%s`",
                     stop_tokens,
                     next_token,
@@ -276,7 +277,7 @@ class GPT2Generator:
 
         result = self.result_replace(text)
 
-        if (depth > 2) and len(result) == 0:
+        if (depth > 6) and len(result) == 0:
             # Sometimes it keeps generating a story startng with an action (">"), if it's tried a few times and it keeps
             # happening, lets let it keep action text which starts in ">"
             result = self.result_replace(text, allow_action=True)
