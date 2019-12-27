@@ -207,6 +207,8 @@ def d20ify_speech(action, d):
     elif d == 20:
         adjective = random.sample(adjectives_say_d20, 1)[0]
         action = "You " + adjective + " say " + action
+    else:
+        action = "You say " + action
     return action
 
 def d20ify_action(action, d):
@@ -411,12 +413,12 @@ def play(generator):
 
                     # If it says 'You say "' then it's still dialouge. Normalise it by removing `You say `, we will add again soon
                     action = re.sub("^ ?[Yy]ou say [\"']", '"', action)
-                    logger.info("%r. %r", action, any(action.lstrip().startswith(t) for t in ['"', "'"]))
                     if any(action.lstrip().startswith(t) for t in ['"', "'"]):
                         if settings.getboolean("action-d20"):
                             action = d20ify_speech(action, d)
                         else:
                             action = "You say " + action
+                        logger.info("%r. %r, %r", action, any(action.lstrip().startswith(t) for t in ['"', "'"]), settings.getboolean("action-d20"))
                     else:
                         action = first_to_second_person(action)
                         if not action.lower().startswith(
