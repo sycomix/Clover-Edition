@@ -330,8 +330,9 @@ def play(generator):
                 for i in range(act_alts):
                     suggested_action = ai_player.get_action()
                     if len(suggested_action.strip()) > 0:
+                        j = len(suggested_actions)
                         suggested_actions.append(suggested_action)
-                        suggestion = "{}> {}".format(i, suggested_action)
+                        suggestion = "{}> {}".format(j, suggested_action)
                         colPrint(suggestion, colors["selection-value"])
                         action_suggestion_lines += count_printed_lines(suggestion)
                 print()
