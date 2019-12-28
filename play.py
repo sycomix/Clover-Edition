@@ -130,7 +130,7 @@ def getGenerator():
         for n, model_path in enumerate(models):
             colPrint("{}: {}".format(n, model_path.name), colors['menu'])
         
-        model=models[getNumberInput(len(models-1))]
+        model=models[getNumberInput(len(models)-1)]
     else:
         model=models[0]
         logger.info("Using model: "+str(model))
