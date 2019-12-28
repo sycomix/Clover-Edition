@@ -14,4 +14,6 @@ added ability to use 16bit mode on GPU to save significant VRAM
 added suggested actions
 added "d20" randomization of action sucess/failure
 added repetitiveness penalty for AI
+added ability to select from multiple models
+added simple to use script to convert tensorflow models
 probably a lot of stuff I forgot to add here...

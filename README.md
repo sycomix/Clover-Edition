@@ -64,7 +64,13 @@ Windows users *may* want to install another module called "colorama". Though it 
 
 Then to install just download this repo. Github has a download option somewhere. Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"`
 
-Then you will need to download a pytorch model. Put it in the models folder. Rename it to `pytorch-gpt2-xl-aid2-v5` until we support arbitrary model names. The pytorch version of the original AID2 model is being distributed by bittorrent. Please seed them if you have a seedbox or homelab:
+Then you will need to download a pytorch model and put it in the models folder:
+
+
+#### Models:
+
+The pytorch version of the original AID2 model is being distributed by bittorrent:
+
 
 [Torrent File](model.torrent) 
 
@@ -74,10 +80,20 @@ Then you will need to download a pytorch model. Put it in the models folder. Ren
 magnet:?xt=urn:btih:17dcfe3d12849db04a3f64070489e6ff5fc6f63f&dn=model_v5_pytorch&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce&tr=udp%3a%2f%2fopen.stealth.si%3a80%2fannounce&tr=udp%3a%2f%2fp4p.arenabg.com%3a1337%2fannounce&tr=udp%3a%2f%2ftracker.coppersurfer.tk%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.cyberia.is%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.moeking.me%3a6969%2fannounce&tr=udp%3a%2f%2f9.rarbg.me%3a2710%2fannounce&tr=udp%3a%2f%2ftracker3.itzmx.com%3a6961%2fannounce
 ```
 
+The original model has 1558 Million Parameters. It is 5.9GiB and requires >8GB of VRAM to run normally on a GPU and >4GB of VRAM to run at our reduced 16 bit mode.
+
+It is possible to play on a GPU with less than 4GB of VRAM with smaller models. Many anons have trained smaller models (see the section on Finetuning). We need volunteers to convert other models to pytorch and create torrents for them.
+
+Ideally I would like to have a single torrent with every model anyone cares about. Both 32bit and 16bit versions. And users could just select what files they want or even get all of them.
+
+I believe it is possible to update or add new files to a torrent. For when new models come out. I believe this can be done by creating a new torrent. And asking users to delete the old one from their torrent program, and to run a checksum on the new torrent so it can recognize the existing files.
+
+I'd do this myself however my internet speed is so bad it will take me days to get all of the models and longer to seed them.
+
 Once downloaded your model folder should look like this:
 ```
     ./models
-    └── pytorch-gpt2-xl-aid2-v5
+    └── <MODEL-NAME>
         ├── config.json
         ├── merges.txt
         ├── pytorch_model.bin
@@ -113,7 +129,9 @@ Fine tunning is not currently a push button thing and requires some minimal tech
 #### Converting Tensorflow model to Pytorch
 ----------------
 
-See [this](https://github.com/huggingface/transformers/blob/17ea43cf985829634bd86b36b44e5410c6f83e36/docs/source/converting_tensorflow_models.rst) and checkout the script in the pytorch-scripts folder of this repo, and comments near the bottom.
+I have made the [convert_gpt2_model.py](convert_gpt2_model.py) script an idiot proof simple way of quickly converting tensorflow models to pytorch models. Just run it on the folder containing a tensorflow model and you will get a pytorch model. You can use the --full flag to get a full 32bit model, but do try 16bit models as they will be potentially half the size for the same accuracy.
+
+See the [test-models.py](test-models.py) script to test the accuracy of 16 bit mode if you doubt the chad 16BIT models. My tests were well within expectations.
 
 #### Community
 ------------------------

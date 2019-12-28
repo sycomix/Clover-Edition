@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import itertools
 import torch
 import torch.nn.functional as F
@@ -127,7 +128,7 @@ def truncate_multiple_sequences(seqs, max_len=100):
 
 class GPT2Generator:
     def __init__(
-        self, generate_num=60, temperature=0.4, top_k=40, top_p=0.9, dtype=DTYPE, censor=False, repetition_penalty=1,
+        self, generate_num=60, temperature=0.4, top_k=40, top_p=0.9, dtype=DTYPE, model_path=Path('models', 'pytorch-gpt2-xl-aid2-v5'), censor=False, repetition_penalty=1,
     ):
         self.generate_num = generate_num
         self.temp = temperature
@@ -141,18 +142,15 @@ class GPT2Generator:
         self.max_history_tokens = 1024 - generate_num
         self.stop_token = "<|endoftext|>"
 
-        self.model_name = "pytorch-gpt2-xl-aid2-v5"
-        self.model_dir = "models"
-        self.checkpoint_path = os.path.join(self.model_dir, self.model_name)
-        assert os.path.exists(self.checkpoint_path), (
-            "Make sure to download the pytorch v5 model and put it in "
-            + self.checkpoint_path
-        )
+        self.checkpoint_path = model_path
+        if not self.checkpoint_path.exists():
+            raise FileNotFoundError("Could not find {} Make sure to download a pytorch model and put it in the models directory!".format(str(self.checkpoint_path)))
+       
         if os.environ.get("DEBUG_GPT2", False):
-            self.checkpoint_path = "gpt2"
+            self.checkpoint_path = Path('gpt2')
             logger.warning("using DEBUG_GPT2 MODE! This is just for devs to quickly check a small GPT2 model with poor output")
         self.device = torch.device("cuda" if self.dtype==torch.float16 else "cpu")
-        logger.info("Using device={}, checkpoint={}, dtype={}".format(self.device, self.checkpoint_path, self.dtype))
+        logger.info("Using device={}, checkpoint={}, dtype={}".format(self.device, str(self.checkpoint_path), self.dtype))
 
         # Load tokenizer and model
         model_class, tokenizer_class = MODEL_CLASSES["gpt2"]

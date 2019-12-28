@@ -97,6 +97,7 @@ def getNumberInput(n):
 def selectFile(p=Path("prompts")):
     if p.is_dir():
         files = [x for x in p.iterdir()]
+        #TODO: make this a config option (although really it should be random)
         shuffle(files)
         for n in range(len(files)):
             colPrint(
@@ -121,7 +122,20 @@ def getGenerator():
         "\nInitializing AI Engine! (This might take a few minutes)\n",
         colors["loading-message"],
     )
+    models=[x for x in Path('models').iterdir() if x.is_dir()]
+    if not models:
+        raise FileNotFoundError('There are no models in the models directory! You must download a pytorch compatible model!')
+    elif len(models) >1:
+        colPrint("You have multiple models in your models folder. Please select one to load:", colors['message']) 
+        for n, model_path in enumerate(models):
+            colPrint("{}: {}".format(n, model_path.name), colors['menu'])
+        
+        model=models[getNumberInput(len(models-1))]
+    else:
+        model=models[0]
+        logger.info("Using model: "+str(model))
     return GPT2Generator(
+        model_path=model,
         generate_num=settings.getint("generate-num"),
         temperature=settings.getfloat("temp"),
         top_k=settings.getint("top-keks"),
