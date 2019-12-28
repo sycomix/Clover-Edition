@@ -26,12 +26,13 @@ try:
 except ModuleNotFoundError:
     pass
 
+#any documentation on what codes are supported?
 def _is_notebook():
     """Some terminal codes don't work in a colab notebook."""
     # from https://github.com/tqdm/tqdm/blob/master/tqdm/autonotebook.py
     try:
         from IPython import get_ipython
-        if 'IPKernelApp' not in get_ipython().config:  # pragma: no cover
+        if (not get_ipython()) or ('IPKernelApp' not in get_ipython().config):  # pragma: no cover
             raise ImportError("console")
         if 'VSCODE_PID' in os.environ:  # pragma: no cover
             raise ImportError("vscode")
@@ -41,6 +42,7 @@ def _is_notebook():
         return True
 
 is_notebook = _is_notebook()
+logger.info("Notebook detected: {}".format(is_notebook))
 
 # ECMA-48 set graphics codes for the curious. Check out "man console_codes"
 def colPrint(str, col="0", wrap=True, end=None):
@@ -66,11 +68,14 @@ def clear_lines(n):
     for _ in range(n):
         print(screen_code, end="")
 
-
+##TODO: See if possible to speed up?
 def count_printed_lines(text):
     """For a prompt, work out how many console lines it took up with wrapping."""
     width = settings.getint("text-wrap-width")
-    return sum([(len(ss) // width) + 1 for ss in text.split("\n")])
+    if(width):
+        return sum([(len(ss) // width) + 1 for ss in text.split("\n")])
+    else:
+        return sum([(len(ss) // 9999) + 1 for ss in text.split("\n")])  
 
 
 def getNumberInput(n):
@@ -341,7 +346,7 @@ def play(generator):
                     clear_lines(action_suggestion_lines)
 
                     # Show user input again
-                    colPrint("\n> " + action.rstrip(), colors["user-text"], end="")
+                    # colPrint("\n> " + action.rstrip(), colors["user-text"], end="")
 
             setRegex = re.search("^set ([^ ]+) ([^ ]+)$", action)
             if setRegex:
@@ -437,7 +442,7 @@ def play(generator):
                 action = "\n> " + action + "\n"
 
                 colPrint(
-                    "\n>> " + action.lstrip().lstrip("> \n"),
+                    "\n>" + action.lstrip().lstrip("> \n"),
                     colors["transformed-user-text"],
                 )
                 result = "\n" + story_manager.act(action)
