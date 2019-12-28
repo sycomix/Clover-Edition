@@ -68,11 +68,14 @@ def clear_lines(n):
     for _ in range(n):
         print(screen_code, end="")
 
-
+##TODO: See if possible to speed up?
 def count_printed_lines(text):
     """For a prompt, work out how many console lines it took up with wrapping."""
     width = settings.getint("text-wrap-width")
-    return sum([(len(ss) // width) + 1 for ss in text.split("\n")])
+    if(width):
+        return sum([(len(ss) // width) + 1 for ss in text.split("\n")])
+    else:
+        return sum([(len(ss) // 9999) + 1 for ss in text.split("\n")])  
 
 
 def getNumberInput(n):
