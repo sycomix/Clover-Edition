@@ -148,7 +148,8 @@ if not Path("prompts", "Anime").exists():
     try:
         import pastebin
     except:
-        logger.warning("Failed to scrape pastebin: %e", e)
+        #temporary fix "e is not defined"
+        #logger.warning("Failed to scrape pastebin: %e", e)
         colPrint(
             "Failed to scrape pastebin, possible connection issue.\nTry again later. Continuing without downloading prompts...",
             colors["error"],
