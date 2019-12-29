@@ -45,12 +45,17 @@ is_notebook = _is_notebook()
 logger.info("Notebook detected: {}".format(is_notebook))
 
 
+termWidth = get_terminal_size()[0]
+if termWidth < 5:
+    logger.warning("Your detected terminal width is: "+str(get_terminal_size()[0]))
+    termWidth = 999999999
+
 # ECMA-48 set graphics codes for the curious. Check out "man console_codes"
 def colPrint(text, col="0", wrap=True, end=None):
     if wrap:
         width = settings.getint("text-wrap-width")
         width = 999999999 if width < 2 else width
-        width=min(width, get_terminal_size()[0])
+        width=min(width, termWidth)
         text = textwrap.fill(
             text, width, replace_whitespace=False
         )
@@ -274,7 +279,7 @@ def play(generator):
         colPrint(file.read(), colors["title"], wrap=False)
 
     with open(Path("interface", "subTitle.txt"), "r", encoding="utf-8") as file:
-        cols = get_terminal_size()[0]
+        cols = termWidth
         for line in file:
             line=re.sub(r'\n', '', line)
             line=line[:cols]
