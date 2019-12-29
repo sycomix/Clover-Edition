@@ -187,7 +187,7 @@ class AIPlayer:
             stop_tokens=self.story_manager.generator.tokenizer.encode(["<|endoftext|>", "\n", ">"])
             # stop_tokens=self.generator.tokenizer.encode(['>', '<|endoftext|>'])
         )
-        logger.info("get_action (mem_ind=%s, sample=%s, include_prompt=%s, predicate=`%r`) -> %r", mem_ind, sample, include_prompt, predicate, result_raw)
+        logger.debug("get_action (mem_ind=%s, sample=%s, include_prompt=%s, predicate=`%r`) -> %r", mem_ind, sample, include_prompt, predicate, result_raw)
         result = predicate + result_raw.lstrip()
         result = clean_suggested_action(
             result, min_length=settings.getint("action-min-length")
