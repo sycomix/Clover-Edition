@@ -44,13 +44,18 @@ def _is_notebook():
 is_notebook = _is_notebook()
 logger.info("Notebook detected: {}".format(is_notebook))
 
+
 # ECMA-48 set graphics codes for the curious. Check out "man console_codes"
-def colPrint(str, col="0", wrap=True, end=None):
-    if wrap and settings.getint("text-wrap-width") > 1:
-        str = textwrap.fill(
-            str, settings.getint("text-wrap-width"), replace_whitespace=False
+def colPrint(text, col="0", wrap=True, end=None):
+    if wrap:
+        width = settings.getint("text-wrap-width")
+        width = 999999999 if width < 2 else width
+        width=min(width, get_terminal_size()[0])
+        text = textwrap.fill(
+            text, width, replace_whitespace=False
         )
-    print("\x1B[{}m{}\x1B[{}m".format(col, str, colors["default"]), end=end)
+    print("\x1B[{}m{}\x1B[{}m".format(col, text, colors["default"]), end=end)
+    return text.count('\n')+1
 
 
 def colInput(str, col1=colors["default"], col2=colors["default"]):
@@ -67,15 +72,6 @@ def clear_lines(n):
     screen_code = "\033[1A[\033[2K"  # up one line, and clear line
     for _ in range(n):
         print(screen_code, end="")
-
-##TODO: See if possible to speed up?
-def count_printed_lines(text):
-    """For a prompt, work out how many console lines it took up with wrapping."""
-    width = settings.getint("text-wrap-width")
-    if(width):
-        return sum([(len(ss) // width) + 1 for ss in text.split("\n")])
-    else:
-        return sum([(len(ss) // 9999) + 1 for ss in text.split("\n")])  
 
 
 def getNumberInput(n):
@@ -348,8 +344,7 @@ def play(generator):
                         j = len(suggested_actions)
                         suggested_actions.append(suggested_action)
                         suggestion = "{}> {}".format(j, suggested_action)
-                        colPrint(suggestion, colors["selection-value"])
-                        action_suggestion_lines += count_printed_lines(suggestion)
+                        action_suggestion_lines += colPrint(suggestion, colors["selection-value"])
                 print()
 
             bell()
@@ -357,7 +352,7 @@ def play(generator):
 
             # Clear suggestions and user input
             if act_alts > 0:
-                action_suggestion_lines += count_printed_lines("> " + action) + 1
+                action_suggestion_lines += 2
                 if not is_notebook:
                     clear_lines(action_suggestion_lines)
 
