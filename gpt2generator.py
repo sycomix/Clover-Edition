@@ -51,6 +51,8 @@ def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-float("Inf")
     return logits
 
 
+#length should be max length, other settings should be removed, device should not be set
+#we could possibly optimize this by having larger batch sizes but it would likely double or more the memory requirements
 def sample_sequence(
     model,
     length,
@@ -75,6 +77,8 @@ def sample_sequence(
     outputs = None
     with torch.no_grad():
         for j in range(length):
+            #why would we ever not use past?
+            #is generated and next_token always same thing?
             if USE_PAST:
                 past = outputs[1] if outputs is not None else None
                 inputs = {"input_ids": next_token, "past": past}
@@ -84,23 +88,27 @@ def sample_sequence(
             outputs = model(
                 **inputs
             )  # Note: we could also use 'past' with GPT-2/Transfo-XL/XLNet/CTRL (cached hidden-states)
-            next_token_logits = outputs[0][:, -1, :] / (
-                temperature if temperature > 0 else 1.0
+
+            #I've moved the top_p filter BEFORE the temperature transform. The temperature transform completely changes how top_p works!
+            logits=outputs[0][:, -1, :].float()
+            logits = top_k_top_p_filtering(
+                logits, top_k=top_k, top_p=top_p
+                )
+
+            logits = logits/ (
+                temperature if temperature > -1 else 1.0
             )
 
             # repetition penalty from CTRL (https://arxiv.org/abs/1909.05858)
             for i in range(num_samples):
                 for k in set(generated[i].tolist()):
-                    next_token_logits[i, k] /= repetition_penalty
+                    logits[i, k] /= repetition_penalty
 
-            filtered_logits = top_k_top_p_filtering(
-                next_token_logits, top_k=top_k, top_p=top_p
-            ).float()
             if temperature == 0:  # greedy sampling:
-                next_token = torch.argmax(filtered_logits, dim=-1).unsqueeze(-1)
+                next_token = torch.argmax(logits, dim=-1).unsqueeze(-1)
             else:
                 next_token = torch.multinomial(
-                    F.softmax(filtered_logits, dim=-1), num_samples=1
+                    F.softmax(logits, dim=-1), num_samples=1
                 )
             generated = torch.cat((generated, next_token), dim=1)
             if (
@@ -109,7 +117,7 @@ def sample_sequence(
                 and (next_token[0][0] in stop_tokens)
             ):
                 # Why the minimum tokens, j>X. Because sometimes the models starts with whitespace, which will strip away anyway. Having a minimum amount of tokens before we stop usually means we don't just stop because of "\n " or similar
-                logger.info(
+                logger.debug(
                     "Stopping generation as we found stop tokens. One of `%s`, in '%s'. token generated `%s`",
                     stop_tokens,
                     next_token,
@@ -128,13 +136,12 @@ def truncate_multiple_sequences(seqs, max_len=100):
 
 class GPT2Generator:
     def __init__(
-        self, generate_num=60, temperature=0.4, top_k=40, top_p=0.9, dtype=DTYPE, model_path=Path('models', 'pytorch-gpt2-xl-aid2-v5'), censor=False, repetition_penalty=1,
+        self, generate_num=60, temperature=0.4, top_k=40, top_p=0.9, dtype=DTYPE, model_path=Path('models', 'pytorch-gpt2-xl-aid2-v5'), repetition_penalty=1,
     ):
         self.generate_num = generate_num
         self.temp = temperature
         self.top_k = top_k
         self.top_p = top_p
-        self.censor = censor
         self.samples = 1
         self.dtype = dtype
         self.repetition_penalty = repetition_penalty
@@ -142,7 +149,7 @@ class GPT2Generator:
         self.max_history_tokens = 1024 - generate_num
         self.stop_token = "<|endoftext|>"
 
-        self.checkpoint_path = model_path
+        self.checkpoint_path = Path(model_path)
         if not self.checkpoint_path.exists():
             raise FileNotFoundError("Could not find {} Make sure to download a pytorch model and put it in the models directory!".format(str(self.checkpoint_path)))
        
@@ -228,8 +235,8 @@ class GPT2Generator:
             "Text passing into model `%r`",
             self.tokenizer.decode(
                 context_tokens,
-                clean_up_tokenization_spaces=True,
-                skip_special_tokens=True,
+                #clean_up_tokenization_spaces=True,
+                #skip_special_tokens=True,
             ),
         )
 
@@ -278,6 +285,7 @@ class GPT2Generator:
         if (depth > 6) and len(result) == 0:
             # Sometimes it keeps generating a story startng with an action (">"), if it's tried a few times and it keeps
             # happening, lets let it keep action text which starts in ">"
+            # We could just blacklist that token and force it to generate something else. TODO
             result = self.result_replace(text, allow_action=True)
             logger.info(
                 "Model generated empty text after formatting `%r`. Trying to format less with allow_action=True. `%r`",
@@ -285,6 +293,7 @@ class GPT2Generator:
                 result,
             )
 
+            #same here as above
         if len(result) == 0:
             if depth < 20:
                 logger.info("Model generated empty text trying again %r", depth)
