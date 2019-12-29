@@ -20,4 +20,3 @@ def instructions():
 	print('      action-sugg     How many actions to generate, 0 is off. Default: 4 | Current:',settings.getint("action-sugg"))
 	print('      action-d20      Make actions difficult. Default: on | Current:',settings.getboolean("action-d20"))
 	print('      action-temp     How random the suggested actions are. Default: 1 | Current:',settings.getfloat("action-temp"),'\033[39m')
-	return;
