@@ -4,9 +4,9 @@
 
 In 2016, Donald Trump ran for president on a campaign of Making Anime Real. Four years later this promise is finally being fullfilled. Behold AID2: Clover Edition. The only video game where you can truly Do Anything:
 
-![Retro-Terminal](images/retro1)
-![Retro-Terminal](images/retro2)
-![Retro-Terminal](images/retro3)
+![img](images/retro1)
+![img](images/retro2)
+![img](images/retro3)
 ![img](https://i.4cdn.org/v/1576830028034.png)
 ![img](https://i.4cdn.org/v/1576564400002.png)
 ![img](http://i.imgur.com/NqC0lxG.png)
