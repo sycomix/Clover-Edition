@@ -53,6 +53,7 @@ def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-float("Inf")
 
 #length should be max length, other settings should be removed, device should not be set
 #we could possibly optimize this by having larger batch sizes but it would likely double or more the memory requirements
+#this is a ridiculous number of arguments
 def sample_sequence(
     model,
     length,
@@ -68,6 +69,7 @@ def sample_sequence(
     xlm_lang=None,
     device="cpu",
     stop_tokens=None,
+    tokenizer=None
 ):
     context = torch.tensor(context, dtype=torch.long, device=device)
     context = context.unsqueeze(0).repeat(num_samples, 1)
@@ -96,13 +98,15 @@ def sample_sequence(
                 )
 
             logits = logits/ (
-                temperature if temperature > -1 else 1.0
+                temperature if temperature > 0 else 1.0
             )
+
 
             # repetition penalty from CTRL (https://arxiv.org/abs/1909.05858)
             for i in range(num_samples):
                 for k in set(generated[i].tolist()):
                     logits[i, k] /= repetition_penalty
+
 
             if temperature == 0:  # greedy sampling:
                 next_token = torch.argmax(logits, dim=-1).unsqueeze(-1)
@@ -183,6 +187,7 @@ class GPT2Generator:
             num_samples=self.samples,
             device=self.device,
             stop_tokens=stop_tokens,
+            tokenizer=self.tokenizer
             # batch_size=self.batch_size,
         )
         return out
@@ -220,7 +225,7 @@ class GPT2Generator:
     def generate_raw(
         self, prompt, generate_num=None, temperature=None, stop_tokens=None
     ):
-        # the prompt is a list of strings, encode each one tok tokens, then truncate the longest ones
+        # the prompt is a list of strings, encode each one to tokens, then truncate the longest ones
         context_tokens = [
             self.tokenizer.encode(
                 p, add_special_tokens=False, max_length=self.max_history_tokens
