@@ -13,6 +13,7 @@ from getconfig import config, settings, colors, logger
 from story.story_manager import *
 from story.utils import *
 from gpt2generator import GPT2Generator
+from interface import instructions
 
 
 # TODO: Move all these utilty functions to seperate utily file
@@ -110,12 +111,6 @@ def selectFile(p=Path("prompts")):
             line1 = file.readline()
             rest = file.read()
         return (line1, rest)
-
-
-# print files done several times and probably deserves own function
-def instructions():
-    with open("interface/instructions.txt", "r", encoding="utf-8") as file:
-        colPrint(file.read(), colors["instructions"], False)
 
 
 def getGenerator():
