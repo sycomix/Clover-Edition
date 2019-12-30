@@ -53,7 +53,6 @@ def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-float("Inf")
 
 #length should be max length, other settings should be removed, device should not be set
 #we could possibly optimize this by having larger batch sizes but it would likely double or more the memory requirements
-#this is a ridiculous number of arguments
 def sample_sequence(
     model,
     length,
@@ -91,21 +90,21 @@ def sample_sequence(
                 **inputs
             )  # Note: we could also use 'past' with GPT-2/Transfo-XL/XLNet/CTRL (cached hidden-states)
 
-            #I've moved the top_p filter BEFORE the temperature transform. The temperature transform completely changes how top_p works!
             logits=outputs[0][:, -1, :].float()
-            logits = top_k_top_p_filtering(
-                logits, top_k=top_k, top_p=top_p
-                )
 
-            logits = logits/ (
-                temperature if temperature > 0 else 1.0
-            )
+            #Originally the order was Temperature, Repetition Penalty, then top-k/p
+            if settings.getboolean('top-p-first'):
+                logits = top_k_top_p_filtering(logits, top_k=top_k, top_p=top_p)
 
+            logits = logits/(temperature if temperature > 0 else 1.0)
 
             # repetition penalty from CTRL (https://arxiv.org/abs/1909.05858)
             for i in range(num_samples):
                 for k in set(generated[i].tolist()):
                     logits[i, k] /= repetition_penalty
+
+            if not settings.getboolean('top-p-first'):
+                logits = top_k_top_p_filtering(logits, top_k=top_k, top_p=top_p)
 
 
             if temperature == 0:  # greedy sampling:
@@ -165,8 +164,8 @@ class GPT2Generator:
 
         # Load tokenizer and model
         model_class, tokenizer_class = MODEL_CLASSES["gpt2"]
-        self.tokenizer = tokenizer_class.from_pretrained(self.checkpoint_path)
-        self.model = model_class.from_pretrained(self.checkpoint_path)
+        self.tokenizer = tokenizer_class.from_pretrained(str(self.checkpoint_path))
+        self.model = model_class.from_pretrained(str(self.checkpoint_path))
         self.model.to(self.dtype).to(self.device)
         self.model.eval()
 
@@ -226,6 +225,7 @@ class GPT2Generator:
         self, prompt, generate_num=None, temperature=None, stop_tokens=None
     ):
         # the prompt is a list of strings, encode each one to tokens, then truncate the longest ones
+        # this seems a bit excessive
         context_tokens = [
             self.tokenizer.encode(
                 p, add_special_tokens=False, max_length=self.max_history_tokens
