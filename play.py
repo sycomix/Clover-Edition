@@ -6,6 +6,7 @@ import gc
 import random
 import torch
 import textwrap
+import readline
 from random import shuffle
 from shutil import get_terminal_size
 

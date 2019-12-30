@@ -5,6 +5,7 @@ import re
 from pyjarowinkler import distance
 import torch
 import random
+import readline
 
 from getconfig import logger
 
