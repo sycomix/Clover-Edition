@@ -6,7 +6,10 @@ import gc
 import random
 import torch
 import textwrap
-import readline
+try:
+	import readline
+except ModuleNotFoundError:
+	pass
 from random import shuffle
 from shutil import get_terminal_size
 
