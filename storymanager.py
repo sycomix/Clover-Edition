@@ -1,3 +1,5 @@
+import re
+
 class Story:
     #the initial prompt is very special.
     #We want it to be permanently in the AI's limited memory (as well as possibly other strings of text.)
@@ -33,7 +35,8 @@ class Story:
         return '\n\n'.join(lines)
 
     def getSuggestion(self):
-        return self.generator.generate(self.getStory()+"\n\n> You", self.prompt)#longterm memory here
+        #temporary fix (TODO)
+        return re.sub('\n.*', '', self.generator.generate_raw(self.getStory()+"\n\n> You", self.prompt))#, stop_tokens=['\n', '\n\n'])#longterm memory here
 
     def __str__(self):
         return self.prompt+self.getStory()

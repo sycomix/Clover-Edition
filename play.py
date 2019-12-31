@@ -427,9 +427,7 @@ def play(generator):
                 action = action.strip()
                 #TODO debug stuff to delete
                 if action != original_action:
-                    print("STRIPPED WHITE SPACE OF ACTION")
-                    print(original_action)
-                    print(action)
+                    logger.debug("STRIPPED WHITE SPACE OFF ACTION %r vs %r", original_action, action)
 
                 # Crop actions to a max length
                 #action = action[:4096]
