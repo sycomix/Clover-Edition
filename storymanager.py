@@ -1,4 +1,5 @@
 import re
+from getconfig import settings
 
 class Story:
     #the initial prompt is very special.
@@ -14,7 +15,16 @@ class Story:
         assert(self.prompt+action)
         results=[]
         for i in range(self.numResults):
-            results.append(self.generator.generate(self.getStory()+action, self.prompt))#self.longTermMemory.join('\n\n'), self.prompt))
+            assert(settings.getint('top-keks') is not None)
+            results.append(
+                    self.generator.generate(
+                        self.getStory()+action,
+                        self.prompt,
+                        temperature=settings.getfloat('temp'),
+                        top_p=settings.getfloat('top-p'),
+                        top_k=settings.getint('top-keks'),
+                        repetition_penalty=settings.getfloat('rep-pen')))
+                    #self.longTermMemory.join('\n\n'), self.prompt))
             
         self.story.append([action, results])
         return results
@@ -36,7 +46,15 @@ class Story:
 
     def getSuggestion(self):
         #temporary fix (TODO)
-        return re.sub('\n.*', '', self.generator.generate_raw(self.getStory()+"\n\n> You", self.prompt))#, stop_tokens=['\n', '\n\n'])#longterm memory here
+        return re.sub('\n.*', '',
+                self.generator.generate_raw(
+                    self.getStory()+"\n\n> You",
+                    self.prompt,
+                    temperature=settings.getfloat('action-temp'),
+                    top_p=settings.getfloat('top-p'),
+                    top_k=settings.getint('top-keks'),
+                    repetition_penalty=1))
+                #, stop_tokens=['\n', '\n\n'])#longterm memory here
 
     def __str__(self):
         return self.prompt+self.getStory()

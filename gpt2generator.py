@@ -18,6 +18,9 @@ MODEL_CLASSES = {
     "gpt2": (GPT2LMHeadModel, GPT2Tokenizer),
 }
 
+def getTokens(tokenizer, l):
+    tokenizer.encode()
+
 #the tokenizer does not preserve white space at the front of the string.
 #so we will append something else to the front of the string and then remove it after tokenization
 def hackyEncode(tokenizer, s):
@@ -97,6 +100,7 @@ def sample_sequence(
     stop_tokens=None,
     tokenizer=None
 ):
+    logger.debug('temp: {}    top_k: {}    top_p: {}    rep-pen: {}'.format(temperature, top_k, top_p, repetition_penalty))
     context = torch.tensor(context, dtype=torch.long, device=device)
     context = context.unsqueeze(0).repeat(num_samples, 1)
     generated = context
@@ -197,19 +201,26 @@ class GPT2Generator:
         self.model.eval()
 
     def sample_sequence(
-        self, context_tokens=None, generate_num=None, temperature=None, stop_tokens=None
+        self, context_tokens=None, top_k=None, top_p=None, repetition_penalty=None, generate_num=None, temperature=None, stop_tokens=None
     ):
+        assert(top_k is not None)
+        assert(temperature is not None)
+        assert(top_p)
+        assert(repetition_penalty)
         generate_num = generate_num if (generate_num is not None) else self.generate_num
         temperature = temperature if (temperature is not None) else self.temp
+        top_k = top_k if top_k is not None else self.top_k
+        top_p = top_p if top_p is not None else self.top_p
+        repetition_penalty = repetition_penalty if repetition_penalty is not None else self.repetition_penalty
         out = sample_sequence(
             model=self.model,
             context=context_tokens,
             length=generate_num,
             # context=self.context,
             temperature=temperature,
-            top_k=self.top_k,
-            top_p=self.top_p,
-            repetition_penalty=self.repetition_penalty,
+            top_k=top_k,
+            top_p=top_p,
+            repetition_penalty=repetition_penalty,
             num_samples=self.samples,
             device=self.device,
             stop_tokens=stop_tokens,
@@ -249,8 +260,12 @@ class GPT2Generator:
         return result
 
     def generate_raw(
-        self, context, prompt='', generate_num=None, temperature=None, stop_tokens=None
+            self, context, prompt='', generate_num=None, temperature=None, top_k=None, top_p=None, repetition_penalty=None, stop_tokens=None
     ):
+        assert(top_k is not None)
+        assert(temperature is not None)
+        assert(top_p)
+        assert(repetition_penalty)
             
         context_tokens=memory_merge(prompt, context, self.tokenizer, self.max_history_tokens)
 
@@ -270,6 +285,9 @@ class GPT2Generator:
                 context_tokens,
                 generate_num=generate_num,
                 temperature=temperature,
+                top_k=top_k,
+                top_p=top_p,
+                repetition_penalty=repetition_penalty,
                 stop_tokens=stop_tokens,
             )
             out = out[:, len(context_tokens) :].tolist()
@@ -292,7 +310,11 @@ class GPT2Generator:
                         text = text[:index]
         return text
 
-    def generate(self, context, prompt='', options=None, seed=None, depth=0):
+    def generate(self, context, prompt='', temperature=None, top_p=None, top_k=None, repetition_penalty=None, depth=0):
+        assert(top_k is not None)
+        assert(temperature is not None)
+        assert(top_p)
+        assert(repetition_penalty)
         #logger.debug("BEFORE PROMPT_REPLACE: `%r`", prompt)
 
         #prompt = [self.prompt_replace(p) for p in prompt]
@@ -301,7 +323,7 @@ class GPT2Generator:
         assert(prompt+context)
 
         text = self.generate_raw(
-            context, prompt, stop_tokens=self.tokenizer.encode(["<|endoftext|>", ">"])
+            context, prompt, temperature=temperature, top_k=top_k, top_p=top_p, repetition_penalty=repetition_penalty, stop_tokens=self.tokenizer.encode(["<|endoftext|>", ">"])
         )
 
         logger.debug("Generated result is: `%r`", repr(text))
@@ -324,7 +346,7 @@ class GPT2Generator:
             if depth < 20:
                 logger.info("Model generated empty text trying again %r", depth)
                 return self.generate(
-                    prompt, context, seed=depth, depth=depth + 1
+                    prompt, context, temperature=temperature, top_p=top_p, top_k=top_k, repetition_penalty=repetition_penalty, depth=depth + 1
                 )
             else:
                 logger.warn(
