@@ -6,10 +6,6 @@ import gc
 import random
 import torch
 import textwrap
-try:
-	import readline
-except ModuleNotFoundError:
-	pass
 from random import shuffle
 from shutil import get_terminal_size
 
@@ -27,7 +23,6 @@ from interface import instructions
 #   It is not necessary to install colorama on most systems
 try:
     import colorama
-
     colorama.init()
 except ModuleNotFoundError:
     pass
@@ -49,6 +44,11 @@ def _is_notebook():
 
 is_notebook = _is_notebook()
 logger.info("Notebook detected: {}".format(is_notebook))
+if not is_notebook:
+    try:
+        import readline
+    except ModuleNotFoundError:
+        pass
 
 
 termWidth = get_terminal_size()[0]
