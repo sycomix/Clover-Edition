@@ -273,6 +273,16 @@ def d20ify_action(action, d):
         action = "You " + adjective + " " + action
     return action
 
+def newStory(generator, prompt, context):
+    story = Story(generator, prompt)
+    assert (story.prompt)
+    first_result = story.act(context)
+    colPrint(prompt, colors['user-text'], end='')
+    colPrint(context, colors['user-text'], end='')
+    colPrint(first_result[0], colors['ai-text'], end='')
+    print("\n\n")
+    return story
+
 def play(generator):
     print("\n")
 
@@ -328,13 +338,7 @@ def play(generator):
         print()
         colPrint("Generating story...", colors["loading-message"])
 
-        story = Story(generator, prompt)
-        assert(story.prompt)
-        first_result = story.act(context)
-        colPrint(prompt, colors['user-text'], end='')
-        colPrint(context, colors['user-text'], end='')
-        colPrint(first_result[0], colors['ai-text'], end='')
-        print("\n\n")
+        story = newStory(generator, prompt, context)
 
         while True:
             # Generate suggested actions
@@ -366,7 +370,7 @@ def play(generator):
                     # Show user input again
                     # colPrint("\n> " + action.rstrip(), colors["user-text"], end="")
 
-            setRegex = re.search("^set ([^ ]+) ([^ ]+)$", action)
+            setRegex = re.search("^/set ([^ ]+) ([^ ]+)$", action)
             if setRegex:
                 if setRegex.group(1) in settings:
                     currentSettingValue = settings[setRegex.group(1)]
@@ -393,17 +397,50 @@ def play(generator):
                 else:
                     colPrint("Invalid Setting", colors["error"])
                     instructions()
-            elif action == "restart":
+            elif action == "/menu":
                 break
-            elif action == "quit":
+            elif action == "/restart":
+                print()
+                colPrint("Restarting story...", colors["loading-message"])
+
+                story = newStory(generator, story.prompt, context)
+                continue
+            elif action == "/quit":
                 exit()
-            elif action == "help":
+            elif action == "/help":
                 instructions()
-            elif action == "print":
+            elif action == "/print":
                 print("\nPRINTING\n")
                 #TODO colorize printed story
                 colPrint(str(story), colors["print-story"])
-            elif action == 'revert':
+            elif action == '/retry':
+
+                if len(story.story) == 1:
+                    print()
+                    colPrint("Restarting story...", colors["loading-message"])
+                    story = newStory(generator, story.prompt, context)
+                    continue
+                else:
+                    newaction = story.story[-1][0]
+
+                colPrint(newaction, colors['user-text'], end='')
+                story.story=story.story[:-1]
+                result = "\n" + story.act(newaction)[0]
+
+                if len(story.story) >= 2:
+                    similarity = get_similarity(result, story.story[-2][1][0])
+                    if similarity > 0.9:
+                        story.story = story.story[:-1]
+                        colPrint(
+                            "Woops that action caused the model to start looping. Try a different action to prevent that.",
+                            colors["error"],
+                        )
+                        continue
+                colPrint(result, colors["ai-text"])
+
+                continue
+
+            elif action == '/revert':
 
                 if len(story.story) == 1:
                     colPrint("You can't go back any farther. ", colors["error"])
