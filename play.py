@@ -370,7 +370,7 @@ def play(generator):
                     # Show user input again
                     # colPrint("\n> " + action.rstrip(), colors["user-text"], end="")
 
-            setRegex = re.search("^set ([^ ]+) ([^ ]+)$", action)
+            setRegex = re.search("^/set ([^ ]+) ([^ ]+)$", action)
             if setRegex:
                 if setRegex.group(1) in settings:
                     currentSettingValue = settings[setRegex.group(1)]
@@ -397,23 +397,23 @@ def play(generator):
                 else:
                     colPrint("Invalid Setting", colors["error"])
                     instructions()
-            elif action == "menu":
+            elif action == "/menu":
                 break
-            elif action == "restart":
+            elif action == "/restart":
                 print()
                 colPrint("Restarting story...", colors["loading-message"])
 
                 story = newStory(generator, story.prompt, context)
                 continue
-            elif action == "quit":
+            elif action == "/quit":
                 exit()
-            elif action == "help":
+            elif action == "/help":
                 instructions()
-            elif action == "print":
+            elif action == "/print":
                 print("\nPRINTING\n")
                 #TODO colorize printed story
                 colPrint(str(story), colors["print-story"])
-            elif action == 'retry':
+            elif action == '/retry':
 
                 if len(story.story) == 1:
                     print()
@@ -440,7 +440,7 @@ def play(generator):
 
                 continue
 
-            elif action == 'revert':
+            elif action == '/revert':
 
                 if len(story.story) == 1:
                     colPrint("You can't go back any farther. ", colors["error"])
