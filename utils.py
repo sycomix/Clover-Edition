@@ -6,9 +6,9 @@ from pyjarowinkler import distance
 import torch
 import random
 try:
-	import readline
+    import readline
 except ModuleNotFoundError:
-	pass
+    pass
 
 from getconfig import logger
 

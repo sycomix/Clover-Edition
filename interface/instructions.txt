@@ -4,7 +4,9 @@ AID2: Clover Edition Instructions:
 The following commands can be entered for any action: 
   "revert"            Reverts the last action allowing you to pick a different action.
   "quit"     	      Quits the game and saves
-  "restart"           Starts a new game and saves your current one
+  "menu"              Starts a new game and saves your current one
+  "retry"             Retries the last action
+  "restart"           Restarts the current story
   "print"             Prints a transcript of your adventure (without extra newline formatting)
   "help"              Prints these instructions again
   "set SETTING VALUE" Sets the specified setting to the specified value.:
