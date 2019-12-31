@@ -403,7 +403,7 @@ def play(generator):
                 print()
                 colPrint("Restarting story...", colors["loading-message"])
 
-                newStory(generator, story.prompt, context)
+                story = newStory(generator, story.prompt, context)
                 continue
             elif action == "quit":
                 exit()
@@ -418,7 +418,7 @@ def play(generator):
                 if len(story.story) == 1:
                     print()
                     colPrint("Restarting story...", colors["loading-message"])
-                    newStory(generator, story.prompt, context)
+                    story = newStory(generator, story.prompt, context)
                     continue
                 else:
                     newaction = story.story[-1][0]
