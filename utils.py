@@ -5,6 +5,10 @@ import re
 from pyjarowinkler import distance
 import torch
 import random
+try:
+	import readline
+except ModuleNotFoundError:
+	pass
 
 from getconfig import logger
 
