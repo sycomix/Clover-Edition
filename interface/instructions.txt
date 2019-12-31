@@ -3,7 +3,7 @@ AID2: Clover Edition Instructions:
  To speak enter 'say "(thing you want to say)"' or just "(thing you want to say)" 
 The following commands can be entered for any action: 
   "/revert"            Reverts the last action allowing you to pick a different action.
-  "/quit"     	      Quits the game and saves
+  "/quit"     	        Quits the game and saves
   "/menu"              Starts a new game and saves your current one
   "/retry"             Retries the last action
   "/restart"           Restarts the current story
