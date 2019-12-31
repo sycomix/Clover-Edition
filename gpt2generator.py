@@ -3,11 +3,12 @@ from pathlib import Path
 import itertools
 import torch
 import torch.nn.functional as F
+import re
 
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
 from getconfig import settings, logger
-from story.utils import cut_trailing_sentence
+from utils import cut_trailing_sentence
 
 DTYPE = torch.float32 if  ((not torch.cuda.is_available()) or settings.getboolean('force-cpu')) else torch.float16
 logger.info('Cuda Available: {}    Force CPU: {}    DTYPE: {}'.format(torch.cuda.is_available(), settings.getboolean('force-cpu'), DTYPE))
@@ -17,6 +18,32 @@ MODEL_CLASSES = {
     "gpt2": (GPT2LMHeadModel, GPT2Tokenizer),
 }
 
+#the tokenizer does not preserve white space at the front of the string.
+#so we will append something else to the front of the string and then remove it after tokenization
+def hackyEncode(tokenizer, s):
+    return tokenizer.encode('====\n '+s)[2:]
+    
+
+def hackyWhiteSpaceCutter(prompt):
+   return re.search(r'\s*$', prompt).group(0)
+
+def memory_merge(prompt, context, tokenizer, maxHistory=1024):
+        assert(prompt+context)
+        #print(prompt+context)
+        #logger.debug('RAW TEXT INPUT IS:`%r`', context)
+        #the tokenizer is kind of broken for the first input, especially if it includes white space. Same with any trailing white space on the last output.
+        #I'm going with the add prefix option but I'm not sure it's quite right
+        prompt_tokens = tokenizer.encode(prompt, add_special_tokens=False, add_prefix_space=True)
+        context_tokens = hackyEncode(tokenizer, hackyWhiteSpaceCutter(prompt)+context)
+        context_tokens = context_tokens[-(maxHistory-len(prompt_tokens)):]
+        #logger.debug('DECODED CONTEXT TOKENS: `%r`', tokenizer.convert_ids_to_tokens(context_tokens))
+        prompt_tokens.extend(context_tokens)
+        context_tokens = prompt_tokens
+        #logger.debug('DECODED OUTPUT IS: `%r`', tokenizer.decode(context_tokens, clean_up_tokenization_spaces=False))
+        #this is a hack and it should be up to the sampler to deal with max size
+        if len(context_tokens) > maxHistory:
+            logger.error("CONTEXT IS TOO LONG ERROR")
+        return context_tokens
 
 def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-float("Inf")):
     """ Filter a distribution of logits using top-k and/or nucleus (top-p) filtering
@@ -191,9 +218,9 @@ class GPT2Generator:
         )
         return out
 
-    def prompt_replace(self, prompt):
-        if len(prompt) > 0 and prompt[-1] == " ":
-            prompt = prompt[:-1]
+    #def prompt_replace(self, prompt):
+        #if len(prompt) > 0 and prompt[-1] == " ":
+        #    prompt = prompt[:-1]
 
         # prompt = second_to_first_person(prompt)
         return prompt
@@ -209,42 +236,34 @@ class GPT2Generator:
         result = result.replace('."', '".')
         result = result.replace("#", "")
         result = result.replace("*", "")
+        #TODO look at this I think blank lines should be fine or blacklisted at generation time
         result = result.replace("\n\n", "\n")
         # result = first_to_second_person(result)
 
         if not first_letter_capitalized:
             result = result[0].lower() + result[1:]
 
-        logger.debug(
-            "AFTER RESULT_REPLACE: `%r`. allow_action=%r", repr(result), allow_action
-        )
+        #this is annoying since we can already see the AIs output
+        #logger.debug( "AFTER RESULT_REPLACE: `%r`. allow_action=%r", repr(result), allow_action)
 
         return result
 
     def generate_raw(
-        self, prompt, generate_num=None, temperature=None, stop_tokens=None
+        self, context, prompt='', generate_num=None, temperature=None, stop_tokens=None
     ):
-        # the prompt is a list of strings, encode each one to tokens, then truncate the longest ones
-        # this seems a bit excessive
-        context_tokens = [
-            self.tokenizer.encode(
-                p, add_special_tokens=False, max_length=self.max_history_tokens
-            )
-            for p in prompt
-        ]
-        truncate_multiple_sequences(context_tokens, self.max_history_tokens)
-        context_tokens = list(itertools.chain(*context_tokens))
+            
+        context_tokens=memory_merge(prompt, context, self.tokenizer, self.max_history_tokens)
+
 
         # if os.environ.get("DEBUG_GPT2", False):
         logger.debug(
             "Text passing into model `%r`",
             self.tokenizer.decode(
                 context_tokens,
-                #clean_up_tokenization_spaces=True,
+                clean_up_tokenization_spaces=True,
                 #skip_special_tokens=True,
             ),
-        )
-
+        ) 
         generated = 0
         for _ in range(self.samples // self.batch_size):
             out = self.sample_sequence(
@@ -256,8 +275,9 @@ class GPT2Generator:
             out = out[:, len(context_tokens) :].tolist()
             for o in out:
                 generated += 1
+                #disabled clean up of spaces, see what effect this has TODO
                 text = self.tokenizer.decode(
-                    o, clean_up_tokenization_spaces=True, skip_special_tokens=True
+                    o, clean_up_tokenization_spaces=False, skip_special_tokens=True
                 )
                 if self.stop_token:
                     index = text.find(self.stop_token)
@@ -272,15 +292,16 @@ class GPT2Generator:
                         text = text[:index]
         return text
 
-    def generate(self, prompt, options=None, seed=None, depth=0):
-        logger.debug("BEFORE PROMPT_REPLACE: `%r`", prompt)
+    def generate(self, context, prompt='', options=None, seed=None, depth=0):
+        #logger.debug("BEFORE PROMPT_REPLACE: `%r`", prompt)
 
-        prompt = [self.prompt_replace(p) for p in prompt]
+        #prompt = [self.prompt_replace(p) for p in prompt]
 
         # logger.debug("AFTER PROMPT_REPLACE is: `%r`", repr(prompt))
+        assert(prompt+context)
 
         text = self.generate_raw(
-            prompt, stop_tokens=self.tokenizer.encode(["<|endoftext|>", ">"])
+            context, prompt, stop_tokens=self.tokenizer.encode(["<|endoftext|>", ">"])
         )
 
         logger.debug("Generated result is: `%r`", repr(text))
@@ -303,7 +324,7 @@ class GPT2Generator:
             if depth < 20:
                 logger.info("Model generated empty text trying again %r", depth)
                 return self.generate(
-                    prompt + [" {}".format(depth)], seed=depth, depth=depth + 1
+                    prompt, context, seed=depth, depth=depth + 1
                 )
             else:
                 logger.warn(
