@@ -6,6 +6,7 @@ import gc
 import random
 import torch
 import textwrap
+import sys
 from random import shuffle
 from shutil import get_terminal_size
 
@@ -27,28 +28,11 @@ try:
 except ModuleNotFoundError:
     pass
 
-#any documentation on what codes are supported?
-def _is_notebook():
-    """Some terminal codes don't work in a colab notebook."""
-    # from https://github.com/tqdm/tqdm/blob/master/tqdm/autonotebook.py
-    try:
-        from IPython import get_ipython
-        if (not get_ipython()) or ('IPKernelApp' not in get_ipython().config):  # pragma: no cover
-            raise ImportError("console")
-        if 'VSCODE_PID' in os.environ:  # pragma: no cover
-            raise ImportError("vscode")
-    except ImportError:
-        if get_terminal_size()==0:
-            return True
-        return False
-    else:
-        return True
-
-is_notebook = _is_notebook()
-logger.info("Colab detected: {}".format(is_notebook))
-if is_notebook:
+IN_COLAB = 'google.colab' in sys.modules
+logger.info("Colab detected: {}".format(IN_COLAB))
+if IN_COLAB:
     logger.warning("Colab detected, disabling line clearing and readline to avoid colab bugs.")
-if not is_notebook:
+if not IN_COLAB:
     try:
         import readline
     except ModuleNotFoundError:
@@ -81,7 +65,7 @@ def colInput(str, col1=colors["default"], col2=colors["default"]):
 
 def clear_lines(n):
     """Clear the last line in the terminal."""
-    if is_notebook:
+    if IN_COLAB:
         # this wont work in colab etc
         return
     screen_code = "\033[1A[\033[2K"  # up one line, and clear line
@@ -368,7 +352,7 @@ def play(generator):
             # Clear suggestions and user input
             if act_alts > 0:
                 action_suggestion_lines += 2
-                if not is_notebook:
+                if not IN_COLAB:
                     clear_lines(action_suggestion_lines)
 
                     # Show user input again
