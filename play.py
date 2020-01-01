@@ -53,8 +53,10 @@ if IN_COLAB:
 if not IN_COLAB:
     try:
         import readline
+        logger.info('readline has been imported. This enables a number of editting features but may cause bugs for colab users.')
     except ModuleNotFoundError:
         pass
+
 
 
 termWidth = get_terminal_size()[0]
