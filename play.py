@@ -44,11 +44,6 @@ def _is_notebook():
 
 is_notebook = _is_notebook()
 logger.info("Notebook detected: {}".format(is_notebook))
-if not is_notebook:
-    try:
-        import readline
-    except ModuleNotFoundError:
-        pass
 
 
 termWidth = get_terminal_size()[0]
@@ -57,7 +52,7 @@ if termWidth < 5:
     termWidth = 999999999
 
 # ECMA-48 set graphics codes for the curious. Check out "man console_codes"
-def colPrint(text, col="0", wrap=True, end=None):
+def colPrint(text, col=colors["default"], wrap=True, end=None):
     if wrap:
         width = settings.getint("text-wrap-width")
         width = 999999999 if width < 2 else width
@@ -65,12 +60,14 @@ def colPrint(text, col="0", wrap=True, end=None):
         text = textwrap.fill(
             text, width, replace_whitespace=False
         )
-    print("\x1B[{}m{}\x1B[{}m".format(col, text, colors["default"]), end=end)
+#    print("\x1B[{}m{}\x1B[{}m".format(col, text, colors["default"]), end=end)
+    print_formatted_text(to_formatted_text(text, col))
     return text.count('\n')+1
 
 
 def colInput(str, col1=colors["default"], col2=colors["default"]):
-    val = input("\x1B[{}m{}\x1B[0m\x1B[{}m".format(col1, str, col1))
+    #val = input("\x1B[{}m{}\x1B[0m\x1B[{}m".format(col1, str, col1))
+    val = ptprompt(to_formatted_text(str, col1))
     print("\x1B[0m", end="")
     return val
 
@@ -290,12 +287,13 @@ def play(generator):
         colPrint(file.read(), colors["title"], wrap=False)
 
     with open(Path("interface", "subTitle.txt"), "r", encoding="utf-8") as file:
-        cols = termWidth
-        for line in file:
-            line=re.sub(r'\n', '', line)
-            line=line[:cols]
-            #fills in the graphic using reverse video mode substituted into the areas between |'s
-            colPrint(re.sub(r'\|[ _]*(\||$)', lambda x: '\x1B[7m'+x.group(0)+'\x1B[27m', line), colors['subtitle'], False)
+        colPrint(file.read(), colors["subtitle"], wrap=False)
+#        cols = termWidth
+#        for line in file:
+#            line=re.sub(r'\n', '', line)
+#            line=line[:cols]
+#            #fills in the graphic using reverse video mode substituted into the areas between |'s
+#            colPrint(re.sub(r'\|[ _]*(\||$)', lambda x: '\x1B[7m'+x.group(0)+'\x1B[27m', line), colors['subtitle'], False)
 
     print()
     colPrint("Go to https://github.com/cloveranon/Clover-Edition/ or email cloveranon@nuke.africa for bug reports, help, and feature requests.", colors['subsubtitle'])
@@ -498,6 +496,7 @@ def play(generator):
                         if action[-1] not in [".", "?", "!"]:
                             action = action + "."
 
+                action = ptprompt("For REAL: ", default="%s" % action)
                 action = "\n> " + action + "\n"
 
                 colPrint(
