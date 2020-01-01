@@ -4,7 +4,11 @@ import logging
 config = configparser.ConfigParser()
 config.read("config.ini")
 settings = config["Settings"]
-colors = config["Colors"]
+
+colorschemefile = settings["color-scheme"]
+colorconfig = configparser.ConfigParser()
+colorconfig.read(colorschemefile)
+colors = colorconfig["Colors"]
 
 logger = logging.getLogger(__name__)
 logLevel = settings.getint("log-level")

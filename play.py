@@ -6,6 +6,7 @@ import gc
 import random
 import torch
 import textwrap
+import sys
 from random import shuffle
 from shutil import get_terminal_size
 
@@ -28,7 +29,7 @@ except ModuleNotFoundError:
     pass
 
 #any documentation on what codes are supported?
-def _is_notebook():
+def _in_colab():
     """Some terminal codes don't work in a colab notebook."""
     # from https://github.com/tqdm/tqdm/blob/master/tqdm/autonotebook.py
     try:
@@ -38,12 +39,24 @@ def _is_notebook():
         if 'VSCODE_PID' in os.environ:  # pragma: no cover
             raise ImportError("vscode")
     except ImportError:
+        if get_terminal_size()[0]==0 or 'google.colab' in sys.modules:
+            return True
         return False
     else:
         return True
 
-is_notebook = _is_notebook()
-logger.info("Notebook detected: {}".format(is_notebook))
+IN_COLAB = _in_colab()
+logger.info("Colab detected: {}".format(IN_COLAB))
+IN_COLAB = IN_COLAB or settings.getboolean('colab-mode') 
+if IN_COLAB:
+    logger.warning("Colab mode enabled, disabling line clearing and readline to avoid colab bugs.")
+else:
+    try:
+        import readline
+        logger.info('readline has been imported. This enables a number of editting features but may cause bugs for colab users.')
+    except ModuleNotFoundError:
+        pass
+
 
 
 termWidth = get_terminal_size()[0]
@@ -52,7 +65,7 @@ if termWidth < 5:
     termWidth = 999999999
 
 # ECMA-48 set graphics codes for the curious. Check out "man console_codes"
-def colPrint(text, col=colors["default"], wrap=True, end=None):
+def colPrint(text, col="0", wrap=True, end=None):
     if wrap:
         width = settings.getint("text-wrap-width")
         width = 999999999 if width < 2 else width
@@ -60,21 +73,19 @@ def colPrint(text, col=colors["default"], wrap=True, end=None):
         text = textwrap.fill(
             text, width, replace_whitespace=False
         )
-#    print("\x1B[{}m{}\x1B[{}m".format(col, text, colors["default"]), end=end)
-    print_formatted_text(to_formatted_text(text, col))
+    print("\x1B[{}m{}\x1B[{}m".format(col, text, colors["default"]), end=end)
     return text.count('\n')+1
 
 
 def colInput(str, col1=colors["default"], col2=colors["default"]):
-    #val = input("\x1B[{}m{}\x1B[0m\x1B[{}m".format(col1, str, col1))
-    val = ptprompt(to_formatted_text(str, col1))
+    val = input("\x1B[{}m{}\x1B[0m\x1B[{}m".format(col1, str, col1))
     print("\x1B[0m", end="")
     return val
 
 
 def clear_lines(n):
     """Clear the last line in the terminal."""
-    if is_notebook:
+    if IN_COLAB:
         # this wont work in colab etc
         return
     screen_code = "\033[1A[\033[2K"  # up one line, and clear line
@@ -287,13 +298,12 @@ def play(generator):
         colPrint(file.read(), colors["title"], wrap=False)
 
     with open(Path("interface", "subTitle.txt"), "r", encoding="utf-8") as file:
-        colPrint(file.read(), colors["subtitle"], wrap=False)
-#        cols = termWidth
-#        for line in file:
-#            line=re.sub(r'\n', '', line)
-#            line=line[:cols]
-#            #fills in the graphic using reverse video mode substituted into the areas between |'s
-#            colPrint(re.sub(r'\|[ _]*(\||$)', lambda x: '\x1B[7m'+x.group(0)+'\x1B[27m', line), colors['subtitle'], False)
+        cols = termWidth
+        for line in file:
+            line=re.sub(r'\n', '', line)
+            line=line[:cols]
+            #fills in the graphic using reverse video mode substituted into the areas between |'s
+            colPrint(re.sub(r'\|[ _]*(\||$)', lambda x: '\x1B[7m'+x.group(0)+'\x1B[27m', line), colors['subtitle'], False)
 
     print()
     colPrint("Go to https://github.com/cloveranon/Clover-Edition/ or email cloveranon@nuke.africa for bug reports, help, and feature requests.", colors['subsubtitle'])
@@ -362,7 +372,7 @@ def play(generator):
             # Clear suggestions and user input
             if act_alts > 0:
                 action_suggestion_lines += 2
-                if not is_notebook:
+                if not IN_COLAB:
                     clear_lines(action_suggestion_lines)
 
                     # Show user input again
@@ -496,7 +506,6 @@ def play(generator):
                         if action[-1] not in [".", "?", "!"]:
                             action = action + "."
 
-                action = ptprompt("For REAL: ", default="%s" % action)
                 action = "\n> " + action + "\n"
 
                 colPrint(
