@@ -38,12 +38,16 @@ def _is_notebook():
         if 'VSCODE_PID' in os.environ:  # pragma: no cover
             raise ImportError("vscode")
     except ImportError:
+        if get_terminal_size()==0:
+            return True
         return False
     else:
         return True
 
 is_notebook = _is_notebook()
-logger.info("Notebook detected: {}".format(is_notebook))
+logger.info("Colab detected: {}".format(is_notebook))
+if is_notebook:
+    logger.warning("Colab detected, disabling line clearing and readline to avoid colab bugs.")
 if not is_notebook:
     try:
         import readline
