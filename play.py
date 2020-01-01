@@ -50,7 +50,7 @@ logger.info("Colab detected: {}".format(IN_COLAB))
 IN_COLAB = IN_COLAB or settings.getboolean('colab-mode') 
 if IN_COLAB:
     logger.warning("Colab mode enabled, disabling line clearing and readline to avoid colab bugs.")
-if not IN_COLAB:
+else:
     try:
         import readline
         logger.info('readline has been imported. This enables a number of editting features but may cause bugs for colab users.')
