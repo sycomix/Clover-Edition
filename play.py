@@ -81,6 +81,7 @@ else:
         if not settings.getboolean('prompt-toolkit'):
             raise ModuleNotFoundError
         TOOLKIT_ENABLED = True
+        from inline_editor import edit_multiline
         from prompt_toolkit import prompt as ptprompt
         from prompt_toolkit import print_formatted_text
         from prompt_toolkit.styles import Style
@@ -359,8 +360,14 @@ def play(generator):
                 Path("interface", "prompt-instructions.txt"), "r", encoding="utf-8"
             ) as file:
                 colPrint(file.read(), colors["instructions"], False)
-            prompt = colInput("Prompt>", colors["main-prompt"], colors["user-text"])
-            context = colInput("Context>", colors["main-prompt"], colors["user-text"])
+            if TOOLKIT_ENABLED:
+                colPrint("Prompt>", colors["main-prompt"])
+                prompt = edit_multiline()
+                colPrint("Context>", colors["main-prompt"])
+                context = edit_multiline()
+            else:
+                prompt = colInput("Prompt>", colors["main-prompt"], colors["user-text"])
+                context = colInput("Context>", colors["main-prompt"], colors["user-text"])
             filename = colInput(
                 "Name to save prompt as? (Leave blank for no save): ",
                 colors["query"],
