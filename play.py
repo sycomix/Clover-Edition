@@ -28,10 +28,28 @@ try:
 except ModuleNotFoundError:
     pass
 
-IN_COLAB = 'google.colab' in sys.modules
+#any documentation on what codes are supported?
+def _in_colab():
+    """Some terminal codes don't work in a colab notebook."""
+    # from https://github.com/tqdm/tqdm/blob/master/tqdm/autonotebook.py
+    try:
+        from IPython import get_ipython
+        if (not get_ipython()) or ('IPKernelApp' not in get_ipython().config):  # pragma: no cover
+            raise ImportError("console")
+        if 'VSCODE_PID' in os.environ:  # pragma: no cover
+            raise ImportError("vscode")
+    except ImportError:
+        if get_terminal_size()==0 or 'google.colab' in sys.modules:
+            return True
+        return False
+    else:
+        return True
+
+IN_COLAB = _in_colab()
 logger.info("Colab detected: {}".format(IN_COLAB))
+IN_COLAB = IN_COLAB or settings.getboolean('colab-mode') 
 if IN_COLAB:
-    logger.warning("Colab detected, disabling line clearing and readline to avoid colab bugs.")
+    logger.warning("Colab mode enabled, disabling line clearing and readline to avoid colab bugs.")
 if not IN_COLAB:
     try:
         import readline
