@@ -39,7 +39,7 @@ def _in_colab():
         if 'VSCODE_PID' in os.environ:  # pragma: no cover
             raise ImportError("vscode")
     except ImportError:
-        if get_terminal_size()==0 or 'google.colab' in sys.modules:
+        if get_terminal_size()[0]==0 or 'google.colab' in sys.modules:
             return True
         return False
     else:
