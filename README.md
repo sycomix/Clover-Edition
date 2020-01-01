@@ -153,3 +153,5 @@ Otherwise see:
 #### Contributing
 ------------------------
 Contributions are more than welcome. You can fork the thing and send a  [pull request](https://help.github.com/articles/using-pull-requests/) from your fork. Or you can possibly just edit the files from the github page if it lets you. If not fork the thing and try to edit your fork and submit it back.
+
+![cry.](https://i.4cdn.org/vg/1577854915134.png)
