@@ -9,7 +9,7 @@ def instructions():
 		d20 = "on"
 	else:
 		d20 = "off"
-	print('\033[' + colors["instructions"] + 'm' + 'AID2: Clover Edition Instructions: \n Enter actions starting with a verb ex. "go to the tavern" or "attack the orc."\n To speak enter say "(thing you want to say)" or just "(thing you want to say)"')
+	print('AID2: Clover Edition Instructions: \n Enter actions starting with a verb ex. "go to the tavern" or "attack the orc."\n To speak enter say "(thing you want to say)" or just "(thing you want to say)"')
 	print('The following commands can be entered for any action:')
 	print('  "/revert"            Reverts the last action allowing you to pick a different action.')
 	print('  "/quit"              Quits the game and saves')

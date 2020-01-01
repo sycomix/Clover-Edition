@@ -5,10 +5,6 @@ import re
 from pyjarowinkler import distance
 import torch
 import random
-from prompt_toolkit import prompt as ptprompt
-from prompt_toolkit import print_formatted_text
-from prompt_toolkit.styles import Style
-from prompt_toolkit.formatted_text import to_formatted_text, HTML
 
 from getconfig import logger
 

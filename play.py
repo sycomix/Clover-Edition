@@ -10,7 +10,7 @@ import sys
 from random import shuffle
 from shutil import get_terminal_size
 
-from getconfig import config, settings, colors, logger
+from getconfig import config, settings, colors, ptcolors, logger
 #from story.story_manager import *
 from storymanager import Story
 from utils import *
@@ -45,19 +45,6 @@ def _in_colab():
     else:
         return True
 
-IN_COLAB = _in_colab()
-logger.info("Colab detected: {}".format(IN_COLAB))
-IN_COLAB = IN_COLAB or settings.getboolean('colab-mode') 
-if IN_COLAB:
-    logger.warning("Colab mode enabled, disabling line clearing and readline to avoid colab bugs.")
-else:
-    try:
-        import readline
-        logger.info('readline has been imported. This enables a number of editting features but may cause bugs for colab users.')
-    except ModuleNotFoundError:
-        pass
-
-
 
 termWidth = get_terminal_size()[0]
 if termWidth < 5:
@@ -81,6 +68,53 @@ def colInput(str, col1=colors["default"], col2=colors["default"]):
     val = input("\x1B[{}m{}\x1B[0m\x1B[{}m".format(col1, str, col1))
     print("\x1B[0m", end="")
     return val
+
+
+IN_COLAB = _in_colab()
+logger.info("Colab detected: {}".format(IN_COLAB))
+IN_COLAB = IN_COLAB or settings.getboolean('colab-mode') 
+TOOLKIT_ENABLED = False
+if IN_COLAB:
+    logger.warning("Colab mode enabled, disabling line clearing and readline to avoid colab bugs.")
+else:
+    try:
+        if not settings.getboolean('prompt-toolkit'):
+            raise ModuleNotFoundError
+        TOOLKIT_ENABLED = True
+        from prompt_toolkit import prompt as ptprompt
+        from prompt_toolkit import print_formatted_text
+        from prompt_toolkit.styles import Style
+        from prompt_toolkit.formatted_text import to_formatted_text, HTML
+
+        colors = ptcolors
+
+        if colors["displaymethod"] == "prompt-toolkit":
+            # ECMA-48 set graphics codes for the curious. Check out "man console_codes"
+            def colPrint(text, col=colors["default"], wrap=True, end=None):
+                if wrap:
+                    width = settings.getint("text-wrap-width")
+                    width = 999999999 if width < 2 else width
+                    width = min(width, termWidth)
+                    text = textwrap.fill(
+                        text, width, replace_whitespace=False
+                    )
+                print_formatted_text(to_formatted_text(text, col))
+                return text.count('\n') + 1
+
+
+            def colInput(str, col1=colors["default"], col2=colors["default"]):
+                val = ptprompt(to_formatted_text(str, col1))
+                print("\x1B[0m", end="")
+                return val
+
+        logger.info(
+            'Python Prompt Toolkit has been imported. This enables a number of editing features but may cause bugs for colab users.')
+    except ModuleNotFoundError:
+        try:
+            import readline
+            logger.info('readline has been imported. This enables a number of editing features but may cause bugs for colab users.')
+        except ModuleNotFoundError:
+            pass
 
 
 def clear_lines(n):
@@ -135,7 +169,7 @@ def getGenerator():
     if not models:
         raise FileNotFoundError('There are no models in the models directory! You must download a pytorch compatible model!')
     elif len(models) >1:
-        colPrint("You have multiple models in your models folder. Please select one to load:", colors['message']) 
+        colPrint("You have multiple models in your models folder. Please select one to load:", colors['message'])
         for n, model_path in enumerate(models):
             colPrint("{}: {}".format(n, model_path.name), colors['menu'])
         
@@ -298,12 +332,15 @@ def play(generator):
         colPrint(file.read(), colors["title"], wrap=False)
 
     with open(Path("interface", "subTitle.txt"), "r", encoding="utf-8") as file:
-        cols = termWidth
-        for line in file:
-            line=re.sub(r'\n', '', line)
-            line=line[:cols]
-            #fills in the graphic using reverse video mode substituted into the areas between |'s
-            colPrint(re.sub(r'\|[ _]*(\||$)', lambda x: '\x1B[7m'+x.group(0)+'\x1B[27m', line), colors['subtitle'], False)
+        if TOOLKIT_ENABLED:
+            colPrint(file.read(), colors["subtitle"], wrap=False)
+        else:
+            cols = termWidth
+            for line in file:
+                line=re.sub(r'\n', '', line)
+                line=line[:cols]
+                #fills in the graphic using reverse video mode substituted into the areas between |'s
+                colPrint(re.sub(r'\|[ _]*(\||$)', lambda x: '\x1B[7m'+x.group(0)+'\x1B[27m', line), colors['subtitle'], False)
 
     print()
     colPrint("Go to https://github.com/cloveranon/Clover-Edition/ or email cloveranon@nuke.africa for bug reports, help, and feature requests.", colors['subsubtitle'])
@@ -505,6 +542,9 @@ def play(generator):
 
                         if action[-1] not in [".", "?", "!"]:
                             action = action + "."
+
+                if TOOLKIT_ENABLED:
+                    action = ptprompt("For REAL: ", default="%s" % action)
 
                 action = "\n> " + action + "\n"
 
