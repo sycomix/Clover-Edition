@@ -567,6 +567,33 @@ def play(generator):
                         colPrint("\n" + story.story[-1][0] + "\n", colors["transformed-user-text"])
                     colPrint("\n" + story.story[-1][1][0] + "\n\n", colors["ai-text"])
 
+                elif action == "remember":
+                    memory = cmdRegex.group(2).strip()
+                    if len(memory) > 0:
+                        memory = memory.strip("that")
+                        memory = memory.strip("That")
+                        memory = memory.strip('.')
+                        memory = memory.strip('!')
+                        memory = memory.strip('?')
+                        story.longTermMemory.append(memory.capitalize() + ".")
+                        colPrint("You remember " + memory + ". ", colors["message"])
+                    else:
+                        colPrint("Please enter something valid to remember. ", colors["error"])
+
+                elif action == "forget":
+                    while True:
+                        i = 0
+                        colPrint("\nSelect a memory to forget: ", colors["menu"])
+                        for mem in story.longTermMemory:
+                            colPrint(str(i) + ") " + mem, colors["menu"])
+                            i += 1
+                        colPrint(str(i) + ") (Finish)\n", colors["menu"])
+                        i = getNumberInput(len(story.longTermMemory))
+                        if i == len(story.longTermMemory):
+                            break
+                        else:
+                            del story.longTermMemory[i]
+
                 else:
                     colPrint("Invalid command: " + action, colors["error"])
 
