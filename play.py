@@ -460,106 +460,117 @@ def play(generator):
                     # Show user input again
                     # colPrint("\n> " + action.rstrip(), colors["user-text"], end="")
 
-            setRegex = re.search("^/set ([^ ]+) ([^ ]+)$", action)
-            if setRegex:
-                if setRegex.group(1) in settings:
-                    currentSettingValue = settings[setRegex.group(1)]
-                    colPrint(
-                        "Current Value of {}: {}     Changing to: {}".format(
-                            setRegex.group(1), currentSettingValue, setRegex.group(2)
-                        )
-                    )
-                    settings[setRegex.group(1)] = setRegex.group(2)
-                    colPrint("Save config file?", colors["query"])
-                    colPrint(
-                        "Saving an invalid option will corrupt file!", colors["error"]
-                    )
-                    if (
-                        colInput(
-                            "y/n? >",
-                            colors["selection-prompt"],
-                            colors["selection-value"],
-                        )
-                        == "y"
-                    ):
-                        with open("config.ini", "w", encoding="utf-8") as file:
-                            config.write(file)
-                else:
-                    colPrint("Invalid Setting", colors["error"])
-                    instructions()
-            elif action == "/menu":
-                break
-            elif action == "/restart":
-                print()
-                colPrint("Restarting story...", colors["loading-message"])
+            cmdRegex = re.search("^/([^ ]+) *(.*)$", action)
 
-                story = newStory(generator, story.prompt, context)
-                continue
-            elif action == "/quit":
-                exit()
-            elif action == "/help":
-                instructions()
-            elif action == "/print":
-                print("\nPRINTING\n")
-                #TODO colorize printed story
-                colPrint(str(story), colors["print-story"])
-            elif action == '/retry':
+            # If this is a command
+            if cmdRegex:
+                action = cmdRegex.group(1)
+                cmdArgs = cmdRegex.group(2).strip().split()
+                if action == "set":
+                    if len(cmdArgs) < 2:
+                        colPrint("Invalid number of arguments for set command.\n", colors["error"])
+                        instructions()
+                        continue
+                    if cmdArgs[0] in settings:
+                        currentSettingValue = settings[cmdArgs[0]]
+                        colPrint(
+                            "Current Value of {}: {}     Changing to: {}".format(
+                                cmdArgs[0], currentSettingValue, cmdArgs[1]
+                            )
+                        )
+                        settings[cmdArgs[0]] = cmdArgs[1]
+                        colPrint("Save config file?", colors["query"])
+                        colPrint(
+                            "Saving an invalid option will corrupt file!", colors["error"]
+                        )
+                        if (
+                            colInput(
+                                "y/n? >",
+                                colors["selection-prompt"],
+                                colors["selection-value"],
+                            )
+                            == "y"
+                        ):
+                            with open("config.ini", "w", encoding="utf-8") as file:
+                                config.write(file)
+                    else:
+                        colPrint("Invalid setting", colors["error"])
+                        instructions()
 
-                if len(story.story) == 1:
+                elif action == "menu":
+                    break
+
+                elif action == "restart":
                     print()
                     colPrint("Restarting story...", colors["loading-message"])
                     story = newStory(generator, story.prompt, context)
                     continue
-                else:
-                    newaction = story.story[-1][0]
 
-                colPrint(newaction, colors['user-text'], end='')
-                story.story=story.story[:-1]
-                result = "\n" + story.act(newaction)[0]
+                elif action == "quit":
+                    exit()
 
-                if len(story.story) >= 2:
-                    similarity = get_similarity(result, story.story[-2][1][0])
-                    if similarity > 0.9:
-                        story.story = story.story[:-1]
-                        colPrint(
-                            "Woops that action caused the model to start looping. Try a different action to prevent that.",
-                            colors["error"],
-                        )
+                elif action == "help":
+                    instructions()
+
+                elif action == "print":
+                    print("\nPRINTING\n")
+                    #TODO colorize printed story
+                    colPrint(str(story), colors["print-story"])
+
+                elif action == "retry":
+                    if len(story.story) == 1:
+                        print()
+                        colPrint("Restarting story...", colors["loading-message"])
+                        story = newStory(generator, story.prompt, context)
                         continue
-                colPrint(result, colors["ai-text"])
-
-                continue
-
-            elif action == '/revert':
-
-                if len(story.story) == 1:
-                    colPrint("You can't go back any farther. ", colors["error"])
+                    else:
+                        newaction = story.story[-1][0]
+                    colPrint(newaction, colors['user-text'], end='')
+                    story.story=story.story[:-1]
+                    result = "\n" + story.act(newaction)[0]
+                    if len(story.story) >= 2:
+                        similarity = get_similarity(result, story.story[-2][1][0])
+                        if similarity > 0.9:
+                            story.story = story.story[:-1]
+                            colPrint(
+                                "Woops that action caused the model to start looping. Try a different action to prevent that.",
+                                colors["error"],
+                            )
+                            continue
+                    colPrint(result, colors["ai-text"])
                     continue
 
-                story.story=story.story[:-1]
-                colPrint("Last action reverted. ", colors["message"])
-                if len(story.story)<2:
-                    colPrint(story.prompt, colors["ai-text"])
-                colPrint(story.story[-1][1][0], colors["ai-text"])
+                elif action == "revert":
+                    if len(story.story) == 1:
+                        colPrint("You can't go back any farther. ", colors["error"])
+                        continue
+                    story.story=story.story[:-1]
+                    colPrint("Last action reverted. ", colors["message"])
+                    if len(story.story)<2:
+                        colPrint(story.prompt, colors["ai-text"])
+                    colPrint(story.story[-1][1][0], colors["ai-text"])
+                    continue
 
-                continue
+                elif action == "alter":
+                    story.story[-1][1][0] = alterText(story.story[-1][1][0])
+                    if len(story.story)<2:
+                        colPrint(story.prompt, colors["ai-text"])
+                    else:
+                        colPrint("\n" + story.story[-1][0] + "\n", colors["transformed-user-text"])
+                    colPrint("\n" + story.story[-1][1][0] + "\n\n", colors["ai-text"])
 
-            elif action == "/alter":
-                story.story[-1][1][0] = alterText(story.story[-1][1][0])
-                if len(story.story)<2:
-                    colPrint(story.prompt, colors["ai-text"])
+                elif action == "prompt":
+                    story.prompt = alterText(story.prompt)
+                    if len(story.story)<2:
+                        colPrint(story.prompt, colors["ai-text"])
+                    else:
+                        colPrint("\n" + story.story[-1][0] + "\n", colors["transformed-user-text"])
+                    colPrint("\n" + story.story[-1][1][0] + "\n\n", colors["ai-text"])
+
                 else:
-                    colPrint("\n" + story.story[-1][0] + "\n", colors["transformed-user-text"])
-                colPrint("\n" + story.story[-1][1][0] + "\n\n", colors["ai-text"])
+                    colPrint("Invalid command: " + action, colors["error"])
 
-            elif action == "/prompt":
-                story.prompt = alterText(story.prompt)
-                if len(story.story)<2:
-                    colPrint(story.prompt, colors["ai-text"])
-                else:
-                    colPrint("\n" + story.story[-1][0] + "\n", colors["transformed-user-text"])
-                colPrint("\n" + story.story[-1][1][0] + "\n\n", colors["ai-text"])
-
+            # Otherwise this is just a normal action.
             else:
                 if act_alts > 0:
                     # Options to select a suggestion action
