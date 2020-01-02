@@ -381,12 +381,12 @@ def alterText(text):
             res = colInput("\nEnter the new altered prompt: ", colors['menu']).strip()
             if len(res) == 0:
                 colPrint("Invalid prompt entered: returning to previous menu. ", colors['error'])
-            else:
-                text = res
-                sentences = splitIntoSentences(res)
+                continue
+            text = res
+            sentences = splitIntoSentences(res)
         elif i == 4:
             break
-    return " ".join(sentences)
+    return " ".join(sentences).strip()
 
 def play(generator):
     print("\n")
