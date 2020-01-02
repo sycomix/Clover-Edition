@@ -19,7 +19,7 @@ class Story:
             results.append(
                     self.generator.generate(
                         self.getStory()+action,
-                        self.prompt,
+                        self.prompt + ' '.join(self.longTermMemory),
                         temperature=settings.getfloat('temp'),
                         top_p=settings.getfloat('top-p'),
                         top_k=settings.getint('top-keks'),
