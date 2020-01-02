@@ -283,7 +283,6 @@ def d20ify_action(action, d):
 
 def newStory(generator, prompt, context):
     story = Story(generator, prompt)
-    assert (story.prompt)
     first_result = story.act(context)
     colPrint(prompt, colors['user-text'], end='')
     colPrint(context, colors['user-text'], end='')
@@ -433,13 +432,14 @@ def play(generator):
                     f.write(context + "\n" + prompt)
         else:
             prompt, context = selectFile()
-        assert(prompt+context)
+
+        if len((prompt+context).strip()) == 0:
+            colPrint("Story has no prompt or context. Please enter a valid custom prompt. ", colors["error"])
+            continue
 
         instructions()
-
         print()
         colPrint("Generating story...", colors["loading-message"])
-
         story = newStory(generator, prompt, context)
 
         while True:
@@ -515,8 +515,10 @@ def play(generator):
                 elif action == "restart":
                     print()
                     colPrint("Restarting story...", colors["loading-message"])
+                    if len((prompt+context).strip()) == 0:
+                        colPrint("Story has no prompt or context. Please enter a valid prompt. ", colors["error"])
+                        continue
                     story = newStory(generator, story.prompt, context)
-                    continue
 
                 elif action == "quit":
                     exit()
@@ -533,6 +535,9 @@ def play(generator):
                     if len(story.story) == 1:
                         print()
                         colPrint("Restarting story...", colors["loading-message"])
+                        if len((prompt+context).strip()) == 0:
+                            colPrint("Story has no prompt or context. Please enter a valid prompt. ", colors["error"])
+                            continue
                         story = newStory(generator, story.prompt, context)
                         continue
                     else:
