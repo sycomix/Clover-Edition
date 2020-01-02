@@ -421,9 +421,7 @@ def play(generator):
                     ) as f:
                         f.write(context + "\n" + prompt)
                 except IOError:
-                  colPrint(
-                        "Permission error! Unable to write to file.", colors["error"]
-                  )
+                    colPrint("Permission error! Unable to save custom prompt.", colors["error"])
         else:
             prompt, context = selectFile()
         assert(prompt+context)
@@ -488,12 +486,12 @@ def play(generator):
                         == "y"
                     ):
                         try:
-                          with open("config.ini", "w", encoding="utf-8") as file:
-                              config.write(file)
+                            with open("config.ini", "w", encoding="utf-8") as file:
+                                config.write(file)
                         except IOError:
-                          colPrint(
-                        "Permission error! Changes will not be saved for next session.", colors["error"]
-                          )
+                            colPrint(
+                                "Permission error! Changes will not be saved for next session.", colors["error"]
+                            )
                 else:
                     colPrint("Invalid Setting", colors["error"])
                     instructions()
