@@ -335,7 +335,6 @@ def alterText(text):
     while True:
         colPrint("\n" + " ".join(sentences) + "\n", colors['menu'])
         colPrint("\n0) Edit a sentence.\n1) Remove a sentence.\n2) Add a sentence.\n3) Edit entire prompt.\n4) Save and finish.", colors['menu'], wrap=False)
-        colPrint("\nChoose an option: ", colors['menu'], wrap=False)
         try:
             i = getNumberInput(4)
         except:
@@ -348,7 +347,11 @@ def alterText(text):
                     break
                 else:
                     colPrint("\n" + sentences[i], colors['menu'])
-                    sentences[i] = colInput("\nEnter the altered sentence: ", colors['menu'])
+                    text = colInput("\nEnter the altered sentence: ", colors['menu']).strip()
+                    if len(text) == 0:
+                        colPrint("Invalid sentence entered: returning to previous menu. ", colors['error'])
+                        continue
+                    sentences[i] = text
         elif i == 1:
             while True:
                 listSentences(sentences)
@@ -364,11 +367,20 @@ def alterText(text):
                 if i == len(sentences):
                     break
                 else:
-                    sentences.insert(i+1, colInput("\nEnter the new sentence: ", colors['menu']))
+                    text = colInput("\nEnter the new sentence: ", colors['menu']).strip()
+                    if len(text) == 0:
+                        colPrint("Invalid sentence entered: returning to previous menu. ", colors['error'])
+                        continue
+                    sentences.insert(i+1, text)
         elif i == 3:
             colPrint("\n" + " ".join(sentences), colors['menu'])
-            text = colInput("\nEnter the new altered prompt: ", colors['menu'])
-            sentences = splitIntoSentences(text)
+            text = ""
+            while True:
+                text = colInput("\nEnter the new altered prompt: ", colors['menu']).strip()
+                if len(text) == 0:
+                    colPrint("Invalid prompt entered: returning to previous menu. ", colors['error'])
+                    break
+                sentences = splitIntoSentences(text)
         elif i == 4:
             break
     return " ".join(sentences)
