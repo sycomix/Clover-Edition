@@ -415,10 +415,15 @@ def play(generator):
                 "-$", "", re.sub("^-", "", re.sub("[^a-zA-Z0-9_-]+", "-", filename))
             )
             if filename != "":
-                with open(
-                    Path("prompts", filename + ".txt"), "w", encoding="utf-8"
-                ) as f:
-                    f.write(context + "\n" + prompt)
+                try:
+                    with open(
+                        Path("prompts", filename + ".txt"), "w", encoding="utf-8"
+                    ) as f:
+                        f.write(context + "\n" + prompt)
+                except IOError:
+                  colPrint(
+                        "Permission error! Unable to write to file.", colors["error"]
+                  )
         else:
             prompt, context = selectFile()
         assert(prompt+context)
@@ -482,8 +487,13 @@ def play(generator):
                         )
                         == "y"
                     ):
-                        with open("config.ini", "w", encoding="utf-8") as file:
-                            config.write(file)
+                        try:
+                          with open("config.ini", "w", encoding="utf-8") as file:
+                              config.write(file)
+                        except IOError:
+                          colPrint(
+                        "Permission error! Changes will not be saved for next session.", colors["error"]
+                          )
                 else:
                     colPrint("Invalid Setting", colors["error"])
                     instructions()
