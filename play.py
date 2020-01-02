@@ -322,12 +322,12 @@ def splitIntoSentences(text):
     sentences = [s.strip() for s in sentences]
     return sentences
 
-def listSentences(sentences):
-    i = 0
+def listSentences(sentences, start=0):
+    i = start
     for s in sentences:
         colPrint(str(i) + ") " + s, colors['menu'])
         i += 1
-    colPrint(str(len(sentences)) + ") (Back)", colors['menu'])
+    colPrint(str(i) + ") (Back)", colors['menu'])
 
 def alterText(text):
     sentences = splitIntoSentences(text)
@@ -340,19 +340,21 @@ def alterText(text):
             continue
         if i == 0:
             while True:
+                colPrint("\nChoose the sentence you want to edit.", colors["menu"])
                 listSentences(sentences)
                 i = getNumberInput(len(sentences))
                 if i == len(sentences):
                     break
                 else:
                     colPrint("\n" + sentences[i], colors['menu'])
-                    text = colInput("\nEnter the altered sentence: ", colors['menu']).strip()
-                    if len(text) == 0:
+                    res = colInput("\nEnter the altered sentence: ", colors['menu']).strip()
+                    if len(res) == 0:
                         colPrint("Invalid sentence entered: returning to previous menu. ", colors['error'])
                         continue
-                    sentences[i] = text
+                    sentences[i] = res
         elif i == 1:
             while True:
+                colPrint("\nChoose the sentence you want to remove.", colors["menu"])
                 listSentences(sentences)
                 i = getNumberInput(len(sentences))
                 if i == len(sentences):
@@ -361,25 +363,27 @@ def alterText(text):
                     del sentences[i]
         elif i == 2:
             while True:
-                listSentences(sentences)
-                i = getNumberInput(len(sentences))
-                if i == len(sentences):
+                colPrint("\nChoose the sentence you want to insert after.", colors["menu"])
+                colPrint("0) (Beginning)", colors['menu'])
+                listSentences(sentences, start=1)
+                max = len(sentences)+1
+                i = getNumberInput(max)
+                if i == max:
                     break
                 else:
-                    text = colInput("\nEnter the new sentence: ", colors['menu']).strip()
-                    if len(text) == 0:
+                    res = colInput("\nEnter the new sentence: ", colors['menu']).strip()
+                    if len(res) == 0:
                         colPrint("Invalid sentence entered: returning to previous menu. ", colors['error'])
                         continue
-                    sentences.insert(i+1, text)
+                    sentences.insert(i, res)
         elif i == 3:
             colPrint("\n" + " ".join(sentences), colors['menu'])
-            text = ""
-            while True:
-                text = colInput("\nEnter the new altered prompt: ", colors['menu']).strip()
-                if len(text) == 0:
-                    colPrint("Invalid prompt entered: returning to previous menu. ", colors['error'])
-                    break
-                sentences = splitIntoSentences(text)
+            res = colInput("\nEnter the new altered prompt: ", colors['menu']).strip()
+            if len(res) == 0:
+                colPrint("Invalid prompt entered: returning to previous menu. ", colors['error'])
+            else:
+                text = res
+                sentences = splitIntoSentences(res)
         elif i == 4:
             break
     return " ".join(sentences)
@@ -563,26 +567,26 @@ def play(generator):
                         continue
                     story.story=story.story[:-1]
                     colPrint("Last action reverted. ", colors["message"])
-                    if len(story.story)<2:
+                    if len(story.story) < 2:
                         colPrint(story.prompt, colors["ai-text"])
                     colPrint(story.story[-1][1][0], colors["ai-text"])
                     continue
 
                 elif action == "alter":
                     story.story[-1][1][0] = alterText(story.story[-1][1][0])
-                    if len(story.story)<2:
+                    if len(story.story) < 2:
                         colPrint(story.prompt, colors["ai-text"])
                     else:
                         colPrint("\n" + story.story[-1][0] + "\n", colors["transformed-user-text"])
-                    colPrint("\n" + story.story[-1][1][0] + "\n\n", colors["ai-text"])
+                    colPrint(story.story[-1][1][0], colors["ai-text"])
 
                 elif action == "prompt":
                     story.prompt = alterText(story.prompt)
-                    if len(story.story)<2:
+                    if len(story.story) < 2:
                         colPrint(story.prompt, colors["ai-text"])
                     else:
                         colPrint("\n" + story.story[-1][0] + "\n", colors["transformed-user-text"])
-                    colPrint("\n" + story.story[-1][1][0] + "\n\n", colors["ai-text"])
+                    colPrint(story.story[-1][1][0], colors["ai-text"])
 
                 elif action == "remember":
                     memory = cmdRegex.group(2).strip()
