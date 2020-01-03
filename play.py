@@ -324,8 +324,9 @@ def splitIntoSentences(text):
     text = text.replace("<3elp>","...")
     text = text.replace("<2elp>","..")
     sentences = text.split("<stop>")
-    sentences = sentences[:-1]
     sentences = [s.strip() for s in sentences]
+    if sentences[-1] == "":
+        sentences = sentences[:-1]
     return sentences
 
 def listSentences(sentences, start=0):
