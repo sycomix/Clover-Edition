@@ -598,8 +598,7 @@ def play(generator):
                 elif action == "remember":
                     memory = cmdRegex.group(2).strip()
                     if len(memory) > 0:
-                        memory = memory.strip("that")
-                        memory = memory.strip("That")
+                        memory = re.sub("^[Tt]hat +(.*)", "\\1", memory)
                         memory = memory.strip('.')
                         memory = memory.strip('!')
                         memory = memory.strip('?')
