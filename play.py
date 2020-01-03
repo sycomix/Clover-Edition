@@ -296,7 +296,7 @@ def play(generator):
         gc.collect()
         torch.cuda.empty_cache()
 
-        list_items(["Pick Prompt From File (Default if you type nothing)", "1: Write Custom Prompt"], colors['menu'])
+        list_items(["Pick Prompt From File (Default if you type nothing)", "Write Custom Prompt"], colors['menu'])
 
         if input_number(1) == 1:
             with open(
