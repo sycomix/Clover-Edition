@@ -255,15 +255,19 @@ def play(generator):
         gc.collect()
         torch.cuda.empty_cache()
 
-        list_items(["Pick Prompt From File (Default if you type nothing)", "Write Custom Prompt"], colors['menu'])
+        list_items(["Pick Prompt From File (Default if you type nothing)", "Write Custom Prompt", "Load a Saved Game"],
+                   colors['menu'])
 
-        if input_number(1) == 1:
+        new_game_option = input_number(2)
+        if new_game_option == 0:
+            prompt, context = select_file()
+        elif new_game_option == 1:
             with open(
                     Path("interface", "prompt-instructions.txt"), "r", encoding="utf-8"
             ) as file:
                 output(file.read(), colors["instructions"], wrap=False)
-            prompt = input_line("Prompt>", colors["main-prompt"], colors["user-text"])
-            context = input_line("Context>", colors["main-prompt"], colors["user-text"])
+            prompt = input_line("Prompt> ", colors["main-prompt"], colors["user-text"])
+            context = input_line("Context> ", colors["main-prompt"], colors["user-text"])
             filename = input_line(
                 "Name to save prompt as? (Leave blank for no save): ",
                 colors["query"],
@@ -279,17 +283,40 @@ def play(generator):
                     ) as f:
                         f.write(context + "\n" + prompt)
                 except IOError:
-                    output("Permission error! Unable to save custom prompt.", colors["error"])
-        else:
-            prompt, context = select_file()
+                    output("Permission error! Unable to save custom prompt. ", colors["error"])
+        elif new_game_option == 2:
+            savefile = input_line("Enter the name of the save file: ", colors["query"], colors["user-text"])
+            if savefile.strip() == "":
+                output("Invalid savename. ", colors["error"])
+                continue
+            else:
+                try:
+                    savefile = os.path.splitext(savefile.lstrip("saves/").strip())[0]
+                    f = open("saves/" + savefile + ".json", 'r')
+                    story = Story(generator, "")
+                    story.savefile = savefile
+                    story.from_json(f.read())
+                    prompt = story.prompt
+                    context = story.actions[0] if len(story.actions) > 0 else ""
+                except FileNotFoundError:
+                    output("Save file not found. ", colors["error"])
+                    continue
+                except IOError:
+                    output("Something wrong occurred when attempting to load the file. ", colors["error"])
+                    continue
 
         if len((prompt + context).strip()) == 0:
             output("Story has no prompt or context. Please enter a valid custom prompt. ", colors["error"])
             continue
 
         instructions()
-        output("Generating story...", colors["loading-message"])
-        story = new_story(generator, prompt, context)
+
+        if story.savefile is None:
+            output("Generating story...", colors["loading-message"])
+            story = new_story(generator, prompt, context)
+        else:
+            output("Loading story...", colors["loading-message"])
+            story.print_story()
 
         while True:
             # Generate suggested actions
@@ -378,9 +405,8 @@ def play(generator):
                     instructions()
 
                 elif action == "print":
-                    output("PRINTING", colors["message"])
-                    # TODO colorize printed story
-                    output(format_result(story.get_story()), colors["print-story"], wrap=False)
+                    output("Printing story...", colors["message"])
+                    story.print_story()
 
                 elif action == "retry":
                     if len(story.actions) < 2:
@@ -450,19 +476,20 @@ def play(generator):
                             del story.memory[i]
 
                 elif action == "save":
-                    savefile = ""
+                    savefile = story.savefile or ""
                     while True:
                         savefile = input_line("Please enter a name for this save: ", colors["menu"])
                         if savefile.strip() == "":
                             output("Please enter a valid savefile name.", colors["menu"])
                         else:
                             break
-                    savefile = os.path.splitext(savefile.strip())[0]
+                    savefile = os.path.splitext(savefile.lstrip("saves/").strip())[0]
+                    story.savefile = savefile
                     savedata = story.to_json()
                     Path("saves/").mkdir(parents=True, exist_ok=True)
                     with open("saves/" + savefile + ".json", 'w') as f:
                         f.write(savedata)
-                        f.close()
+                        output("Successfully saved to" + savefile, colors["message"])
 
                 else:
                     output("Invalid command: " + action, colors["error"])

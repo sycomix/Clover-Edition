@@ -1,7 +1,7 @@
 import json
 import re
-from getconfig import settings
-from utils import format_result, get_similarity
+from getconfig import settings, colors
+from utils import output, format_result, get_similarity
 
 class Story:
     #the initial prompt is very special.
@@ -12,6 +12,7 @@ class Story:
         self.memory = []
         self.actions = []
         self.results = []
+        self.savefile = None
 
     def act(self, action):
         assert (self.prompt.strip() + action.strip())
@@ -26,6 +27,17 @@ class Story:
                     repetition_penalty=settings.getfloat('rep-pen'))
         self.results.append(format_result(result))
         return self.results[-1]
+
+    def print_story(self, wrap=True):
+        first_result = format_result(self.actions[0] + ' ' + self.results[0])
+        output(self.prompt, colors['user-text'], first_result, colors['ai-text'], wrap=wrap)
+        maxactions = len(self.actions)
+        maxresults = len(self.results)
+        for i in range(1, max(maxactions, maxresults)):
+            if i < maxactions and self.actions[i].strip() != "":
+                output("> " + self.actions[i], colors['user-text'], wrap=wrap)
+            if i < maxresults and self.results[i].strip() != "":
+                output(self.results[i], colors['ai-text'], wrap=wrap)
 
     def get_story(self):
         lines = [val for pair in zip(self.actions, self.results) for val in pair]
@@ -64,10 +76,10 @@ class Story:
         return res
 
     def from_dict(self, d):
-        settings["temp"] = d["temp"]
-        settings["top-p"] = d["top-p"]
-        settings["top-keks"] = d["top-keks"]
-        settings["rep-pen"] = d["rep-pen"]
+        settings["temp"] = str(d["temp"])
+        settings["top-p"] = str(d["top-p"])
+        settings["top-keks"] = str(d["top-keks"])
+        settings["rep-pen"] = str(d["rep-pen"])
         self.prompt = d["prompt"]
         self.memory = d["memory"]
         self.actions = d["actions"]
