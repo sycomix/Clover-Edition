@@ -77,12 +77,7 @@ if not Path("prompts", "Anime").exists():
     try:
         import pastebin
     except:
-        #temporary fix "e is not defined"
-        #logger.warning("Failed to scrape pastebin: %e", e)
-        output(
-            "Failed to scrape pastebin, possible connection issue.\nTry again later. Continuing without downloading prompts...",
-            colors["error"],
-        )
+        output("Continuing without downloading prompts...",colors["error"],)
 
 
 #class AIPlayer:
