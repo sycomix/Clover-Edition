@@ -5,35 +5,91 @@ import re
 from pyjarowinkler import distance
 import torch
 import random
+import textwrap
+import os
+import sys
 
-from getconfig import logger
+from getconfig import logger, settings, colors
+from shutil import get_terminal_size
 
+def in_colab():
+    """Some terminal codes don't work in a colab notebook."""
+    # from https://github.com/tqdm/tqdm/blob/master/tqdm/autonotebook.py
+    try:
+        from IPython import get_ipython
+        if (not get_ipython()) or ('IPKernelApp' not in get_ipython().config):  # pragma: no cover
+            raise ImportError("console")
+        if 'VSCODE_PID' in os.environ:  # pragma: no cover
+            raise ImportError("vscode")
+    except ImportError:
+        if get_terminal_size()[0]==0 or 'google.colab' in sys.modules:
+            return True
+        return False
+    else:
+        return True
 
-def set_seed(seed):
-    """Sets the seed for all used libraries that take it."""
-    # Make sure you don't use 0 as a seed since some libraries will ignore it.
-    if seed:
-        # np.random.seed(seed)  # not using numpy right now
-        random.seed(a=seed, version=2)
-        torch.manual_seed(seed)
-        if args.n_gpu > 0:
-            torch.cuda.manual_seed_all(seed)
+termWidth = get_terminal_size()[0]
+if termWidth < 5:
+    logger.warning("Your detected terminal width is: "+str(get_terminal_size()[0]))
+    termWidth = 999999999
 
+def format_result(text):
+    """
+    Formats the result text from the AI to be more human-readable.
+    """
+    text = text.strip()
+    text = re.sub("\n{3,}", "\n\n", text)
+    text = re.sub("\n", " ", text)
+    return text
 
-def console_print(text, width=75):
-    last_newline = 0
-    i = 0
-    while i < len(text):
-        if text[i] == "\n":
-            last_newline = 0
-        elif last_newline > width and text[i] == " ":
-            text = text[:i] + "\n" + text[i:]
-            last_newline = 0
-        else:
-            last_newline += 1
-        i += 1
-    print(text)
+# ECMA-48 set graphics codes for the curious. Check out "man console_codes"
+def output(text1, col1="0", text2=None, col2="0", wrap=True, end=None):
+    if text2 is None:
+        res = "\x1B[{}m{}\x1B[{}m".format(col1, text1.strip(), colors["default"])
+    else:
+        res = "\x1B[{}m{}\x1B[{}m {}\x1B[{}m".format(col1, text1.strip(), col2, text2.strip(), colors["default"])
+    if wrap:
+        width = settings.getint("text-wrap-width")
+        width = 999999999 if width < 2 else width
+        width=min(width, termWidth)
+        res = textwrap.fill(
+            res, width, replace_whitespace=False
+        )
+    print(res, end=end)
+    return res.count('\n') + 1
 
+def input_line(str, col1=colors["default"], col2=colors["default"]):
+    val = input("\x1B[{}m{}\x1B[0m\x1B[{}m".format(col1, str, col1))
+    print("\x1B[0m", end="")
+    return val
+
+def clear_lines(n):
+    """Clear the last line in the terminal."""
+    if in_colab() or settings.getboolean('colab-mode'):
+        # this wont work in colab etc
+        return
+    screen_code = "\033[1A[\033[2K"  # up one line, and clear line
+    for _ in range(n):
+        print(screen_code, end="")
+
+def input_number(n):
+    bell()
+    val = input_line(
+        "Enter a number from above (default 0):",
+        colors["selection-prompt"],
+        colors["selection-value"],
+    )
+    if val == "":
+        return 0
+    elif not re.match("^\d+$", val) or 0 > int(val) or int(val) > n:
+        output("Invalid choice.", colors["error"])
+        return input_number(n)
+    else:
+        return int(val)
+
+def bell():
+    if settings.getboolean("console-bell"):
+        print("\x07", end="")
 
 # TODO: get rid if pyjarowinker dependency
 # (AOP) You could use a simpler method, but this has been reported by RebootTech as a much more accurate way to compare strings. It also helps clean up the history. So it will hurt ability to check for looping
@@ -41,7 +97,6 @@ def get_similarity(a, b):
     if len(a) == 0 or len(b) == 0:
         return 1
     return distance.get_jaro_distance(a, b, winkler=True, scaling=0.1)
-
 
 def get_num_options(num):
 
@@ -55,7 +110,6 @@ def get_num_options(num):
                 print("Error invalid choice. ")
         except ValueError:
             print("Error invalid choice. ")
-
 
 def player_died(text):
     """
@@ -73,7 +127,6 @@ def player_died(text):
     ]
     return any(re.search(regexp, lower_text) for regexp in you_dead_regexps)
 
-
 def player_won(text):
     lower_text = text.lower()
     won_phrases = [
@@ -86,10 +139,8 @@ def player_won(text):
     ]
     return any(re.search(regexp, lower_text) for regexp in won_phrases)
 
-
 def remove_profanity(text):
     return pf.censor(text)
-
 
 def cut_trailing_quotes(text):
     num_quotes = text.count('"')
