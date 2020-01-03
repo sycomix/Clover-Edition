@@ -1,63 +1,90 @@
+import json
 import re
 from getconfig import settings
+from utils import format_result, get_similarity
 
 class Story:
     #the initial prompt is very special.
     #We want it to be permanently in the AI's limited memory (as well as possibly other strings of text.)
-    def __init__(self, generator, prompt='', numResults=1):
-        self.numResults=numResults
-        self.story = []
-        self.longTermMemory = []
+    def __init__(self, generator, prompt=''):
         self.generator = generator
         self.prompt = prompt
+        self.memory = []
+        self.actions = []
+        self.results = []
 
     def act(self, action):
-        assert(self.prompt+action)
-        results=[]
-        for i in range(self.numResults):
-            assert(settings.getint('top-keks') is not None)
-            results.append(
-                    self.generator.generate(
-                        self.getStory()+action,
-                        self.prompt + ' '.join(self.longTermMemory),
-                        temperature=settings.getfloat('temp'),
-                        top_p=settings.getfloat('top-p'),
-                        top_k=settings.getint('top-keks'),
-                        repetition_penalty=settings.getfloat('rep-pen')))
-                    #self.longTermMemory.join('\n\n'), self.prompt))
-            
-        self.story.append([action, results])
-        return results
+        assert (self.prompt.strip() + action.strip())
+        assert (settings.getint('top-keks') is not None)
+        self.actions.append(format_result(action))
+        result = self.generator.generate(
+                    self.get_story() + action,
+                    self.prompt + ' '.join(self.memory),
+                    temperature=settings.getfloat('temp'),
+                    top_p=settings.getfloat('top-p'),
+                    top_k=settings.getint('top-keks'),
+                    repetition_penalty=settings.getfloat('rep-pen'))
+        self.results.append(format_result(result))
+        return self.results[-1]
 
-    #only relevant when multiple results are supported
-    #chosen result is always placed first, simplifies many things
-    def chooseResult(self, num):
-       results=self.story[1] 
-       best=results.pop(num)
-       results.insert(0,best)
+    def get_story(self):
+        lines = [val for pair in zip(self.actions, self.results) for val in pair]
+        return self.prompt + '\n\n'.join(lines)
 
-    #Results 
-    def getStory(self):
-        lines = []
-        for line in self.story:
-            lines.append(line[0])
-            lines.append(line[1][0])
-        return '\n\n'.join(lines)
+    def get_last_action_result(self):
+        return self.actions[-1] + ' ' + self.results[-1]
 
-    def getSuggestion(self):
-        #temporary fix (TODO)
+    def revert(self):
+        self.actions = self.actions[:-1]
+        self.results = self.results[:-1]
+
+    def get_suggestion(self):
         return re.sub('\n.*', '',
                 self.generator.generate_raw(
-                    self.getStory()+"\n\n> You",
+                    self.get_story() + "\n\n> You",
                     self.prompt,
                     temperature=settings.getfloat('action-temp'),
                     top_p=settings.getfloat('top-p'),
                     top_k=settings.getint('top-keks'),
                     repetition_penalty=1))
-                #, stop_tokens=['\n', '\n\n'])#longterm memory here
 
     def __str__(self):
-        return self.prompt+self.getStory()
+        return self.get_story()
+
+    def to_dict(self):
+        res = {}
+        res["temp"] = settings.getfloat('temp')
+        res["top-p"] = settings.getfloat("top-p")
+        res["top-keks"] = settings.getint("top-keks")
+        res["rep-pen"] = settings.getfloat("rep-pen")
+        res["prompt"] = self.prompt
+        res["memory"] = self.memory
+        res["actions"] = self.actions
+        res["results"] = self.results
+        return res
+
+    def from_dict(self, d):
+        settings["temp"] = d["temp"]
+        settings["top-p"] = d["top-p"]
+        settings["top-keks"] = d["top-keks"]
+        settings["rep-pen"] = d["rep-pen"]
+        self.prompt = d["prompt"]
+        self.memory = d["memory"]
+        self.actions = d["actions"]
+        self.results = d["results"]
+
+    def to_json(self):
+        return json.dumps(self.to_dict())
+
+    def from_json(self, j):
+        self.from_dict(json.loads(j))
+
+    def is_looping(self, threshold=0.9):
+        if len(self.results) >= 2:
+            similarity = get_similarity(self.results[-1], self.results[-2])
+            if similarity > threshold:
+                return True
+        return False
 
 #    def save()
 #        file=Path('saves', self.filename)
