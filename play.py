@@ -299,6 +299,8 @@ websites = "[.](com|ca|gg|tv|co|net|org|io|gov)"
 
 def splitIntoSentences(text):
     text = " " + text + "  "
+    text = text.replace("...","<3elp><stop>")
+    text = text.replace("..","<2elp><stop>")
     text = text.replace("\n"," ")
     text = re.sub(prefixes,"\\1<prd>",text)
     text = re.sub(websites,"<prd>\\1",text)
@@ -316,7 +318,11 @@ def splitIntoSentences(text):
     text = text.replace(".<stop>\"", ".\"<stop>")
     text = text.replace("?<stop>\"", "?\"<stop>")
     text = text.replace("!<stop>\"", "!\"<stop>")
+    text = text.replace("<3elp><stop>\"", "<3elp>\"<stop>")
+    text = text.replace("<2elp><stop>\"", "<2elp>\"<stop>")
     text = text.replace("<prd>",".")
+    text = text.replace("<3elp>","...")
+    text = text.replace("<2elp>","..")
     sentences = text.split("<stop>")
     sentences = sentences[:-1]
     sentences = [s.strip() for s in sentences]
