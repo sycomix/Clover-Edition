@@ -4,7 +4,7 @@ def boolValue(bool):
 	return "on" if bool else "off"
 
 def instructions():
-	print('\033[' + colors["instructions"] + 'm' + 'AID2: Clover Edition Instructions: \n Enter actions starting with a verb ex. "go to the tavern" or "attack the orc."\n To speak enter say "(thing you want to say)" or just "(thing you want to say)"')
+	print('\033[' + colors["instructions"] + 'm' + '\nAID2: Clover Edition Instructions: \n  Enter actions starting with a verb ex. "go to the tavern" or "attack the orc."\n  To speak enter say "(thing you want to say)" or just "(thing you want to say)"')
 	print('The following commands can be entered for any action:')
 	print('  "/revert"                Reverts the last action allowing you to pick a different action.')
 	print('  "/quit"                  Quits the game and saves')
