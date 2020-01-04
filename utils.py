@@ -46,21 +46,21 @@ def format_result(text):
     return text.strip()
 
 
-def select_file(p, e):
+def select_file(p, e, d=0):
     """
     Selects a file from a specific path matching a specific extension.
-    p: The path (and subdirectories) to choose from.
+    p: The current path (and subdirectories) to choose from.
     e: The extension to filter based on.
+    d: The path depth. Used for knowing when to go back or when to abort a file selection. Do not set this yourself.
     """
     if p.is_dir():
         t_dirs = sorted([x for x in p.iterdir() if x.is_dir()])
         t_files = sorted([x for x in p.iterdir() if x.is_file() and x.name.endswith(e)])
         files = t_dirs + t_files
-        is_top = p == Path("prompts")
         list_items(
             ["(Random)"] +
             [f.name[:-len(e)] if f.is_file() else f.name + "/" for f in files] +
-            ["(Cancel)" if is_top else "(Back)"],
+            ["(Cancel)" if d == 0 else "(Back)"],
             colors["menu"]
         )
         count = len(files) + 1
@@ -71,13 +71,13 @@ def select_file(p, e):
             except ValueError:
                 i = 1
         if i == count:
-            if is_top:
+            if d == 0:
                 output("Action cancelled. ", colors["message"])
                 return None
             else:
-                return select_file(p.parent, e)
+                return select_file(p.parent, e, d-1)
         else:
-            return select_file(files[i-1], e)
+            return select_file(files[i-1], e, d+1)
     else:
         return p
 
