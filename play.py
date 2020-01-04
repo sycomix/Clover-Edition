@@ -39,10 +39,9 @@ else:
 
 def select_file(p=Path("prompts")):
     if p.is_dir():
-        files = [x for x in p.iterdir() if x.is_dir() or x.name.endswith(".txt")]
-        sorted(files, key=lambda x: (x.name, 0 if x.is_dir() else 1))
-        # TODO: make this a config option (although really it should be random)
-        #shuffle(files)
+        t_dirs = sorted([x for x in p.iterdir() if x.is_dir()])
+        t_files = sorted([x for x in p.iterdir() if x.is_file() and x.name.endswith(".txt")])
+        files = t_dirs + t_files
         is_top = p == Path("prompts")
         list_items(
             ["(Random)"] +
@@ -229,22 +228,28 @@ def load_story(p=Path("saves")):
     and returns a valid story, as well as the prompt and starting context if the story is successfully loaded.
     Otherwise, returns None, None, None"""
     if p.is_dir():
-        files = [x for x in p.iterdir() if x.is_dir() or x.name.endswith(".json")]
-        sorted(files, key=lambda x: (x.name, 0 if x.is_dir() else 1))
+        t_dirs = sorted([x for x in p.iterdir() if x.is_dir()])
+        t_files = sorted([x for x in p.iterdir() if x.is_file() and x.name.endswith(".json")])
+        files = t_dirs + t_files
         is_top = p == Path("saves")
-        list_items([f.name[:-5] if f.is_file() else f.name + "/" for f in files] +
-                   ["(Cancel)" if is_top else "(Back)"],
-                   colors["menu"])
-        count = len(files)
+        list_items(
+            ["(Random)"] +
+            [f.name[:-5] if f.is_file() else f.name + "/" for f in files] +
+            ["(Cancel)" if is_top else "(Back)"],
+            colors["menu"]
+        )
+        count = len(files) + 1
         i = input_number(count)
+        if i == 0:
+            i = random.randrange(1, count-1)
         if i == count:
             if is_top:
                 output("Action cancelled. ", colors["message"])
-                return None, None, None
+                return None, None
             else:
-                return load_story(p.parent)
-        elif files[i].is_dir():
-            return load_story(files[i])
+                return select_file(p.parent)
+        else:
+            return select_file(files[i-1])
     else:
         with p.open('r') as f:
             try:
