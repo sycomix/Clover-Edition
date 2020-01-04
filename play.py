@@ -182,8 +182,11 @@ def save_story(story):
     savedata = story.to_json()
     Path("saves/").mkdir(parents=True, exist_ok=True)
     with open("saves/" + savefile + ".json", 'w') as f:
-        f.write(savedata)
-        output("Successfully saved to " + savefile, colors["message"])
+        try:
+            f.write(savedata)
+            output("Successfully saved to " + savefile, colors["message"])
+        except IOError:
+            output("Unable to write to file; aborting. ", colors["error"])
 
 
 def load_story():
