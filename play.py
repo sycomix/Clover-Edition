@@ -591,17 +591,25 @@ def play(generator):
                            colors["error"])
 
                 if player_won(result):
-                    output(result + "\n CONGRATS YOU WIN", colors["message"])
-                    break
-                elif player_died(result):
                     output(result, colors["ai-text"])
-                    output("YOU DIED. GAME OVER", colors["error"])
-                    list_items(["Start a New Game", "\"I'm not dead yet!\" (If you didn't actually die."])
+                    output("YOU WON. CONGRATULATIONS", colors["error"])
+                    list_items(["Start a New Game", "\"I'm not done yet!\" (If you still want to play)"])
                     choice = input_number(1)
                     if choice == 0:
                         break
                     else:
                         output("Sorry about that...where were we?", colors["query"])
+
+                elif player_died(result):
+                    output(result, colors["ai-text"])
+                    output("YOU DIED. GAME OVER", colors["error"])
+                    list_items(["Start a New Game", "\"I'm not dead yet!\" (If you didn't actually die)"])
+                    choice = input_number(1)
+                    if choice == 0:
+                        break
+                    else:
+                        output("Sorry about that...where were we?", colors["query"])
+                        
                 output(result, colors["ai-text"])
 
 
