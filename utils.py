@@ -407,6 +407,7 @@ def mapping_variation_pairs(mapping):
     mapping_list.append((" " + mapping[0] + "\?", " " + mapping[1] + "\?"))
     mapping_list.append((" " + mapping[0] + "\!", " " + mapping[1] + "\!"))
     mapping_list.append((" " + mapping[0] + "\.", " " + mapping[1] + "."))
+    mapping_list.append((" " + mapping[0], " " + mapping[1]))
 
     return mapping_list
 
