@@ -40,10 +40,28 @@ else:
 def select_file(p=Path("prompts")):
     if p.is_dir():
         files = [x for x in p.iterdir() if x.is_dir() or x.name.endswith(".txt")]
+        sorted(files, key=lambda x: (x.name, 0 if x.is_dir() else 1))
         # TODO: make this a config option (although really it should be random)
-        shuffle(files)
-        list_items([f.name[:-4] if f.is_file() else f.name + "/" for f in files], colors["menu"])
-        return select_file(files[input_number(len(files) - 1)])
+        #shuffle(files)
+        is_top = p == Path("prompts")
+        list_items(
+            ["(Random)"] +
+            [f.name[:-4] if f.is_file() else f.name + "/" for f in files] +
+            ["(Cancel)" if is_top else "(Back)"],
+            colors["menu"]
+        )
+        count = len(files) + 1
+        i = input_number(count)
+        if i == 0:
+            i = random.randrange(1, count-1)
+        if i == count:
+            if is_top:
+                output("Action cancelled. ", colors["message"])
+                return None, None
+            else:
+                return select_file(p.parent)
+        else:
+            return select_file(files[i-1])
     else:
         with p.open("r", encoding="utf-8") as file:
             try:
@@ -55,6 +73,7 @@ def select_file(p=Path("prompts")):
                     context = lines[0]
                     prompt = lines[1]
             except IOError:
+                output("Something went wrong; aborting. ", colors["error"])
                 return None, None
         return context, prompt
 
@@ -209,16 +228,25 @@ def load_story(p=Path("saves")):
     """Prompts the user for a save file stored in the saves directory,
     and returns a valid story, as well as the prompt and starting context if the story is successfully loaded.
     Otherwise, returns None, None, None"""
-    files = [x for x in p.iterdir() if x.is_dir() or x.name.endswith(".json")]
-    list_items([f.name[:-5] if f.is_file() else f.name + "/" for f in files], colors["menu"])
-    i = input_number(len(files))
-    if i == len(files):
-        output("Action cancelled. ")
-        return None, None, None
-    elif files[i].is_dir():
-        return load_story(files[i])
+    if p.is_dir():
+        files = [x for x in p.iterdir() if x.is_dir() or x.name.endswith(".json")]
+        sorted(files, key=lambda x: (x.name, 0 if x.is_dir() else 1))
+        is_top = p == Path("saves")
+        list_items([f.name[:-5] if f.is_file() else f.name + "/" for f in files] +
+                   ["(Cancel)" if is_top else "(Back)"],
+                   colors["menu"])
+        count = len(files)
+        i = input_number(count)
+        if i == count:
+            if is_top:
+                output("Action cancelled. ", colors["message"])
+                return None, None, None
+            else:
+                return load_story(p.parent)
+        elif files[i].is_dir():
+            return load_story(files[i])
     else:
-        with files[i].open('r') as f:
+        with p.open('r') as f:
             try:
                 story = Story(generator, "")
                 story.savefile = os.path.splitext(f.name.strip())
@@ -334,7 +362,6 @@ def play(generator):
         if new_game_option == 0:
             context, prompt = select_file()
             if context is None and prompt is None:
-                output("Invalid prompt and context. Please try another file. ", colors["error"])
                 continue
         elif new_game_option == 1:
             with open(
