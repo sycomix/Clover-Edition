@@ -5,7 +5,7 @@ import textwrap
 import os
 import sys
 
-from getconfig import logger, settings, colors
+from getconfig import logger, settings, colors, ptcolors
 from shutil import get_terminal_size
 
 
@@ -85,15 +85,17 @@ def format_result(text):
 
 # ECMA-48 set graphics codes for the curious. Check out "man console_codes"
 def output(text1, col1=None, text2=None, col2=None, wrap=True, beg=None, end='\n', sep=' '):
-    if not text1:
-        return 0
     print('', end=beg)
-    ptoolkit = use_ptoolkit()
+    ptoolkit = use_ptoolkit() and ptcolors['displaymethod'] == "prompt-toolkit"
+
     if not ptoolkit:
-        clb1 = "\x1B[{}m".format(col1) if col1 and col1[0].isdigit() else ""
-        clb2 = "\x1B[{}m".format(col2) if col2 and col2[0].isdigit() else ""
-        cle1 = "\x1B[0m" if col1 and col1[0].isdigit() else ""
-        cle2 = "\x1B[0m" if col2 and col2[0].isdigit() else ""
+        col1 = colors[col1] if col1 and colors[col1] and colors[col1][0].isdigit() else None
+        col2 = colors[col2] if col2 and colors[col2] and colors[col2][0].isdigit() else None
+
+        clb1 = "\x1B[{}m".format(col1) if col1 else ""
+        clb2 = "\x1B[{}m".format(col2) if col2 else ""
+        cle1 = "\x1B[0m" if col1 else ""
+        cle2 = "\x1B[0m" if col2 else ""
         text1 = clb1 + text1 + cle1
         if text2 is not None:
             text2 = clb2 + text2 + cle2
@@ -113,6 +115,8 @@ def output(text1, col1=None, text2=None, col2=None, wrap=True, beg=None, end='\n
             )
 
     if ptoolkit:
+        col1 = ptcolors[col1] if col1 and ptcolors[col1] else ""
+        col2 = ptcolors[col2] if col2 and ptcolors[col2] else ""
         print_formatted_text(to_formatted_text(text1, col1), end='')
         if text2:
             print_formatted_text(to_formatted_text(sep), end='')
@@ -126,7 +130,9 @@ def output(text1, col1=None, text2=None, col2=None, wrap=True, beg=None, end='\n
             print(sep, end='')
             print(text2, end=end)
 
-    linecount = text1.count('\n') + 1
+    linecount = 1
+    if text1:
+        linecount += text1.count('\n')
     if end:
         linecount += end.count('\n')
     if sep:
@@ -136,7 +142,7 @@ def output(text1, col1=None, text2=None, col2=None, wrap=True, beg=None, end='\n
     return linecount
 
 
-def input_bool(str, col1=colors["default"], col2=colors["default"], default=False):
+def input_bool(str, col1="default", col2="default", default=False):
     val = input_line(str, col1, col2).strip().lower()
     if not val:
         return default
@@ -148,12 +154,13 @@ def input_bool(str, col1=colors["default"], col2=colors["default"], default=Fals
         return default
 
 
-def input_line(str, col1=colors["default"], col2=colors["default"]):
-    if use_ptoolkit():
-        val = ptprompt(to_formatted_text(str, col1))
+def input_line(str, col1="default", col2="default"):
+    if use_ptoolkit() and colors['displaymethod'] == "prompt-toolkit":
+        col1 = ptcolors[col1] if col1 and ptcolors[col1] else ""
+        val = ptprompt(to_formatted_text(str, ptcolors[col1]))
     else:
-        clb1 = "\x1B[{}m".format(col1) if col1 and col1[0].isdigit() else ""
-        cle1 = "\x1B[0m" if col1 and col1[0].isdigit() else ""
+        clb1 = "\x1B[{}m".format(colors[col1]) if col1 and colors[col1] and colors[col1][0].isdigit() else ""
+        cle1 = "\x1B[0m" if col1 and colors[col1] and colors[col1][0].isdigit() else ""
         val = input(clb1 + str + cle1)
         print("\x1B[0m", end="")
     return val
@@ -164,13 +171,13 @@ def input_number(maxn, default=0):
     print()
     val = input_line(
         "Enter a number from above (default 0):",
-        colors["selection-prompt"],
-        colors["selection-value"],
+        "selection-prompt",
+        "selection-value",
     )
     if not val:
         return default
     elif not re.match("^\d+$", val) or 0 > int(val) or int(val) > maxn:
-        output("Invalid choice. ", colors["error"])
+        output("Invalid choice. ", "error")
         return input_number(maxn)
     else:
         return int(val)
@@ -223,7 +230,7 @@ def sentence_split(text):
     return sentences
 
 
-def list_items(items, col=colors['menu'], start=0, end=None):
+def list_items(items, col='menu', start=0, end=None):
     """Lists a generic list of items, numbered, starting from the number passed to start. If end is not None,
     an additional element will be added with its name as the value """
     i = start

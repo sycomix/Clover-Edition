@@ -1,4 +1,4 @@
-from urllib import request, error
+rom urllib import request, error
 import re
 import os
 from utils import *
@@ -22,11 +22,11 @@ try:
     paste = request.urlopen("https://pastebin.com/raw/KD4yN2Gc").read().decode("utf-8")
 except error.HTTPError as e:
     if e.code == 404:
-        output("Unable to find pastebin for scraping.", colors["error"])    
+        output("Unable to find pastebin for scraping.", "error")
     else:
-        output("Unable to load pastebin for custom prompts. Error code: {}".format(e.code), colors["error"])
+        output("Unable to load pastebin for custom prompts. Error code: {}".format(e.code), "error")
 except error.URLError as e:
-    output("Unexpected error while trying to load pastebin prompts! Error code: {}".format(e.code), colors["error"])
+    output("Unexpected error while trying to load pastebin prompts! Error code: {}".format(e.code), "error")
 paste = re.sub(r'\nTAGS:.*\n', '\n', paste)
 #pipe is never used in paste so use it as a seperator
 paste = re.sub("=====+", "|", paste)
@@ -41,7 +41,7 @@ for sect in sections[2:][:-1]:
         Path("prompts", category).mkdir(exist_ok=True)
         print(category)
     except IOError:
-        output("Permission error! Unable to create directory for custom prompts.", colors["error"])
+        output("Permission error! Unable to create directory for custom prompts.", "error")
     for story in [x for x in filter(None, sect.split("\n\n"))][1:]:
         title = re.search(r"^\(([^\)]+)", story)
         if bool(title):
@@ -53,4 +53,4 @@ for sect in sections[2:][:-1]:
             try:
                 f.write(re.sub(r"^\([^\)]+\)\n", "", story))
             except IOError:
-                output("Permission error! Unable to write custom prompt to file.", colors["error"])
+                output("Permission error! Unable to write custom prompt to file.", "error")
