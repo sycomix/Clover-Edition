@@ -28,16 +28,18 @@ class Story:
         self.results.append(format_result(result))
         return self.results[-1]
 
-    def print_story(self, wrap=True):
+    def print_story(self, wrap=True, color=True):
         first_result = format_result(self.actions[0] + ' ' + self.results[0])
-        output(self.prompt, colors['user-text'], first_result, colors['ai-text'], wrap=wrap)
+        col1 = colors['user-text'] if color else None
+        col2 = colors['ai-text'] if color else None
+        output(self.prompt, col1, first_result, col2, wrap=wrap)
         maxactions = len(self.actions)
         maxresults = len(self.results)
         for i in range(1, max(maxactions, maxresults)):
             if i < maxactions and self.actions[i].strip() != "":
-                output("> " + self.actions[i], colors['user-text'], wrap=wrap)
+                output("> " + self.actions[i], col1, wrap=wrap)
             if i < maxresults and self.results[i].strip() != "":
-                output(self.results[i], colors['ai-text'], wrap=wrap)
+                output(self.results[i], col2, wrap=wrap)
 
     def get_story(self):
         lines = [val for pair in zip(self.actions, self.results) for val in pair]

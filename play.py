@@ -442,8 +442,10 @@ def play(generator):
                     instructions()
 
                 elif action == "print":
+                    use_wrap = input_bool("Print with wrapping? (y/N): ", colors["query"], colors["user-text"])
+                    use_color = input_bool("Print with colors? (y/N): ", colors["query"], colors["user-text"])
                     output("Printing story...", colors["message"])
-                    story.print_story()
+                    story.print_story(wrap=use_wrap, color=use_color)
 
                 elif action == "retry":
                     if len(story.actions) < 2:
