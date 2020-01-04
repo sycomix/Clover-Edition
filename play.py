@@ -317,8 +317,10 @@ def play(generator):
 
         if new_game_option == 0:
             prompt_file = select_file(Path("prompts"), ".txt")
-            if prompt_file is not None:
+            if prompt_file:
                 context, prompt = load_prompt(prompt_file)
+            else:
+                continue
         elif new_game_option == 1:
             with open(
                     Path("interface", "prompt-instructions.txt"), "r", encoding="utf-8"
@@ -348,6 +350,8 @@ def play(generator):
                 story, context, prompt = load_story(story_file)
                 if not story:
                     continue
+            else:
+                continue
 
         if len((context + prompt).strip()) == 0:
             output("Story has no prompt or context. Please enter a valid custom prompt. ", colors["error"])
