@@ -40,7 +40,8 @@ class Story:
         maxresults = len(self.results)
         for i in range(1, max(maxactions, maxresults)):
             if i < maxactions and self.actions[i].strip() != "":
-                output("> " + self.actions[i], col1, wrap=wrap)
+                caret = "> " if re.match("^[Yy]ou +", self.actions[i]) else ""
+                output(caret + self.actions[i], col1, wrap=wrap)
             if i < maxresults and self.results[i].strip() != "":
                 output(self.results[i], col2, wrap=wrap)
 
@@ -50,7 +51,8 @@ class Story:
         else:
             col1 = colors['user-text'] if color else None
             col2 = colors['ai-text'] if color else None
-            output("> " + self.actions[-1], col1, wrap=wrap)
+            caret = "> " if re.match("^[Yy]ou +", self.actions[-1]) else ""
+            output(caret + self.actions[-1], col1, wrap=wrap)
             output(self.results[-1], col2, wrap=wrap)
 
     def get_story(self):
