@@ -526,10 +526,17 @@ def play(generator):
                 elif action == "load":
                     story_file = select_file(Path("saves"), ".json")
                     if story_file:
-                        story, context, prompt = load_story(story_file)
-                        if story:
+                        tstory, tcontext, tprompt = load_story(story_file)
+                        if tstory:
                             output("Loading story...", colors["message"])
+                            story = tstory
+                            context = tcontext
+                            prompt = tprompt
                             story.print_story()
+                        else:
+                            story.print_last()
+                    else:
+                        story.print_last()
 
                 elif action == "summarize":
                     first_result = story.results[-1]
