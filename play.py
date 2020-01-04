@@ -419,6 +419,8 @@ def play(generator):
                         instructions()
 
                 elif action == "menu":
+                    if input_bool("Do you want to save? (y/N): ", colors["query"], colors["user-text"]):
+                        save_story(story)
                     break
 
                 elif action == "restart":
@@ -429,6 +431,8 @@ def play(generator):
                     story = new_story(generator, story.prompt, context)
 
                 elif action == "quit":
+                    if input_bool("Do you want to save? (y/N): ", colors["query"], colors["user-text"]):
+                        save_story(story)
                     exit()
 
                 elif action == "help":
