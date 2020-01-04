@@ -537,26 +537,27 @@ def play(generator):
 
             # Otherwise this is just a normal action.
             else:
+                action = format_result(action)
+
+                # If we're using suggestions and a player entered one
                 if act_alts > 0:
                     # Options to select a suggestion action
                     if action in [str(i) for i in range(len(suggested_actions))]:
                         action = suggested_actions[int(action)]
 
-                original_action = action
-                action = action.strip()
-                # TODO debug stuff to delete
-                if action != original_action:
-                    logger.debug("STRIPPED WHITE SPACE OFF ACTION %r vs %r", original_action, action)
+                # If the player enters a story insert.
+                if action != "" and action[0] == "!":
+                    if len(action) == 1:
+                        output("Invalid story insert. ", colors["error"])
+                        continue
+                    action = action[1:]
+                    output(format_result(action), colors["user-text"])
 
-                # Crop actions to a max length
-                # action = action[:4096]
-
-                if action != "":
-
+                # If the player enters a real action
+                elif action != "":
                     # Roll a 20 sided dice to make things interesting
                     d = random.randint(1, 20)
                     logger.debug("roll d20=%s", d)
-
                     # If it says 'You say "' then it's still dialouge. Normalise it by removing `You say `, we will add again soon
                     action = re.sub("^ ?[Yy]ou say [\"']", '"', action)
                     if any(action.lstrip().startswith(t) for t in ['"', "'"]):
@@ -577,12 +578,12 @@ def play(generator):
                                 action = d20ify_action(action, d)
                             else:
                                 action = "You " + action
-
                         if action[-1] not in [".", "?", "!"]:
                             action = action + "."
+                    # Prompt the user with the formatted action
+                    output("> " + format_result(action), colors["transformed-user-text"])
 
-                output("> " + format_result(action), colors["transformed-user-text"])
-
+                # Get a result from the AI
                 result = story.act(action)
 
                 # Check for loops
@@ -594,7 +595,7 @@ def play(generator):
                 # If the player won, ask them if they want to continue or not.
                 if player_won(result):
                     output(result, colors["ai-text"])
-                    output("YOU WON. CONGRATULATIONS", colors["error"])
+                    output("YOU WON. CONGRATULATIONS", colors["message"])
                     list_items(["Start a New Game", "\"I'm not done yet!\" (If you still want to play)"])
                     choice = input_number(1)
                     if choice == 0:
@@ -605,14 +606,14 @@ def play(generator):
                 # If the player lost, ask them if they want to continue or not.
                 elif player_died(result):
                     output(result, colors["ai-text"])
-                    output("YOU DIED. GAME OVER", colors["error"])
+                    output("YOU DIED. GAME OVER", colors["message"])
                     list_items(["Start a New Game", "\"I'm not dead yet!\" (If you didn't actually die)"])
                     choice = input_number(1)
                     if choice == 0:
                         break
                     else:
                         output("Sorry about that...where were we?", colors["query"])
-                        
+
                 # Output the AI's result.
                 output(result, colors["ai-text"])
 
