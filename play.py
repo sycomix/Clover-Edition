@@ -585,11 +585,13 @@ def play(generator):
 
                 result = story.act(action)
 
+                # Check for loops
                 if story.is_looping():
                     story.revert()
                     output("That action caused the model to start looping. Try something else instead. ",
                            colors["error"])
 
+                # If the player won, ask them if they want to continue or not.
                 if player_won(result):
                     output(result, colors["ai-text"])
                     output("YOU WON. CONGRATULATIONS", colors["error"])
@@ -600,6 +602,7 @@ def play(generator):
                     else:
                         output("Sorry about that...where were we?", colors["query"])
 
+                # If the player lost, ask them if they want to continue or not.
                 elif player_died(result):
                     output(result, colors["ai-text"])
                     output("YOU DIED. GAME OVER", colors["error"])
@@ -610,6 +613,7 @@ def play(generator):
                     else:
                         output("Sorry about that...where were we?", colors["query"])
                         
+                # Output the AI's result.
                 output(result, colors["ai-text"])
 
 
