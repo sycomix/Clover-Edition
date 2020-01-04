@@ -25,6 +25,7 @@ def instructions():
     print('  "/forget"                Opens a menu allowing you to remove permanent memories')
     print('  "/save"                  Saves your game to a file in the game\'s save directory')
     print('  "/load"                  Loads a game from a file in the game\'s save directory')
+    print('  "/summarize"             Create a new story using by summarizing your previous one')
     print('  "/help"                  Prints these instructions again')
     print('  "/set [SETTING] [VALUE]" Sets the specified setting to the specified value.:')
     print('        temp               Higher values make the AI more random. Default: 0.4 | Current:',

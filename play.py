@@ -163,11 +163,17 @@ def d20ify_action(action, d):
     return action
 
 
-def new_story(generator, prompt, context):
-    prompt = prompt.strip()
+def new_story(generator, context, prompt, memory=None, first_result=None):
+    if memory is None:
+        memory = []
     context = context.strip()
-    story = Story(generator, prompt)
-    story.act(context)
+    prompt = prompt.strip()
+    story = Story(generator, context, memory)
+    if first_result is None:
+        story.act(prompt)
+    else:
+        story.actions.append(prompt)
+        story.results.append(first_result)
     story.print_story()
     return story
 
@@ -528,6 +534,22 @@ def play(generator):
                     if story:
                         output("Loading story...", colors["message"])
                         story.print_story()
+
+                elif action == "summarize":
+                    first_result = story.results[-1]
+                    output(story.context, colors["user-text"], "(YOUR SUMMARY HERE)", colors["message"])
+                    output(story.results[-1], colors["ai-text"])
+                    new_prompt = input_line("Enter the summary for the new story: ",
+                                            colors["query"], colors["user-text"])
+                    new_prompt = format_result(new_prompt)
+                    if len(new_prompt) == 0:
+                        output("Invalid new prompt; cancelling. ", colors["error"])
+                        continue
+                    if input_bool("Do you want to save your previous story? (y/N): ",
+                                  colors["query"], colors["user-text"]):
+                        save_story(story)
+                    story = new_story(generator, context, new_prompt, memory=story.memory, first_result=first_result)
+                    story.print_story()
 
                 else:
                     output("Invalid command: " + action, colors["error"])

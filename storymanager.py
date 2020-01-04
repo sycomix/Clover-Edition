@@ -7,10 +7,12 @@ from utils import output, format_result, get_similarity
 class Story:
     # the initial prompt is very special.
     # We want it to be permanently in the AI's limited memory (as well as possibly other strings of text.)
-    def __init__(self, generator, prompt=''):
+    def __init__(self, generator, context='', memory=None):
+        if memory is None:
+            memory = []
         self.generator = generator
-        self.context = prompt
-        self.memory = []
+        self.context = context
+        self.memory = memory
         self.actions = []
         self.results = []
         self.savefile = None
