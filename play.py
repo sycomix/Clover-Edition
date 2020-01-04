@@ -224,7 +224,7 @@ def load_story():
 def alter_text(text):
     sentences = sentence_split(text)
     while True:
-        output(" ".join(sentences) + "\n", colors['menu'])
+        output(" ".join(sentences), colors['menu'])
         list_items(
             [
                 "Edit a sentence.",
@@ -499,14 +499,10 @@ def play(generator):
 
                 elif action == "alter":
                     story.results[-1] = alter_text(story.results[-1])
-                    if len(story.actions) < 2:
-                        output(story.context, colors["ai-text"])
                     story.print_last()
 
                 elif action == "context":
                     story.context = alter_text(story.context)
-                    if len(story.actions) < 2:
-                        output(story.context, colors["ai-text"])
                     story.print_last()
 
                 elif action == "remember":
@@ -590,10 +586,7 @@ def play(generator):
                         if action[-1] not in [".", "?", "!"]:
                             action = action + "."
 
-                output(
-                    "\n> " + format_result(action),
-                    colors["transformed-user-text"],
-                )
+                output("> " + format_result(action), colors["transformed-user-text"])
 
                 result = story.act(action)
 

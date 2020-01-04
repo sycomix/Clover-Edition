@@ -43,10 +43,13 @@ class Story:
                 output(self.results[i], col2, wrap=wrap)
 
     def print_last(self, wrap=True, color=True):
-        col1 = colors['user-text'] if color else None
-        col2 = colors['ai-text'] if color else None
-        output("> " + self.actions[-1], col1, wrap=wrap)
-        output(self.results[-1], col2, wrap=wrap)
+        if len(self.actions) < 2:
+            self.print_story()
+        else:
+            col1 = colors['user-text'] if color else None
+            col2 = colors['ai-text'] if color else None
+            output("> " + self.actions[-1], col1, wrap=wrap)
+            output(self.results[-1], col2, wrap=wrap)
 
     def get_story(self):
         lines = [val for pair in zip(self.actions, self.results) for val in pair]
