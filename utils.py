@@ -407,18 +407,19 @@ def mapping_variation_pairs(mapping):
     mapping_list.append((" " + mapping[0] + "\?", " " + mapping[1] + "\?"))
     mapping_list.append((" " + mapping[0] + "\!", " " + mapping[1] + "\!"))
     mapping_list.append((" " + mapping[0] + "\.", " " + mapping[1] + "."))
-    mapping_list.append((" " + mapping[0], " " + mapping[1]))
 
     return mapping_list
 
 
 first_to_second_mappings = [
     ("I'm", "you're"),
+    ("i'm", "you're"),
     ("Im", "you're"),
+    ("im", "you're"),
     ("Ive", "you've"),
+    ("ive", "you've"),
     ("I am", "you are"),
-    ("was I", "were you"),
-    ("am I", "are you"),
+    ("i am", "you are"),
     ("wasn't I", "weren't you"),
     ("I", "you"),
     ("I'd", "you'd"),
@@ -426,12 +427,17 @@ first_to_second_mappings = [
     ("I've", "you've"),
     ("was I", "were you"),
     ("am I", "are you"),
+    ("was i", "were you"),
+    ("am i", "are you"),
     ("wasn't I", "weren't you"),
     ("I", "you"),
-    ("I'd", "you'd"),
     ("i", "you"),
+    ("I'd", "you'd"),
+    ("i'd", "you'd"),
     ("I've", "you've"),
+    ("i've", "you've"),
     ("I was", "you were"),
+    ("i was", "you were"),
     ("my", "your"),
     ("we", "you"),
     ("we're", "you're"),
@@ -440,6 +446,7 @@ first_to_second_mappings = [
     ("us", "you"),
     ("our", "your"),
     ("I'll", "you'll"),
+    ("i'll", "you'll"),
     ("myself", "yourself"),
 ]
 
@@ -484,6 +491,8 @@ def standardize_punctuation(text):
 def first_to_second_person(text):
     text = " " + text
     text = standardize_punctuation(text)
+    if text[-1] not in [".", "?", "!"]:
+        text += "."
     for pair in first_to_second_mappings:
         variations = mapping_variation_pairs(pair)
         for variation in variations:
