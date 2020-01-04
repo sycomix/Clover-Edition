@@ -168,66 +168,71 @@ def list_items(items, col=colors['menu'], start=0, end=None):
         output('', end=end)
 
 
+def remove_prefix(text, prefix):
+    return text[text.startswith(prefix) and len(prefix):]
+
+
 def _get_prefix(first_string ,second_string):
-	if not first_string or not second_string:
-		return ""
-	if first_string == second_string:
-		return first_string
-	maximum_length = min(len(first_string), len(second_string))
-	for i in range(0, maximum_length):
-		if not first_string[i] == second_string[i]:
-			return first_string[0:i]
-	return first_string[0:maximum_length]
+    if not first_string or not second_string:
+        return ""
+    if first_string == second_string:
+        return first_string
+    maximum_length = min(len(first_string), len(second_string))
+    for i in range(0, maximum_length):
+        if not first_string[i] == second_string[i]:
+            return first_string[0:i]
+    return first_string[0:maximum_length]
+
 
 def get_similarity(first_string, second_string, scaling=0.1):
-	first_string_length = len(first_string)
-	second_string_length = len(second_string)
-	a_matches = [False] * first_string_length
-	b_matches = [False] * second_string_length
-	matches = 0
-	transpositions = 0
-	jaro_distance = 0.0
+    first_string_length = len(first_string)
+    second_string_length = len(second_string)
+    a_matches = [False] * first_string_length
+    b_matches = [False] * second_string_length
+    matches = 0
+    transpositions = 0
+    jaro_distance = 0.0
 
-	if first_string_length == 0 or second_string_length == 0:
-		return 1.0
+    if first_string_length == 0 or second_string_length == 0:
+        return 1.0
 
-	maximum_matching_distance = (max(first_string_length, second_string_length) // 2) - 1
-	if maximum_matching_distance < 0:
-		maximum_matching_distance = 0
+    maximum_matching_distance = (max(first_string_length, second_string_length) // 2) - 1
+    if maximum_matching_distance < 0:
+        maximum_matching_distance = 0
 
-	for i in range (first_string_length):
-		start = max(0, i - maximum_matching_distance)
-		end = min(i + maximum_matching_distance + 1, second_string_length)
-		for x in range (start, end):
-			if b_matches[x]:
-				continue
-			if first_string[i] != second_string[x]:
-				continue
-			a_matches[i] = True
-			b_matches[x] = True
-			matches += 1
-			break
+    for i in range (first_string_length):
+        start = max(0, i - maximum_matching_distance)
+        end = min(i + maximum_matching_distance + 1, second_string_length)
+        for x in range (start, end):
+            if b_matches[x]:
+                continue
+            if first_string[i] != second_string[x]:
+                continue
+            a_matches[i] = True
+            b_matches[x] = True
+            matches += 1
+            break
 
-	if matches == 0:
-		return 0.0
+    if matches == 0:
+        return 0.0
 
-	k = 0
-	for i in range(first_string_length):
-		if not a_matches[i]:
-			continue
-		while not b_matches[k]:
-			k += 1
-		if first_string[i] != second_string[k]:
-			transpositions += 1
-		k += 1
+    k = 0
+    for i in range(first_string_length):
+        if not a_matches[i]:
+            continue
+        while not b_matches[k]:
+            k += 1
+        if first_string[i] != second_string[k]:
+            transpositions += 1
+        k += 1
 
-	jaro_distance = ((matches / first_string_length) +
-					(matches / second_string_length) +
-					((matches - transpositions / 2) / matches)) / 3.0
-	prefix = min(len(_get_prefix(first_string, second_string)), 4)
+    jaro_distance = ((matches / first_string_length) +
+                    (matches / second_string_length) +
+                    ((matches - transpositions / 2) / matches)) / 3.0
+    prefix = min(len(_get_prefix(first_string, second_string)), 4)
 
     # Round to 2 places of percision to match pyjarowinkler formatting
-	return round((jaro_distance + prefix * scaling * (1.0 - jaro_distance)) * 100.0) / 100.0
+    return round((jaro_distance + prefix * scaling * (1.0 - jaro_distance)) * 100.0) / 100.0
 
 def get_num_options(num):
 

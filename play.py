@@ -39,10 +39,10 @@ else:
 
 def select_file(p=Path("prompts")):
     if p.is_dir():
-        files = [x for x in p.iterdir()]
+        files = [x for x in p.iterdir() if x.is_dir() or x.name.endswith(".txt")]
         # TODO: make this a config option (although really it should be random)
         shuffle(files)
-        list_items([f.name for f in files], colors["menu"])
+        list_items([f.name[:-4] if f.is_file() else f.name + "/" for f in files], colors["menu"])
         return select_file(files[input_number(len(files) - 1)])
     else:
         with p.open("r", encoding="utf-8") as file:
@@ -91,8 +91,7 @@ if not Path("prompts", "Anime").exists():
     try:
         import pastebin
     except:
-        output("Continuing without downloading prompts...",colors["error"],)
-
+        output("Continuing without downloading prompts...", colors["error"], )
 
 
 def d20ify_speech(action, d):
@@ -190,11 +189,15 @@ def save_story(story):
             output("Please enter a valid savefile name. ", colors["error"])
         else:
             break
-    savefile = os.path.splitext(savefile.lstrip("saves/").strip())[0]
+    savefile = os.path.splitext(remove_prefix(savefile, "saves/").strip())[0]
     story.savefile = savefile
     savedata = story.to_json()
-    Path("saves/").mkdir(parents=True, exist_ok=True)
-    with open("saves/" + savefile + ".json", 'w') as f:
+    finalpath = "saves/" + savefile + ".json"
+    try:
+        os.makedirs(os.path.dirname(finalpath), exist_ok=True)
+    except OSError:
+        output("Error when creating subdirectory; aborting. ", colors["error"])
+    with open(finalpath, 'w') as f:
         try:
             f.write(savedata)
             output("Successfully saved to " + savefile, colors["message"])
@@ -202,29 +205,31 @@ def save_story(story):
             output("Unable to write to file; aborting. ", colors["error"])
 
 
-def load_story():
+def load_story(p=Path("saves")):
     """Prompts the user for a save file stored in the saves directory,
     and returns a valid story, as well as the prompt and starting context if the story is successfully loaded.
     Otherwise, returns None, None, None"""
-    savefile = input_line("Enter the save you want to load: ",
-                          colors["query"], colors["user-text"])
-    if savefile.strip() == "":
-        output("Invalid savename. ", colors["error"])
+    files = [x for x in p.iterdir() if x.is_dir() or x.name.endswith(".json")]
+    list_items([f.name[:-5] if f.is_file() else f.name + "/" for f in files], colors["menu"])
+    i = input_number(len(files))
+    if i == len(files):
+        output("Action cancelled. ")
         return None, None, None
+    elif files[i].is_dir():
+        return load_story(files[i])
     else:
-        try:
-            savefile = os.path.splitext(savefile.lstrip("saves/").strip())[0]
-            f = open("saves/" + savefile + ".json", 'r')
-            story = Story(generator, "")
-            story.savefile = savefile
-            story.from_json(f.read())
-            return story, story.context, story.actions[-1] if len(story.actions) > 0 else ""
-        except FileNotFoundError:
-            output("Save file not found. ", colors["error"])
-            return None, None, None
-        except IOError:
-            output("Something wrong occurred when attempting to load the file. ", colors["error"])
-            return None, None, None
+        with files[i].open('r') as f:
+            try:
+                story = Story(generator, "")
+                story.savefile = os.path.splitext(f.name.strip())
+                story.from_json(f.read())
+                return story, story.context, story.actions[-1] if len(story.actions) > 0 else ""
+            except FileNotFoundError:
+                output("Save file not found. ", colors["error"])
+                return None, None, None
+            except IOError:
+                output("Something wrong occurred when attempting to load the file. ", colors["error"])
+                return None, None, None
 
 
 def alter_text(text):
@@ -349,7 +354,7 @@ def play(generator):
             if filename != "":
                 try:
                     with open(
-                        Path("prompts", filename + ".txt"), "w", encoding="utf-8"
+                            Path("prompts", filename + ".txt"), "w", encoding="utf-8"
                     ) as f:
                         f.write(context + "\n" + prompt)
                 except IOError:
@@ -399,7 +404,7 @@ def play(generator):
                 if not IN_COLAB:
                     clear_lines(action_suggestion_lines)
 
-            cmd_regex = re.search("^/([^ ]+) *(.*)$", action)
+            cmd_regex = re.search(r"^/([^ ]+) *(.*)$", action)
 
             # If this is a command
             if cmd_regex:
@@ -430,11 +435,11 @@ def play(generator):
                                 )
                                 == "y"
                         ):
-                          try:
-                            with open("config.ini", "w", encoding="utf-8") as file:
-                                config.write(file)
-                          except IOError:
-                            output("Permission error! Changes will not be saved for next session.", colors["error"])                      
+                            try:
+                                with open("config.ini", "w", encoding="utf-8") as file:
+                                    config.write(file)
+                            except IOError:
+                                output("Permission error! Changes will not be saved for next session.", colors["error"])
                     else:
                         output("Invalid setting", colors["error"])
                         instructions()
