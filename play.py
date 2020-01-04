@@ -372,16 +372,16 @@ def play(generator):
             if act_alts > 0:
                 # TODO change this to two messages for different colors
                 suggested_actions = []
-                output("\nSuggested actions:", colors["selection-value"])
+                output("Suggested actions:", colors["selection-value"])
                 action_suggestion_lines = 2
                 for i in range(act_alts):
                     suggested_action = story.get_suggestion()
                     if len(suggested_action.strip()) > 0:
                         j = len(suggested_actions)
                         suggested_actions.append(suggested_action)
-                        suggestion = "{}> {}".format(j, suggested_action)
-                        action_suggestion_lines += output(suggestion, colors["selection-value"])
-                print()
+                        suggestion = "{}) {}".format(j, suggested_action)
+                        action_suggestion_lines += \
+                            output(suggestion, colors["selection-value"], beg='' if i != 0 else None)
 
             bell()
             print()
@@ -393,28 +393,25 @@ def play(generator):
                 if not IN_COLAB:
                     clear_lines(action_suggestion_lines)
 
-                    # Show user input again
-                    # colPrint("\n> " + action.rstrip(), colors["user-text"], end="")
-
             cmd_regex = re.search("^/([^ ]+) *(.*)$", action)
 
             # If this is a command
             if cmd_regex:
                 action = cmd_regex.group(1)
-                cmdArgs = cmd_regex.group(2).strip().split()
+                cmd_args = cmd_regex.group(2).strip().split()
                 if action == "set":
-                    if len(cmdArgs) < 2:
+                    if len(cmd_args) < 2:
                         output("Invalid number of arguments for set command. ", colors["error"])
                         instructions()
                         continue
-                    if cmdArgs[0] in settings:
-                        currentSettingValue = settings[cmdArgs[0]]
+                    if cmd_args[0] in settings:
+                        curr_setting_val = settings[cmd_args[0]]
                         output(
                             "Current Value of {}: {}     Changing to: {}".format(
-                                cmdArgs[0], currentSettingValue, cmdArgs[1]
+                                cmd_args[0], curr_setting_val, cmd_args[1]
                             )
                         )
-                        settings[cmdArgs[0]] = cmdArgs[1]
+                        settings[cmd_args[0]] = cmd_args[1]
                         output("Save config file?", colors["query"])
                         output(
                             "Saving an invalid option will corrupt file! ", colors["error"]
