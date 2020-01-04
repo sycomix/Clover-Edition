@@ -41,7 +41,7 @@ class Story:
 
     def get_story(self):
         lines = [val for pair in zip(self.actions, self.results) for val in pair]
-        return self.prompt + '\n\n'.join(lines)
+        return '\n\n'.join(lines)
 
     def get_last_action_result(self):
         return self.actions[-1] + ' ' + self.results[-1]
@@ -61,7 +61,7 @@ class Story:
                     repetition_penalty=1))
 
     def __str__(self):
-        return self.get_story()
+        return self.prompt + ' ' + self.get_story()
 
     def to_dict(self):
         res = {}

@@ -165,6 +165,52 @@ def new_story(generator, prompt, context):
     return story
 
 
+def save_story(story):
+    """Saves the existing story to a json file in the saves directory to be resumed later."""
+    savefile = story.savefile
+    while True:
+        print()
+        temp_savefile = input_line("Please enter a name for this save: ",
+                                   colors["query"], colors["user-text"])
+        savefile = temp_savefile if len(temp_savefile.strip()) > 0 else savefile
+        if len(savefile.strip()) == 0:
+            output("Please enter a valid savefile name. ", colors["error"])
+        else:
+            break
+    savefile = os.path.splitext(savefile.lstrip("saves/").strip())[0]
+    story.savefile = savefile
+    savedata = story.to_json()
+    Path("saves/").mkdir(parents=True, exist_ok=True)
+    with open("saves/" + savefile + ".json", 'w') as f:
+        f.write(savedata)
+        output("Successfully saved to " + savefile, colors["message"])
+
+
+def load_story():
+    """Prompts the user for a save file stored in the saves directory,
+    and returns a valid story, as well as the prompt and starting context if the story is successfully loaded.
+    Otherwise, returns None, None, None"""
+    savefile = input_line("Enter the save you want to load: ",
+                          colors["query"], colors["user-text"])
+    if savefile.strip() == "":
+        output("Invalid savename. ", colors["error"])
+        return None, None, None
+    else:
+        try:
+            savefile = os.path.splitext(savefile.lstrip("saves/").strip())[0]
+            f = open("saves/" + savefile + ".json", 'r')
+            story = Story(generator, "")
+            story.savefile = savefile
+            story.from_json(f.read())
+            return story, story.prompt, story.actions[-1] if len(story.actions) > 0 else ""
+        except FileNotFoundError:
+            output("Save file not found. ", colors["error"])
+            return None, None, None
+        except IOError:
+            output("Something wrong occurred when attempting to load the file. ", colors["error"])
+            return None, None, None
+
+
 def alter_text(text):
     sentences = sentence_split(text)
     while True:
@@ -285,25 +331,9 @@ def play(generator):
                 except IOError:
                     output("Permission error! Unable to save custom prompt. ", colors["error"])
         elif new_game_option == 2:
-            savefile = input_line("Enter the name of the save file: ", colors["query"], colors["user-text"])
-            if savefile.strip() == "":
-                output("Invalid savename. ", colors["error"])
+            story, prompt, context = load_story()
+            if not story:
                 continue
-            else:
-                try:
-                    savefile = os.path.splitext(savefile.lstrip("saves/").strip())[0]
-                    f = open("saves/" + savefile + ".json", 'r')
-                    story = Story(generator, "")
-                    story.savefile = savefile
-                    story.from_json(f.read())
-                    prompt = story.prompt
-                    context = story.actions[0] if len(story.actions) > 0 else ""
-                except FileNotFoundError:
-                    output("Save file not found. ", colors["error"])
-                    continue
-                except IOError:
-                    output("Something wrong occurred when attempting to load the file. ", colors["error"])
-                    continue
 
         if len((prompt + context).strip()) == 0:
             output("Story has no prompt or context. Please enter a valid custom prompt. ", colors["error"])
@@ -476,20 +506,13 @@ def play(generator):
                             del story.memory[i]
 
                 elif action == "save":
-                    savefile = story.savefile or ""
-                    while True:
-                        savefile = input_line("Please enter a name for this save: ", colors["menu"])
-                        if savefile.strip() == "":
-                            output("Please enter a valid savefile name.", colors["menu"])
-                        else:
-                            break
-                    savefile = os.path.splitext(savefile.lstrip("saves/").strip())[0]
-                    story.savefile = savefile
-                    savedata = story.to_json()
-                    Path("saves/").mkdir(parents=True, exist_ok=True)
-                    with open("saves/" + savefile + ".json", 'w') as f:
-                        f.write(savedata)
-                        output("Successfully saved to" + savefile, colors["message"])
+                    save_story(story)
+
+                elif action == "load":
+                    story, prompt, context = load_story()
+                    if story:
+                        output("Loading story...", colors["message"])
+                        story.print_story()
 
                 else:
                     output("Invalid command: " + action, colors["error"])
