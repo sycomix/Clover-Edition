@@ -547,12 +547,12 @@ def play(generator):
                     new_prompt = format_result(new_prompt)
                     if len(new_prompt) == 0:
                         output("Invalid new prompt; cancelling. ", colors["error"])
+                        story.print_last()
                         continue
                     if input_bool("Do you want to save your previous story? (y/N): ",
                                   colors["query"], colors["user-text"]):
                         save_story(story)
                     story = new_story(generator, context, new_prompt, memory=story.memory, first_result=first_result)
-                    story.print_story()
 
                 else:
                     output("Invalid command: " + action, colors["error"])
