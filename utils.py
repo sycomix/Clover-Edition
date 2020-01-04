@@ -46,12 +46,16 @@ def format_result(text):
 
 
 # ECMA-48 set graphics codes for the curious. Check out "man console_codes"
-def output(text1, col1="0", text2=None, col2="0", wrap=True, beg=None, end=None):
+def output(text1, col1=None, text2=None, col2=None, wrap=True, beg=None, end=None, sep=' '):
     print('', end=beg)
+    clb1 = "\x1B[{}m".format(col1) if col1 else ""
+    clb2 = "\x1B[{}m".format(col2) if col2 else ""
+    cle1 = "\x1B[0m" if col1 else ""
+    cle2 = "\x1B[0m" if col2 else ""
     if text2 is None:
-        res = "\x1B[{}m{}\x1B[{}m".format(col1, text1.strip(), colors["default"])
+        res = clb1 + text1 + cle1
     else:
-        res = "\x1B[{}m{}\x1B[{}m {}\x1B[{}m".format(col1, text1.strip(), col2, text2.strip(), colors["default"])
+        res = clb1 + text1 + cle1 + sep + clb2 + text2 + cle2
     if wrap:
         width = settings.getint("text-wrap-width")
         width = 999999999 if width < 2 else width
@@ -63,8 +67,18 @@ def output(text1, col1="0", text2=None, col2="0", wrap=True, beg=None, end=None)
     return res.count('\n') + 1
 
 
+def input_bool(str, col1=colors["default"], col2=colors["default"], default=False):
+    val = input_line(str, col1, col2).strip().lower()
+    if val[0] == 'y':
+        return True
+    elif val[0] == 'n':
+        return False
+    else:
+        return default
+
+
 def input_line(str, col1=colors["default"], col2=colors["default"]):
-    val = input("\x1B[{}m{}\x1B[0m\x1B[{}m".format(col1, str, col1))
+    val = input("\x1B[{}m{}\x1B[0m\x1B[{}m".format(col1, str, col2))
     print("\x1B[0m", end="")
     return val
 
