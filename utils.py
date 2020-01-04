@@ -1,5 +1,6 @@
 # coding: utf-8
 import re
+from pathlib import Path
 
 import torch
 import random
@@ -43,6 +44,42 @@ def format_result(text):
     text = re.sub("<br>", "\n", text)
     text = re.sub(" {2,}", " ", text)
     return text.strip()
+
+
+def select_file(p, e):
+    """
+    Selects a file from a specific path matching a specific extension.
+    p: The path (and subdirectories) to choose from.
+    e: The extension to filter based on.
+    """
+    if p.is_dir():
+        t_dirs = sorted([x for x in p.iterdir() if x.is_dir()])
+        t_files = sorted([x for x in p.iterdir() if x.is_file() and x.name.endswith(e)])
+        files = t_dirs + t_files
+        is_top = p == Path("prompts")
+        list_items(
+            ["(Random)"] +
+            [f.name[:-len(e)] if f.is_file() else f.name + "/" for f in files] +
+            ["(Cancel)" if is_top else "(Back)"],
+            colors["menu"]
+        )
+        count = len(files) + 1
+        i = input_number(count)
+        if i == 0:
+            try:
+                i = random.randrange(1, count-1)
+            except ValueError:
+                i = 1
+        if i == count:
+            if is_top:
+                output("Action cancelled. ", colors["message"])
+                return None
+            else:
+                return select_file(p.parent, e)
+        else:
+            return select_file(files[i-1], e)
+    else:
+        return p
 
 
 # ECMA-48 set graphics codes for the curious. Check out "man console_codes"

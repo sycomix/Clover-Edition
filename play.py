@@ -37,52 +37,6 @@ else:
         pass
 
 
-def select_file(p=Path("prompts")):
-    if p.is_dir():
-        t_dirs = sorted([x for x in p.iterdir() if x.is_dir()])
-        t_files = sorted([x for x in p.iterdir() if x.is_file() and x.name.endswith(".txt")])
-        files = t_dirs + t_files
-        is_top = p == Path("prompts")
-        list_items(
-            ["(Random)"] +
-            [f.name[:-4] if f.is_file() else f.name + "/" for f in files] +
-            ["(Cancel)" if is_top else "(Back)"],
-            colors["menu"]
-        )
-        count = len(files) + 1
-        i = input_number(count)
-        if i == 0:
-            try:
-                i = random.randrange(1, count-1)
-            except ValueError:
-                i = 1
-        if i == count:
-            if is_top:
-                output("Action cancelled. ", colors["message"])
-                return None, None
-            else:
-                return select_file(p.parent)
-        else:
-            return select_file(files[i-1])
-    else:
-        with p.open("r", encoding="utf-8") as file:
-            try:
-                lines = file.read().strip().split('\n')
-                if len(lines) < 2:
-                    context = lines[0]
-                    prompt = ""
-                elif len(lines) == 2:
-                    context = lines[0]
-                    prompt = lines[1]
-                else:
-                    context = ' '.join(lines[0:-1])
-                    prompt = lines[-1]
-            except IOError:
-                output("Something went wrong; aborting. ", colors["error"])
-                return None, None
-        return context, prompt
-
-
 def get_generator():
     output(
         "\nInitializing AI Engine! (This might take a few minutes)\n",
@@ -186,6 +140,25 @@ def d20ify_action(action, d):
     return action
 
 
+def load_prompt(f):
+    with f.open('r', encoding="utf-8") as file:
+        try:
+            lines = file.read().strip().split('\n')
+            if len(lines) < 2:
+                context = lines[0]
+                prompt = ""
+            elif len(lines) == 2:
+                context = lines[0]
+                prompt = lines[1]
+            else:
+                context = ' '.join(lines[0:-1])
+                prompt = lines[-1]
+            return context, prompt
+        except IOError:
+            output("Something went wrong; aborting. ", colors["error"])
+    return None, None
+
+
 def new_story(generator, context, prompt, memory=None, first_result=None):
     if memory is None:
         memory = []
@@ -229,49 +202,18 @@ def save_story(story):
             output("Unable to write to file; aborting. ", colors["error"])
 
 
-def load_story(p=Path("saves")):
-    """Prompts the user for a save file stored in the saves directory,
-    and returns a valid story, as well as the prompt and starting context if the story is successfully loaded.
-    Otherwise, returns None, None, None"""
-    if p.is_dir():
-        t_dirs = sorted([x for x in p.iterdir() if x.is_dir()])
-        t_files = sorted([x for x in p.iterdir() if x.is_file() and x.name.endswith(".json")])
-        files = t_dirs + t_files
-        is_top = p == Path("saves")
-        list_items(
-            ["(Random)"] +
-            [f.name[:-5] if f.is_file() else f.name + "/" for f in files] +
-            ["(Cancel)" if is_top else "(Back)"],
-            colors["menu"]
-        )
-        count = len(files) + 1
-        i = input_number(count)
-        if i == 0:
-            try:
-                i = random.randrange(1, count-1)
-            except ValueError:
-                i = 1
-        if i == count:
-            if is_top:
-                output("Action cancelled. ", colors["message"])
-                return None, None, None
-            else:
-                return load_story(p.parent)
-        else:
-            return load_story(files[i-1])
-    else:
-        with p.open('r') as f:
-            try:
-                story = Story(generator, "")
-                story.savefile = os.path.splitext(f.name.strip())
-                story.from_json(f.read())
-                return story, story.context, story.actions[-1] if len(story.actions) > 0 else ""
-            except FileNotFoundError:
-                output("Save file not found. ", colors["error"])
-                return None, None, None
-            except IOError:
-                output("Something wrong occurred when attempting to load the file. ", colors["error"])
-                return None, None, None
+def load_story(f):
+    with f.open('r', encoding="utf-8") as file:
+        try:
+            story = Story(generator, "")
+            story.savefile = os.path.splitext(file.name.strip())
+            story.from_json(file.read())
+            return story, story.context, story.actions[-1] if len(story.actions) > 0 else ""
+        except FileNotFoundError:
+            output("Save file not found. ", colors["error"])
+        except IOError:
+            output("Something went wrong; aborting. ", colors["error"])
+    return None, None, None
 
 
 def alter_text(text):
@@ -374,9 +316,9 @@ def play(generator):
         new_game_option = input_number(2)
 
         if new_game_option == 0:
-            context, prompt = select_file()
-            if context is None and prompt is None:
-                continue
+            prompt_file = select_file(Path("prompts"), ".txt")
+            if prompt_file is not None:
+                context, prompt = load_prompt(prompt_file)
         elif new_game_option == 1:
             with open(
                     Path("interface", "prompt-instructions.txt"), "r", encoding="utf-8"
@@ -401,9 +343,11 @@ def play(generator):
                 except IOError:
                     output("Permission error! Unable to save custom prompt. ", colors["error"])
         elif new_game_option == 2:
-            story, context, prompt = load_story()
-            if not story:
-                continue
+            story_file = select_file(Path("saves"), ".json")
+            if story_file:
+                story, context, prompt = load_story(story_file)
+                if not story:
+                    continue
 
         if len((context + prompt).strip()) == 0:
             output("Story has no prompt or context. Please enter a valid custom prompt. ", colors["error"])
@@ -576,10 +520,12 @@ def play(generator):
                     save_story(story)
 
                 elif action == "load":
-                    story, context, prompt = load_story()
-                    if story:
-                        output("Loading story...", colors["message"])
-                        story.print_story()
+                    story_file = select_file(Path("saves"), ".json")
+                    if story_file:
+                        story, context, prompt = load_story(story_file)
+                        if story:
+                            output("Loading story...", colors["message"])
+                            story.print_story()
 
                 elif action == "summarize":
                     first_result = story.results[-1]
