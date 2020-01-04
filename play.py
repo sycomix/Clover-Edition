@@ -245,11 +245,11 @@ def load_story(p=Path("saves")):
         if i == count:
             if is_top:
                 output("Action cancelled. ", colors["message"])
-                return None, None
+                return None, None, None
             else:
-                return select_file(p.parent)
+                return load_story(p.parent)
         else:
-            return select_file(files[i-1])
+            return load_story(files[i-1])
     else:
         with p.open('r') as f:
             try:
