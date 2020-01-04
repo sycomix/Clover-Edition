@@ -596,10 +596,7 @@ def play(generator):
                 elif player_died(result):
                     output(result, colors["ai-text"])
                     output("YOU DIED. GAME OVER", colors["error"])
-                    output(
-                        "\nOptions:\n0)Start a new game\n1)\"I'm not dead yet!\" (If you didn't actually die)",
-                        colors["menu"],
-                    )
+                    list_items(["Start a New Game", "\"I'm not dead yet!\" (If you didn't actually die."])
                     choice = input_number(1)
                     if choice == 0:
                         break
