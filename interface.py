@@ -16,6 +16,8 @@ def instructions():
 	print('  "/prompt"                Edit the story\'s permanent prompt paragraph')
 	print('  "/remember [SENTENCE]"   Commits something permanently to the AI\'s memory')
 	print('  "/forget"                Opens a menu allowing you to remove permanent memories')
+	print('  "/save"                  Saves your game to a file in the game\'s save directory')
+	print('  "/load"                  Loads a game from a file in the game\'s save directory')
 	print('  "/help"                  Prints these instructions again')
 	print('  "/set [SETTING] [VALUE]" Sets the specified setting to the specified value.:')
 	print('        temp               Higher values make the AI more random. Default: 0.4 | Current:', settings.getfloat("temp"))
