@@ -504,7 +504,7 @@ def play(generator):
                         memory = memory.strip('.')
                         memory = memory.strip('!')
                         memory = memory.strip('?')
-                        story.memory.append(memory.capitalize() + ".")
+                        story.memory.append(memory[0].upper() + memory[1:] + ".")
                         output("You remember " + memory + ". ", colors["message"])
                     else:
                         output("Please enter something valid to remember. ", colors["error"])
