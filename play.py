@@ -475,16 +475,14 @@ def play(generator):
                         continue
                     else:
                         newaction = story.actions[-1]
-                    output(newaction, colors['user-text'])
-                    story.revert()
-                    result = story.act(newaction)
-                    if story.is_looping():
                         story.revert()
-                        output("That action caused the model to start looping. Try something else instead. ",
-                               colors["error"])
-                        continue
-                    output(result, colors["ai-text"])
-                    continue
+                        result = story.act(newaction)
+                        if story.is_looping():
+                            story.revert()
+                            output("That action caused the model to start looping. Try something else instead. ",
+                                   colors["error"])
+                            continue
+                        story.print_last()
 
                 elif action == "revert":
                     if len(story.actions) < 2:
@@ -492,10 +490,7 @@ def play(generator):
                         continue
                     story.revert()
                     output("Last action reverted. ", colors["message"])
-                    if len(story.actions) < 2:
-                        output(story.context, colors["ai-text"])
                     story.print_last()
-                    continue
 
                 elif action == "alter":
                     story.results[-1] = alter_text(story.results[-1])
