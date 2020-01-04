@@ -52,7 +52,10 @@ def select_file(p=Path("prompts")):
         count = len(files) + 1
         i = input_number(count)
         if i == 0:
-            i = random.randrange(1, count-1)
+            try:
+                i = random.randrange(1, count-1)
+            except ValueError:
+                i = 1
         if i == count:
             if is_top:
                 output("Action cancelled. ", colors["message"])
@@ -241,7 +244,10 @@ def load_story(p=Path("saves")):
         count = len(files) + 1
         i = input_number(count)
         if i == 0:
-            i = random.randrange(1, count-1)
+            try:
+                i = random.randrange(1, count-1)
+            except ValueError:
+                i = 1
         if i == count:
             if is_top:
                 output("Action cancelled. ", colors["message"])
