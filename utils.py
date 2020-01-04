@@ -105,13 +105,15 @@ def output(text1, col1=None, text2=None, col2=None, wrap=True, beg=None, end=Non
 
 
 def input_bool(str, col1=colors["default"], col2=colors["default"], default=False):
-    val = input_line(str, col1, col2).strip().lower()
-    if val[0] == 'y':
-        return True
+    val = input_line(str, col1, col2).strip().lower().strip()
+    res = default
+    if val == "":
+        res = default
+    elif val[0] == 'y':
+        res = True
     elif val[0] == 'n':
-        return False
-    else:
-        return default
+        res = False
+    return res
 
 
 def input_line(str, col1=colors["default"], col2=colors["default"]):
