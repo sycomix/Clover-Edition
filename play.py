@@ -75,7 +75,7 @@ def select_file(p=Path("prompts")):
                     context = lines[0]
                     prompt = lines[1]
                 else:
-                    context = '\n'.join(lines[0:-1])
+                    context = ' '.join(lines[0:-1])
                     prompt = lines[-1]
             except IOError:
                 output("Something went wrong; aborting. ", colors["error"])
