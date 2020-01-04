@@ -49,8 +49,8 @@ def select_file(p=Path("prompts")):
             try:
                 lines = file.read().strip().split('\n')
                 if len(lines) < 2:
-                    context = ""
-                    prompt = lines[0]
+                    context = lines[0]
+                    prompt = ""
                 else:
                     context = lines[0]
                     prompt = lines[1]
