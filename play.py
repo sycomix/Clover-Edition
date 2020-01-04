@@ -396,12 +396,12 @@ def play(generator):
                     # Show user input again
                     # colPrint("\n> " + action.rstrip(), colors["user-text"], end="")
 
-            cmdRegex = re.search("^/([^ ]+) *(.*)$", action)
+            cmd_regex = re.search("^/([^ ]+) *(.*)$", action)
 
             # If this is a command
-            if cmdRegex:
-                action = cmdRegex.group(1)
-                cmdArgs = cmdRegex.group(2).strip().split()
+            if cmd_regex:
+                action = cmd_regex.group(1)
+                cmdArgs = cmd_regex.group(2).strip().split()
                 if action == "set":
                     if len(cmdArgs) < 2:
                         output("Invalid number of arguments for set command. ", colors["error"])
@@ -474,9 +474,9 @@ def play(generator):
                         story = new_story(generator, story.context, prompt)
                         continue
                     else:
-                        newaction = story.actions[-1]
+                        new_action = story.actions[-1]
                         story.revert()
-                        result = story.act(newaction)
+                        result = story.act(new_action)
                         if story.is_looping():
                             story.revert()
                             output("That action caused the model to start looping. Try something else instead. ",
@@ -501,7 +501,7 @@ def play(generator):
                     story.print_last()
 
                 elif action == "remember":
-                    memory = cmdRegex.group(2).strip()
+                    memory = cmd_regex.group(2).strip()
                     if len(memory) > 0:
                         memory = re.sub("^[Tt]hat +(.*)", "\\1", memory)
                         memory = memory.strip('.')
