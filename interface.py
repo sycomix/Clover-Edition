@@ -13,7 +13,7 @@ def instructions():
 	print('  "/restart"               Restarts the current story')
 	print('  "/print"                 Prints a transcript of your adventure (without extra newline formatting)')
 	print('  "/alter"                 Edit the last prompt from the AI')
-	print('  "/prompt"                Edit the story\'s permanent prompt paragraph')
+	print('  "/context"               Edit the story\'s permanent context paragraph')
 	print('  "/remember [SENTENCE]"   Commits something permanently to the AI\'s memory')
 	print('  "/forget"                Opens a menu allowing you to remove permanent memories')
 	print('  "/save"                  Saves your game to a file in the game\'s save directory')

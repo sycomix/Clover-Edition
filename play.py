@@ -46,9 +46,17 @@ def select_file(p=Path("prompts")):
         return select_file(files[input_number(len(files) - 1)])
     else:
         with p.open("r", encoding="utf-8") as file:
-            line1 = file.readline()
-            rest = file.read()
-        return line1, rest
+            try:
+                lines = file.read().strip().split('\n')
+                if len(lines) < 2:
+                    context = ""
+                    prompt = lines[0]
+                else:
+                    context = lines[0]
+                    prompt = lines[1]
+            except IOError:
+                return None, None
+        return context, prompt
 
 
 def get_generator():
@@ -159,9 +167,8 @@ def new_story(generator, prompt, context):
     prompt = prompt.strip()
     context = context.strip()
     story = Story(generator, prompt)
-    user_portion = format_result(prompt + ' ' + context)
-    first_result = story.act(context)
-    output(user_portion, colors['user-text'], first_result, colors['ai-text'])
+    story.act(context)
+    story.print_story()
     return story
 
 
@@ -205,7 +212,7 @@ def load_story():
             story = Story(generator, "")
             story.savefile = savefile
             story.from_json(f.read())
-            return story, story.prompt, story.actions[-1] if len(story.actions) > 0 else ""
+            return story, story.context, story.actions[-1] if len(story.actions) > 0 else ""
         except FileNotFoundError:
             output("Save file not found. ", colors["error"])
             return None, None, None
@@ -311,17 +318,20 @@ def play(generator):
 
         list_items(["Pick Prompt From File (Default if you type nothing)", "Write Custom Prompt", "Load a Saved Game"],
                    colors['menu'])
-
         new_game_option = input_number(2)
+
         if new_game_option == 0:
-            prompt, context = select_file()
+            context, prompt = select_file()
+            if context is None and prompt is None:
+                output("Invalid prompt and context. Please try another file. ", colors["error"])
+                continue
         elif new_game_option == 1:
             with open(
                     Path("interface", "prompt-instructions.txt"), "r", encoding="utf-8"
             ) as file:
                 output(file.read(), colors["instructions"], wrap=False)
-            prompt = input_line("Prompt> ", colors["main-prompt"], colors["user-text"])
             context = input_line("Context> ", colors["main-prompt"], colors["user-text"])
+            prompt = input_line("Prompt> ", colors["main-prompt"], colors["user-text"])
             filename = input_line(
                 "Name to save prompt as? (Leave blank for no save): ",
                 colors["query"],
@@ -339,19 +349,19 @@ def play(generator):
                 except IOError:
                     output("Permission error! Unable to save custom prompt. ", colors["error"])
         elif new_game_option == 2:
-            story, prompt, context = load_story()
+            story, context, prompt = load_story()
             if not story:
                 continue
 
-        if len((prompt + context).strip()) == 0:
+        if len((context + prompt).strip()) == 0:
             output("Story has no prompt or context. Please enter a valid custom prompt. ", colors["error"])
             continue
 
         instructions()
 
-        if story.savefile is None:
+        if story is None:
             output("Generating story...", colors["loading-message"])
-            story = new_story(generator, prompt, context)
+            story = new_story(generator, context, prompt)
         else:
             output("Loading story...", colors["loading-message"])
             story.print_story()
@@ -436,10 +446,10 @@ def play(generator):
 
                 elif action == "restart":
                     output("Restarting story...", colors["loading-message"])
-                    if len((prompt + context).strip()) == 0:
+                    if len((context + prompt).strip()) == 0:
                         output("Story has no prompt or context. Please enter a valid prompt. ", colors["error"])
                         continue
-                    story = new_story(generator, story.prompt, context)
+                    story = new_story(generator, story.context, prompt)
 
                 elif action == "quit":
                     if input_bool("Do you want to save? (y/N): ", colors["query"], colors["user-text"]):
@@ -458,10 +468,10 @@ def play(generator):
                 elif action == "retry":
                     if len(story.actions) < 2:
                         output("Restarting story...", colors["loading-message"])
-                        if len((prompt + context).strip()) == 0:
+                        if len((context + prompt).strip()) == 0:
                             output("Story has no prompt or context. Please enter a valid prompt. ", colors["error"])
                             continue
-                        story = new_story(generator, story.prompt, context)
+                        story = new_story(generator, story.context, prompt)
                         continue
                     else:
                         newaction = story.actions[-1]
@@ -483,21 +493,21 @@ def play(generator):
                     story.revert()
                     output("Last action reverted. ", colors["message"])
                     if len(story.actions) < 2:
-                        output(story.prompt, colors["ai-text"])
-                    output(story.get_last_action_result(), colors["ai-text"])
+                        output(story.context, colors["ai-text"])
+                    story.print_last()
                     continue
 
                 elif action == "alter":
                     story.results[-1] = alter_text(story.results[-1])
                     if len(story.actions) < 2:
-                        output(story.prompt, colors["ai-text"])
-                    output(story.get_last_action_result(), colors["ai-text"])
+                        output(story.context, colors["ai-text"])
+                    story.print_last()
 
-                elif action == "prompt":
-                    story.prompt = alter_text(story.prompt)
+                elif action == "context":
+                    story.context = alter_text(story.context)
                     if len(story.actions) < 2:
-                        output(story.prompt, colors["ai-text"])
-                    output(story.get_last_action_result(), colors["ai-text"])
+                        output(story.context, colors["ai-text"])
+                    story.print_last()
 
                 elif action == "remember":
                     memory = cmdRegex.group(2).strip()
@@ -526,7 +536,7 @@ def play(generator):
                     save_story(story)
 
                 elif action == "load":
-                    story, prompt, context = load_story()
+                    story, context, prompt = load_story()
                     if story:
                         output("Loading story...", colors["message"])
                         story.print_story()
