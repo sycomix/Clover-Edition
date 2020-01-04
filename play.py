@@ -299,6 +299,11 @@ def play(generator):
            "or email cloveranon@nuke.africa for bug reports, help, and feature requests.",
            colors['subsubtitle'])
 
+    # Prevent reference before assignment
+    story = None
+    context = None
+    prompt = None
+
     while True:
         # May be needed to avoid out of mem
         gc.collect()
