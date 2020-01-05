@@ -155,7 +155,7 @@ def settings_menu():
             output("Current: " + str(settings[key]), colors["menu"], beg='')
             new_value = input_line("Enter the new value: ", colors["query"], colors["user-text"])
             if len(new_value.strip()) == 0:
-                output("Invalid value; canceling. ", colors["error"])
+                output("Invalid value; cancelling. ", colors["error"])
                 continue
             output(key + ": " + setting_info[key][0], colors["menu"])
             output("Current: " + str(settings[key]), colors["menu"], beg='')
