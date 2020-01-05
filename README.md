@@ -57,10 +57,10 @@ Next install pytorch (aka the `torch` python module.) For GPU support pytorch re
 pip3 install torch -f https://download.pytorch.org/whl/torch_stable.html
 ```
 
-Next install the necessary python modules: `transformers` and `pyjarowinkler`. This should be done with pip by entering a command like this:
+Next we'll install the necessary python module `transformers`. This should be done with pip by entering a command like this:
 
 ```
-pip3 install transformers pyjarowinkler
+pip3 install transformers
 ```
 
 Windows users *may* want to install another module called "colorama". Though it may already be installed. If you see `[27m` glyphs, the color codes aren't working See the color support section.
