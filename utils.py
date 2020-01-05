@@ -1,14 +1,12 @@
 # coding: utf-8
 import re
-from pathlib import Path
 
-import torch
 import random
 import textwrap
 import os
 import sys
 
-from getconfig import logger, settings, colors
+from getconfig import logger, settings, colors, ptcolors
 from shutil import get_terminal_size
 
 
@@ -28,6 +26,47 @@ def in_colab():
     else:
         return True
 
+
+def use_ptoolkit():
+    return not in_colab() and not settings.getboolean('colab-mode') and settings.getboolean('prompt-toolkit')
+
+
+IN_COLAB = in_colab() or settings.getboolean('colab-mode')
+
+
+def clear_lines(n):
+    """Clear the last line in the terminal."""
+    if in_colab() or settings.getboolean('colab-mode'):
+        # this wont work in colab etc
+        return
+    screen_code = "\033[1A[\033[2K"  # up one line, and clear line
+    for _ in range(n):
+        print(screen_code, end="\r")
+
+
+if IN_COLAB:
+    logger.warning("Colab mode enabled, disabling line clearing and readline to avoid colab bugs.")
+else:
+    try:
+        if not settings.getboolean('prompt-toolkit'):
+            raise ModuleNotFoundError
+        from inline_editor import edit_multiline
+        from prompt_toolkit import prompt as ptprompt
+        from prompt_toolkit import print_formatted_text
+        from prompt_toolkit.styles import Style
+        from prompt_toolkit.formatted_text import to_formatted_text, HTML
+
+        logger.info(
+            'Python Prompt Toolkit has been imported. This enables a number of editing features but may cause bugs for colab users.')
+    except (ImportError, ModuleNotFoundError):
+        try:
+            settings['prompt-toolkit'] = "off"
+            import readline
+
+            logger.info(
+                'readline has been imported. This enables a number of editting features but may cause bugs for colab users.')
+        except (ImportError, ModuleNotFoundError):
+            pass
 
 termWidth = get_terminal_size()[0]
 if termWidth < 5:
@@ -67,7 +106,7 @@ def select_file(p, e, d=0):
             ["(Random)"] +
             [f.name[:-len(e)] if f.is_file() else f.name + "/" for f in files] +
             ["(Cancel)" if d == 0 else "(Back)"],
-            colors["menu"]
+            "menu"
         )
         count = len(files) + 1
         i = input_number(count)
@@ -78,7 +117,7 @@ def select_file(p, e, d=0):
                 i = 1
         if i == count:
             if d == 0:
-                output("Action cancelled. ", colors["message"])
+                output("Action cancelled. ", "message")
                 return None
             else:
                 return select_file(p.parent, e, d-1)
@@ -89,67 +128,95 @@ def select_file(p, e, d=0):
 
 
 # ECMA-48 set graphics codes for the curious. Check out "man console_codes"
-def output(text1, col1=None, text2=None, col2=None, wrap=True, beg=None, end=None, sep=' '):
+def output(text1, col1=None, text2=None, col2=None, wrap=True, beg=None, end='\n', sep=' '):
     print('', end=beg)
-    clb1 = "\x1B[{}m".format(col1) if col1 else ""
-    clb2 = "\x1B[{}m".format(col2) if col2 else ""
-    cle1 = "\x1B[0m" if col1 else ""
-    cle2 = "\x1B[0m" if col2 else ""
-    if text2 is None:
-        res = clb1 + text1 + cle1
-    else:
-        res = clb1 + text1 + cle1 + sep + clb2 + text2 + cle2
+    ptoolkit = use_ptoolkit() and ptcolors['displaymethod'] == "prompt-toolkit"
+
+    if not ptoolkit:
+        col1 = colors[col1] if col1 and colors[col1] and colors[col1][0].isdigit() else None
+        col2 = colors[col2] if col2 and colors[col2] and colors[col2][0].isdigit() else None
+
+        clb1 = "\x1B[{}m".format(col1) if col1 else ""
+        clb2 = "\x1B[{}m".format(col2) if col2 else ""
+        cle1 = "\x1B[0m" if col1 else ""
+        cle2 = "\x1B[0m" if col2 else ""
+        text1 = clb1 + text1 + cle1
+        if text2 is not None:
+            text2 = clb2 + text2 + cle2
     if wrap:
         width = settings.getint("text-wrap-width")
         width = 999999999 if width < 2 else width
         width=min(width, termWidth)
-        res = textwrap.fill(
-            res, width, replace_whitespace=False
+        text1 = textwrap.fill(
+            text1, width, replace_whitespace=False, drop_whitespace=False
         )
-    print(res, end=end)
-    return res.count('\n') + 1
+        if text2:
+            if len(text1)+1+len(text2) >= width:
+                if not re.match("^\n+$", sep):
+                    sep += '\n'
+            text2 = textwrap.fill(
+                text2, width, replace_whitespace=False, drop_whitespace=False
+            )
+
+    if ptoolkit:
+        col1 = ptcolors[col1] if col1 and ptcolors[col1] else ""
+        col2 = ptcolors[col2] if col2 and ptcolors[col2] else ""
+        print_formatted_text(to_formatted_text(text1, col1), end='')
+        if text2:
+            print_formatted_text(to_formatted_text(sep), end='')
+            print_formatted_text(to_formatted_text(text2, col2), end='')
+        print('', end=end)
+    else:
+        if not text2:
+            print(text1, end=end)
+        else:
+            print(text1, end='')
+            print(sep, end='')
+            print(text2, end=end)
+
+    linecount = 1
+    if text1:
+        linecount += text1.count('\n')
+    if end:
+        linecount += end.count('\n')
+    if sep:
+        linecount += sep.count('\n')
+    if text2:
+        linecount += text2.count('\n')
+    return linecount
 
 
-def input_bool(str, col1=colors["default"], col2=colors["default"], default=False):
-    val = input_line(str, col1, col2).strip().lower().strip()
-    res = default
-    if val == "":
-        res = default
-    elif val[0] == 'y':
-        res = True
+def input_bool(str, col1="default", default=False):
+    val = input_line(str, col1).strip().lower()
+    if not val:
+        return default
+    if val[0] == 'y':
+        return True
     elif val[0] == 'n':
         res = False
     return res
 
 
-def input_line(str, col1=colors["default"], col2=colors["default"]):
-    val = input("\x1B[{}m{}\x1B[0m\x1B[{}m".format(col1, str, col2))
-    print("\x1B[0m", end="")
+def input_line(str, col1="default", default=""):
+    if use_ptoolkit() and ptcolors['displaymethod'] == "prompt-toolkit":
+        col1 = ptcolors[col1] if col1 and ptcolors[col1] else ""
+        val = ptprompt(to_formatted_text(str, col1), default=default)
+    else:
+        clb1 = "\x1B[{}m".format(colors[col1]) if col1 and colors[col1] and colors[col1][0].isdigit() else ""
+        cle1 = "\x1B[0m" if col1 and colors[col1] and colors[col1][0].isdigit() else ""
+        val = input(clb1 + str + cle1)
+        print("\x1B[0m", end="")
     return val
-
-
-def clear_lines(n):
-    """Clear the last line in the terminal."""
-    if in_colab() or settings.getboolean('colab-mode'):
-        # this wont work in colab etc
-        return
-    screen_code = "\033[1A[\033[2K"  # up one line, and clear line
-    for _ in range(n):
-        print(screen_code, end="")
 
 
 def input_number(maxn, default=0):
     bell()
     print()
-    val = input_line(
-        "Enter a number from above (default 0):",
-        colors["selection-prompt"],
-        colors["selection-value"],
-    )
-    if val == "":
+    val = input_line("Enter a number from above (default 0):", "selection-prompt")
+    if not val:
         return default
     elif not re.match("^\d+$", val) or 0 > int(val) or int(val) > maxn:
-        output("Invalid choice. ", colors["error"])
+        output("Invalid choice. ", "error")
         return input_number(maxn)
     else:
         return int(val)
@@ -202,15 +269,15 @@ def sentence_split(text):
     return sentences
 
 
-def list_items(items, col=colors['menu'], start=0, end=None):
+def list_items(items, col='menu', start=0, end=None, wrap=False):
     """Lists a generic list of items, numbered, starting from the number passed to start. If end is not None,
     an additional element will be added with its name as the value """
     i = start
     for s in items:
-        output(str(i) + ") " + s, col, end='')
+        output(str(i) + ") " + s, col, end='', wrap=wrap)
         i += 1
     if end is not None:
-        output('', end=end)
+        output('', end=end, wrap=wrap)
 
 
 def remove_prefix(text, prefix):
@@ -278,6 +345,7 @@ def get_similarity(first_string, second_string, scaling=0.1):
 
     # Round to 2 places of percision to match pyjarowinkler formatting
     return round((jaro_distance + prefix * scaling * (1.0 - jaro_distance)) * 100.0) / 100.0
+
 
 def get_num_options(num):
 
@@ -561,16 +629,16 @@ def first_to_second_person(text):
         variations = mapping_variation_pairs(pair)
         for variation in variations:
             text = replace_outside_quotes(text, variation[0], variation[1])
-
-    return capitalize_first_letters(text[1:])
+    return text
 
 
 def second_to_first_person(text):
     text = " " + text
     text = standardize_punctuation(text)
+    if text[-1] not in [".", "?", "!"]:
+        text += "."
     for pair in second_to_first_mappings:
         variations = mapping_variation_pairs(pair)
         for variation in variations:
             text = replace_outside_quotes(text, variation[0], variation[1])
-
-    return capitalize_first_letters(text[1:])
+    return text

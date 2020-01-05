@@ -4,8 +4,7 @@ from pathlib import Path
 with open(Path('interface', 'start-message.txt'), 'r') as file:
     print('\x1B[7m' + file.read() + '\x1B[27m')
 import gc
-import json
-from random import shuffle
+import torch
 
 from getconfig import config, setting_info
 from storymanager import Story
@@ -22,34 +21,22 @@ try:
 except ModuleNotFoundError:
     pass
 
-IN_COLAB = in_colab()
-logger.info("Colab detected: {}".format(IN_COLAB))
-IN_COLAB = IN_COLAB or settings.getboolean('colab-mode')
-if IN_COLAB:
-    logger.warning("Colab mode enabled, disabling line clearing and readline to avoid colab bugs.")
-else:
-    try:
-        import readline
-
-        logger.info(
-            'readline has been imported. This enables a number of editting features but may cause bugs for colab users.')
-    except ModuleNotFoundError:
-        pass
+logger.info("Colab detected: {}".format(in_colab()))
 
 
 def get_generator():
     output(
-        "\nInitializing AI Engine! (This might take a few minutes)\n",
-        colors["loading-message"],
+        "\nInitializing AI Engine! (This might take a few minutes)",
+        "loading-message", end="\n\n"
     )
     models = [x for x in Path('models').iterdir() if x.is_dir()]
     if not models:
         raise FileNotFoundError(
             'There are no models in the models directory! You must download a pytorch compatible model!')
     elif len(models) > 1:
-        output("You have multiple models in your models folder. Please select one to load:", colors['message'])
+        output("You have multiple models in your models folder. Please select one to load:", 'message')
         for n, model_path in enumerate(models):
-            output("{}: {}".format(n, model_path.name), colors['menu'])
+            output("{}: {}".format(n, model_path.name), 'menu')
 
         model = models[input_number(len(models) - 1)]
     else:
@@ -69,7 +56,7 @@ if not Path("prompts", "Anime").exists():
     try:
         import pastebin
     except:
-        output("Continuing without downloading prompts...", colors["error"], )
+        output("Continuing without downloading prompts...", "error")
 
 
 def d20ify_speech(action, d):
@@ -143,31 +130,34 @@ def d20ify_action(action, d):
 def settings_menu():
     all_settings = list(setting_info.keys())
     while True:
-        list_items(all_settings + ["(Cancel)"])
+        list_items([pad_text(k, 19) + v[0] + (" " if v[0] else "") +
+                    "Default: " + str(v[1]) + " | "
+                    "Current: " + settings.get(k) for k, v in setting_info.items()] + [
+                    "(Finish)"])
         i = input_number(len(all_settings))
         if i == len(all_settings):
-            output("Action cancelled. ", colors["menu"])
+            output("Done editing settings. ", "menu")
             return
         else:
             key = all_settings[i]
-            output(key + ": " + setting_info[key][0], colors["menu"])
-            output("Default: " + str(setting_info[key][1]), colors["menu"], beg='')
-            output("Current: " + str(settings[key]), colors["menu"], beg='')
-            new_value = input_line("Enter the new value: ", colors["query"], colors["user-text"])
+            output(key + ": " + setting_info[key][0], "menu")
+            output("Default: " + str(setting_info[key][1]), "menu", beg='')
+            output("Current: " + str(settings[key]), "menu", beg='')
+            new_value = input_line("Enter the new value: ", "query")
             if len(new_value.strip()) == 0:
-                output("Invalid value; cancelling. ", colors["error"])
+                output("Invalid value; cancelling. ", "error")
                 continue
-            output(key + ": " + setting_info[key][0], colors["menu"])
-            output("Current: " + str(settings[key]), colors["menu"], beg='')
-            output("New: " + str(new_value), colors["menu"], beg='')
-            output("Saving an invalid option will corrupt file! ", colors["message"])
-            if input_bool("Change setting? (y/N): ", colors["selection-prompt"], colors["selection-value"]):
+            output(key + ": " + setting_info[key][0], "menu")
+            output("Current: " + str(settings[key]), "menu", beg='')
+            output("New: " + str(new_value), "menu", beg='')
+            output("Saving an invalid option will corrupt file! ", "message")
+            if input_bool("Change setting? (y/N): ", "selection-prompt"):
                 settings[key] = new_value
                 try:
                     with open("config.ini", "w", encoding="utf-8") as file:
                         config.write(file)
                 except IOError:
-                    output("Permission error! Changes will not be saved for next session.", colors["error"])
+                    output("Permission error! Changes will not be saved for next session.", "error")
 
 
 def load_prompt(f):
@@ -185,7 +175,7 @@ def load_prompt(f):
                 prompt = lines[-1]
             return context, prompt
         except IOError:
-            output("Something went wrong; aborting. ", colors["error"])
+            output("Something went wrong; aborting. ", "error")
     return None, None
 
 
@@ -206,14 +196,13 @@ def new_story(generator, context, prompt, memory=None, first_result=None):
 
 def save_story(story):
     """Saves the existing story to a json file in the saves directory to be resumed later."""
-    savefile = story.savefile
+    savefile = story.savefile if story.savefile else ""
     while True:
         print()
-        temp_savefile = input_line("Please enter a name for this save: ",
-                                   colors["query"], colors["user-text"])
+        temp_savefile = input_line("Please enter a name for this save: ", "query")
         savefile = temp_savefile if len(temp_savefile.strip()) > 0 else savefile
-        if len(savefile.strip()) == 0:
-            output("Please enter a valid savefile name. ", colors["error"])
+        if not savefile or len(savefile.strip()) == 0:
+            output("Please enter a valid savefile name. ", "error")
         else:
             break
     savefile = os.path.splitext(remove_prefix(savefile, "saves/").strip())[0]
@@ -223,13 +212,13 @@ def save_story(story):
     try:
         os.makedirs(os.path.dirname(finalpath), exist_ok=True)
     except OSError:
-        output("Error when creating subdirectory; aborting. ", colors["error"])
+        output("Error when creating subdirectory; aborting. ", "error")
     with open(finalpath, 'w') as f:
         try:
             f.write(savedata)
-            output("Successfully saved to " + savefile, colors["message"])
+            output("Successfully saved to " + savefile, "message")
         except IOError:
-            output("Unable to write to file; aborting. ", colors["error"])
+            output("Unable to write to file; aborting. ", "error")
 
 
 def load_story(f):
@@ -240,16 +229,19 @@ def load_story(f):
             story.from_json(file.read())
             return story, story.context, story.actions[-1] if len(story.actions) > 0 else ""
         except FileNotFoundError:
-            output("Save file not found. ", colors["error"])
+            output("Save file not found. ", "error")
         except IOError:
-            output("Something went wrong; aborting. ", colors["error"])
+            output("Something went wrong; aborting. ", "error")
     return None, None, None
 
 
 def alter_text(text):
+    if use_ptoolkit():
+        return edit_multiline(text).strip()
+
     sentences = sentence_split(text)
     while True:
-        output(" ".join(sentences), colors['menu'])
+        output(" ".join(sentences), 'menu')
         list_items(
             [
                 "Edit a sentence.",
@@ -257,29 +249,29 @@ def alter_text(text):
                 "Add a sentence.",
                 "Edit entire prompt.",
                 "Save and finish."
-            ], colors['menu'])
+            ], 'menu')
         try:
             i = input_number(4)
         except:
             continue
         if i == 0:
             while True:
-                output("Choose the sentence you want to edit.", colors["menu"])
-                list_items(sentences + ["(Back)"], colors["menu"])
+                output("Choose the sentence you want to edit.", "menu")
+                list_items(sentences + ["(Back)"], "menu")
                 i = input_number(len(sentences))
                 if i == len(sentences):
                     break
                 else:
-                    output(sentences[i], colors['menu'])
-                    res = input_line("Enter the altered sentence: ", colors['menu']).strip()
+                    output(sentences[i], 'menu')
+                    res = input_line("Enter the altered sentence: ", 'menu').strip()
                     if len(res) == 0:
-                        output("Invalid sentence entered: returning to previous menu. ", colors['error'])
+                        output("Invalid sentence entered: returning to previous menu. ", 'error')
                         continue
                     sentences[i] = res
         elif i == 1:
             while True:
-                output("Choose the sentence you want to remove.", colors["menu"])
-                list_items(sentences + ["(Back)"], colors["menu"])
+                output("Choose the sentence you want to remove.", "menu")
+                list_items(sentences + ["(Back)"], "menu")
                 i = input_number(len(sentences))
                 if i == len(sentences):
                     break
@@ -287,23 +279,23 @@ def alter_text(text):
                     del sentences[i]
         elif i == 2:
             while True:
-                output("Choose the sentence you want to insert after.", colors["menu"])
-                list_items(["(Beginning)"] + sentences + ["(Back)"], colors["menu"])
+                output("Choose the sentence you want to insert after.", "menu")
+                list_items(["(Beginning)"] + sentences + ["(Back)"], "menu")
                 max = len(sentences) + 1
                 i = input_number(max)
                 if i == max:
                     break
                 else:
-                    res = input_line("Enter the new sentence: ", colors['menu']).strip()
+                    res = input_line("Enter the new sentence: ", 'menu').strip()
                     if len(res) == 0:
-                        output("Invalid sentence entered: returning to previous menu. ", colors['error'])
+                        output("Invalid sentence entered: returning to previous menu. ", 'error')
                         continue
                     sentences.insert(i, res)
         elif i == 3:
-            output(" ".join(sentences), colors['menu'])
-            res = input_line("Enter the new altered prompt: ", colors['menu']).strip()
+            output(" ".join(sentences), 'menu')
+            res = input_line("Enter the new altered prompt: ", 'menu').strip()
             if len(res) == 0:
-                output("Invalid prompt entered: returning to previous menu. ", colors['error'])
+                output("Invalid prompt entered: returning to previous menu. ", 'error')
                 continue
             text = res
             sentences = sentence_split(res)
@@ -316,7 +308,7 @@ def play(generator):
     print()
 
     with open(Path("interface", "mainTitle.txt"), "r", encoding="utf-8") as file:
-        output(file.read(), colors["title"], wrap=False, beg='')
+        output(file.read(), "title", wrap=False, beg='')
 
     with open(Path("interface", "subTitle.txt"), "r", encoding="utf-8") as file:
         cols = termWidth
@@ -324,12 +316,20 @@ def play(generator):
             line = re.sub(r'\n', '', line)
             line = line[:cols]
             # fills in the graphic using reverse video mode substituted into the areas between |'s
-            output(re.sub(r'\|[ _]*(\||$)', lambda x: '\x1B[7m' + x.group(0) + '\x1B[27m', line), colors['subtitle'],
-                   wrap=False, beg='')
+            if use_ptoolkit():
+                style = Style.from_dict({
+                    'nor': ptcolors['subtitle'],
+                    'rev': ptcolors['subtitle'] + ' reverse',
+                })
+                text = re.sub(r'\|[ _]*(\||$)', lambda x: '<rev>' + x.group(0) + '</rev>', line)
+                print_formatted_text(HTML('<nor>' + text + '</nor>'), style=style)
+            else:
+                output(re.sub(r'\|[ _]*(\||$)', lambda x: '\x1B[7m' + x.group(0) + '\x1B[27m', line), 'subtitle',
+                       wrap=False, beg='')
 
     output("Go to https://github.com/cloveranon/Clover-Edition/ "
            "or email cloveranon@nuke.africa for bug reports, help, and feature requests.",
-           colors['subsubtitle'])
+           'subsubtitle')
 
     # Prevent reference before assignment
     story = None
@@ -344,9 +344,9 @@ def play(generator):
         list_items(["Pick Prompt From File (Default if you type nothing)",
                     "Write Custom Prompt",
                     "Load a Saved Game",
-                    "Edit Settings"
-                    ], colors['menu'])
-        new_game_option = input_number(3)
+                    "Change Settings"],
+                   'menu')
+        new_game_option = input_number(2)
 
         if new_game_option == 0:
             prompt_file = select_file(Path("prompts"), ".txt")
@@ -358,17 +358,17 @@ def play(generator):
             with open(
                     Path("interface", "prompt-instructions.txt"), "r", encoding="utf-8"
             ) as file:
-                output(file.read(), colors["instructions"], wrap=False)
-            context = input_line("Context> ", colors["main-prompt"], colors["user-text"])
-            prompt = input_line("Prompt> ", colors["main-prompt"], colors["user-text"])
-            filename = input_line(
-                "Name to save prompt as? (Leave blank for no save): ",
-                colors["query"],
-                colors["user-text"],
-            )
-            filename = re.sub(
-                "-$", "", re.sub("^-", "", re.sub("[^a-zA-Z0-9_-]+", "-", filename))
-            )
+                output(file.read(), "instructions", wrap=False)
+            if use_ptoolkit():
+                output("Context>", "main-prompt")
+                context = edit_multiline()
+                output("Prompt>", "main-prompt")
+                prompt = edit_multiline()
+            else:
+                context = input_line("Context> ", "main-prompt")
+                prompt = input_line("Prompt> ", "main-prompt")
+            filename = input_line("Name to save prompt as? (Leave blank for no save): ", "query")
+            filename = re.sub("-$", "", re.sub("^-", "", re.sub("[^a-zA-Z0-9_-]+", "-", filename)))
             if filename != "":
                 try:
                     with open(
@@ -376,7 +376,7 @@ def play(generator):
                     ) as f:
                         f.write(context + "\n" + prompt)
                 except IOError:
-                    output("Permission error! Unable to save custom prompt. ", colors["error"])
+                    output("Permission error! Unable to save custom prompt. ", "error")
         elif new_game_option == 2:
             story_file = select_file(Path("saves"), ".json")
             if story_file:
@@ -385,21 +385,18 @@ def play(generator):
                     continue
             else:
                 continue
-        elif new_game_option == 3:
-            settings_menu()
-            continue
 
         if len((context + prompt).strip()) == 0:
-            output("Story has no prompt or context. Please enter a valid custom prompt. ", colors["error"])
+            output("Story has no prompt or context. Please enter a valid custom prompt. ", "error")
             continue
 
         instructions()
 
         if story is None:
-            output("Generating story...", colors["loading-message"])
+            output("Generating story...", "loading-message")
             story = new_story(generator, context, prompt)
         else:
-            output("Loading story...", colors["loading-message"])
+            output("Loading story...", "loading-message")
             story.print_story()
 
         while True:
@@ -408,7 +405,7 @@ def play(generator):
             if act_alts > 0:
                 # TODO change this to two messages for different colors
                 suggested_actions = []
-                output("Suggested actions:", colors["selection-value"])
+                output("Suggested actions:", "selection-value")
                 action_suggestion_lines = 2
                 for i in range(act_alts):
                     suggested_action = story.get_suggestion()
@@ -417,11 +414,15 @@ def play(generator):
                         suggested_actions.append(suggested_action)
                         suggestion = "{}) {}".format(j, suggested_action)
                         action_suggestion_lines += \
-                            output(suggestion, colors["selection-value"], beg='' if i != 0 else None)
+                            output(suggestion, "selection-value", beg='' if i != 0 else None)
 
             bell()
             print()
-            action = input_line("> You ", colors["main-prompt"], colors["user-text"])
+
+            if use_ptoolkit():
+                action = input_line("> ", "main-prompt", default="%s" % "You ")
+            else:
+                action = input_line("> You ", "main-prompt")
 
             # Clear suggestions and user input
             if act_alts > 0:
@@ -429,34 +430,36 @@ def play(generator):
                 if not IN_COLAB:
                     clear_lines(action_suggestion_lines)
 
-            cmd_regex = re.search(r"^/([^ ]+) *(.*)$", action)
+            # Users can type in "/command", or "You /command" if prompt_toolkit is on and they left the "You" in
+            cmd_regex = re.search(r"^(?: *you *)?/([^ ]+) *(.*)$", action, flags=re.IGNORECASE)
 
             # If this is a command
             if cmd_regex:
-                action = cmd_regex.group(1)
+                action = cmd_regex.group(1).strip().lower()
                 cmd_args = cmd_regex.group(2).strip().split()
+
                 if action == "set":
                     if len(cmd_args) < 2:
-                        output("Invalid number of arguments for set command. ", colors["error"])
+                        output("Invalid number of arguments for set command. ", "error")
                         instructions()
                         continue
                     if cmd_args[0] in settings:
                         curr_setting_val = settings[cmd_args[0]]
                         output(
-                            "Current value of {}: {}    New value: {}".format(
+                            "Current Value of {}: {}     Changing to: {}".format(
                                 cmd_args[0], curr_setting_val, cmd_args[1]
                             )
                         )
-                        output("Saving an invalid option will corrupt file! ", colors["error"])
-                        if input_bool("Change setting? (y/N): ", colors["selection-prompt"], colors["selection-value"]):
-                            settings[cmd_args[0]] = cmd_args[1]
+                        settings[cmd_args[0]] = cmd_args[1]
+                        output("Saving an invalid option will corrupt file! ", "error")
+                        if input_bool("Save setting? (y/N): ", "selection-prompt"):
                             try:
                                 with open("config.ini", "w", encoding="utf-8") as file:
                                     config.write(file)
                             except IOError:
-                                output("Permission error! Changes will not be saved for next session.", colors["error"])
+                                output("Permission error! Changes will not be saved for next session.", "error")
                     else:
-                        output("Invalid setting", colors["error"])
+                        output("Invalid setting", "error")
                         instructions()
 
                 elif action == "settings":
@@ -464,7 +467,7 @@ def play(generator):
                     story.print_last()
 
                 elif action == "menu":
-                    if input_bool("Do you want to save? (y/N): ", colors["query"], colors["user-text"]):
+                    if input_bool("Do you want to save? (y/N): ", "query", "user-text"):
                         save_story(story)
                     story = None
                     context = None
@@ -472,14 +475,14 @@ def play(generator):
                     break
 
                 elif action == "restart":
-                    output("Restarting story...", colors["loading-message"])
+                    output("Restarting story...", "loading-message")
                     if len((context + prompt).strip()) == 0:
-                        output("Story has no prompt or context. Please enter a valid prompt. ", colors["error"])
+                        output("Story has no prompt or context. Please enter a valid prompt. ", "error")
                         continue
                     story = new_story(generator, story.context, prompt)
 
                 elif action == "quit":
-                    if input_bool("Do you want to save? (y/N): ", colors["query"], colors["user-text"]):
+                    if input_bool("Do you want to save? (y/N): ", "query", "user-text"):
                         save_story(story)
                     exit()
 
@@ -487,16 +490,16 @@ def play(generator):
                     instructions()
 
                 elif action == "print":
-                    use_wrap = input_bool("Print with wrapping? (y/N): ", colors["query"], colors["user-text"])
-                    use_color = input_bool("Print with colors? (y/N): ", colors["query"], colors["user-text"])
-                    output("Printing story...", colors["message"])
+                    use_wrap = input_bool("Print with wrapping? (y/N): ", "query", "user-text")
+                    use_color = input_bool("Print with colors? (y/N): ", "query", "user-text")
+                    output("Printing story...", "message")
                     story.print_story(wrap=use_wrap, color=use_color)
 
                 elif action == "retry":
                     if len(story.actions) < 2:
-                        output("Restarting story...", colors["loading-message"])
+                        output("Restarting story...", "loading-message")
                         if len((context + prompt).strip()) == 0:
-                            output("Story has no prompt or context. Please enter a valid prompt. ", colors["error"])
+                            output("Story has no prompt or context. Please enter a valid prompt. ", "error")
                             continue
                         story = new_story(generator, story.context, prompt)
                         continue
@@ -507,16 +510,16 @@ def play(generator):
                         if story.is_looping():
                             story.revert()
                             output("That action caused the model to start looping. Try something else instead. ",
-                                   colors["error"])
+                                   "error")
                             continue
                         story.print_last()
 
                 elif action == "revert":
                     if len(story.actions) < 2:
-                        output("You can't go back any farther. ", colors["error"])
+                        output("You can't go back any farther. ", "error")
                         continue
                     story.revert()
-                    output("Last action reverted. ", colors["message"])
+                    output("Last action reverted. ", "message")
                     story.print_last()
 
                 elif action == "alter":
@@ -535,15 +538,15 @@ def play(generator):
                         memory = memory.strip('!')
                         memory = memory.strip('?')
                         story.memory.append(memory[0].upper() + memory[1:] + ".")
-                        output("You remember " + memory + ". ", colors["message"])
+                        output("You remember " + memory + ". ", "message")
                     else:
-                        output("Please enter something valid to remember. ", colors["error"])
+                        output("Please enter something valid to remember. ", "error")
 
                 elif action == "forget":
                     while True:
                         i = 0
-                        output("Select a memory to forget: ", colors["menu"])
-                        list_items(story.memory + ["(Finish)"], colors["menu"])
+                        output("Select a memory to forget: ", "menu")
+                        list_items(story.memory + ["(Finish)"], "menu")
                         i = input_number(len(story.memory))
                         if i == len(story.memory):
                             break
@@ -558,7 +561,7 @@ def play(generator):
                     if story_file:
                         tstory, tcontext, tprompt = load_story(story_file)
                         if tstory:
-                            output("Loading story...", colors["message"])
+                            output("Loading story...", "message")
                             story = tstory
                             context = tcontext
                             prompt = tprompt
@@ -570,84 +573,91 @@ def play(generator):
 
                 elif action == "summarize":
                     first_result = story.results[-1]
-                    output(story.context, colors["user-text"], "(YOUR SUMMARY HERE)", colors["message"])
-                    output(story.results[-1], colors["ai-text"])
-                    new_prompt = input_line("Enter the summary for the new story: ",
-                                            colors["query"], colors["user-text"])
+                    output(story.context, "user-text", "(YOUR SUMMARY HERE)", "message")
+                    output(story.results[-1], "ai-text")
+                    new_prompt = input_line("Enter the summary for the new story: ", "query")
                     new_prompt = format_result(new_prompt)
                     if len(new_prompt) == 0:
-                        output("Invalid new prompt; cancelling. ", colors["error"])
+                        output("Invalid new prompt; cancelling. ", "error")
                         story.print_last()
                         continue
                     if input_bool("Do you want to save your previous story? (y/N): ",
-                                  colors["query"], colors["user-text"]):
+                                  "query", "user-text"):
                         save_story(story)
                     story = new_story(generator, context, new_prompt, memory=story.memory, first_result=first_result)
 
                 else:
-                    output("Invalid command: " + action, colors["error"])
+                    output("Invalid command: " + action, "error")
 
             # Otherwise this is just a normal action.
             else:
                 action = format_result(action)
 
-                # If we're using suggestions and a player entered one
-                if act_alts > 0:
-                    # Options to select a suggestion action
-                    if action in [str(i) for i in range(len(suggested_actions))]:
-                        action = suggested_actions[int(action)]
+                story_insert_regex = re.search("^ *(?:you)? *! *(.*)$", action, flags=re.IGNORECASE)
 
                 # If the player enters a story insert.
-                if action != "" and action[0] == "!":
-                    if len(action) == 1:
-                        output("Invalid story insert. ", colors["error"])
+                if story_insert_regex:
+                    action = story_insert_regex.group(1)
+                    if not action or len(action.strip()) == 0:
+                        output("Invalid story insert. ", "error")
                         continue
-                    action = action[1:]
-                    output(format_result(action), colors["user-text"])
+                    output(format_result(action), "user-text")
 
                 # If the player enters a real action
                 elif action != "":
-                    # Roll a 20 sided dice to make things interesting
+                    # Roll a die. We'll use it later if action-d20 is enabled.
                     d = random.randint(1, 20)
                     logger.debug("roll d20=%s", d)
-                    # If it says 'You say "' then it's still dialouge. Normalise it by removing `You say `, we will add again soon
-                    action = re.sub("^ ?[Yy]ou say [\"']", '"', action)
-                    if any(action.lstrip().startswith(t) for t in ['"', "'"]):
+
+                    # Add the "you" if it's not prompt-toolkit
+                    if not settings.getboolean("prompt-toolkit"):
+                        action = re.sub("^ *(?:you)? *(?! *you)(.+)$", "You \\1", action, flags=re.IGNORECASE)
+
+                    sugg_action_regex = re.search(r"^ *(?:you)? *([0-9]+)$", action, flags=re.IGNORECASE)
+                    user_speech_regex = re.search(r"^ *you *say *([\"'].*[\"'])$", action, flags=re.IGNORECASE)
+                    user_action_regex = re.search(r"^ *you *(.+)$", action, flags=re.IGNORECASE)
+
+                    if sugg_action_regex:
+                        action = sugg_action_regex.group(1)
+                        if action in [str(i) for i in range(len(suggested_actions))]:
+                            action = "You " + suggested_actions[int(action)].strip()
+
+                    if user_speech_regex:
+                        action = user_speech_regex.group(1)
                         if settings.getboolean("action-d20"):
                             action = d20ify_speech(action, d)
                         else:
                             action = "You say " + action
-                        logger.info("%r. %r, %r", action, any(action.lstrip().startswith(t) for t in ['"', "'"]),
-                                    settings.getboolean("action-d20"))
-                    else:
-                        action = first_to_second_person(action)
-                        if not action.lower().startswith(
-                                "you "
-                        ) and not action.lower().startswith("i "):
-                            action = action[0].lower() + action[1:]
-                            # roll a d20
-                            if settings.getboolean("action-d20"):
-                                action = d20ify_action(action, d)
-                            else:
-                                action = "You " + action
-                        if action[-1] not in [".", "?", "!"]:
-                            action = action + "."
-                    # Prompt the user with the formatted action
-                    output("> " + format_result(action), colors["transformed-user-text"])
 
-                # Get a result from the AI
+                    elif user_action_regex:
+                        action = first_to_second_person(user_action_regex.group(1))
+                        if settings.getboolean("action-d20"):
+                            action = d20ify_action(action, d)
+                        else:
+                            action = "You " + action
+
+                    if action[-1] not in [".", "?", "!"]:
+                        action = action + "."
+
+                    # If the user enters nothing but leaves "you", treat it like an empty action (continue)
+                    if re.match(r"^ *you *[.?!]? *$", action, flags=re.IGNORECASE):
+                        action = ""
+
+                    # Prompt the user with the formatted action
+                    output("> " + format_result(action), "transformed-user-text")
+
                 result = story.act(action)
 
                 # Check for loops
                 if story.is_looping():
                     story.revert()
                     output("That action caused the model to start looping. Try something else instead. ",
-                           colors["error"])
+                           "error")
 
                 # If the player won, ask them if they want to continue or not.
                 if player_won(result):
-                    output(result, colors["ai-text"])
-                    output("YOU WON. CONGRATULATIONS", colors["message"])
+                    output(result, "ai-text")
+                    output("YOU WON. CONGRATULATIONS", "message")
                     list_items(["Start a New Game", "\"I'm not done yet!\" (If you still want to play)"])
                     choice = input_number(1)
                     if choice == 0:
@@ -656,12 +666,12 @@ def play(generator):
                         prompt = None
                         break
                     else:
-                        output("Sorry about that...where were we?", colors["query"])
+                        output("Sorry about that...where were we?", "query")
 
                 # If the player lost, ask them if they want to continue or not.
                 elif player_died(result):
-                    output(result, colors["ai-text"])
-                    output("YOU DIED. GAME OVER", colors["message"])
+                    output(result, "ai-text")
+                    output("YOU DIED. GAME OVER", "message")
                     list_items(["Start a New Game", "\"I'm not dead yet!\" (If you didn't actually die)"])
                     choice = input_number(1)
                     if choice == 0:
@@ -670,15 +680,18 @@ def play(generator):
                         prompt = None
                         break
                     else:
-                        output("Sorry about that...where were we?", colors["query"])
+                        output("Sorry about that...where were we?", "query")
 
                 # Output the AI's result.
-                output(result, colors["ai-text"])
+                output(result, "ai-text")
 
 
 # This is here for rapid development, without reloading the model. You import play into a jupyternotebook with autoreload
 if __name__ == "__main__":
     with open(Path("interface", "clover"), "r", encoding="utf-8") as file:
         print(file.read())
+    instructions()
+    settings_menu()
+    exit(0)
     generator = get_generator()
     play(generator)

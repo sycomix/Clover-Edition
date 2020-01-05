@@ -4,7 +4,16 @@ import logging
 config = configparser.ConfigParser()
 config.read("config.ini")
 settings = config["Settings"]
-colors = config["Colors"]
+
+colorschemefile = settings["color-scheme"]
+colorconfig = configparser.ConfigParser()
+colorconfig.read(colorschemefile)
+ptcolors = colorconfig["Colors"]
+
+colorschemefile = settings["backup-color-scheme"]
+colorconfig = configparser.ConfigParser()
+colorconfig.read(colorschemefile)
+colors = colorconfig["Colors"]
 
 logger = logging.getLogger(__name__)
 logLevel = settings.getint("log-level")
@@ -36,6 +45,7 @@ setting_info = {
     "action-sugg":      ["How many actions to generate; 0 is off.", 4],
     "action-d20":       ["Makes actions difficult.", "on"],
     "action-temp":      ["How random the suggested actions are.", 1],
+    "prompt-toolkit":   ["Whether or not to use the prompt_toolkit library.", "on"],
     "generate-num":     ["", 60],
     "top-p":            ["", 0.9],
     "log-level":        ["", 3],
