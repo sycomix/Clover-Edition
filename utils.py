@@ -35,6 +35,12 @@ if termWidth < 5:
     termWidth = 999999999
 
 
+def pad_text(text, width, sep=' '):
+    while len(text) < width:
+        text += sep
+    return text
+
+
 def format_result(text):
     """
     Formats the result text from the AI to be more human-readable.
