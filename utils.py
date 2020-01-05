@@ -58,13 +58,14 @@ else:
 
         logger.info(
             'Python Prompt Toolkit has been imported. This enables a number of editing features but may cause bugs for colab users.')
-    except ModuleNotFoundError:
+    except (ImportError, ModuleNotFoundError):
         try:
+            settings['prompt-toolkit'] = "off"
             import readline
 
             logger.info(
                 'readline has been imported. This enables a number of editting features but may cause bugs for colab users.')
-        except ModuleNotFoundError:
+        except (ImportError, ModuleNotFoundError):
             pass
 
 termWidth = get_terminal_size()[0]
@@ -179,8 +180,8 @@ def output(text1, col1=None, text2=None, col2=None, wrap=True, beg=None, end='\n
     return linecount
 
 
-def input_bool(str, col1="default", col2="default", default=False):
-    val = input_line(str, col1, col2).strip().lower()
+def input_bool(str, col1="default", default=False):
+    val = input_line(str, col1).strip().lower()
     if not val:
         return default
     if val[0] == 'y':
@@ -190,10 +191,10 @@ def input_bool(str, col1="default", col2="default", default=False):
     return res
 
 
-def input_line(str, col1="default", col2="default"):
+def input_line(str, col1="default", default=""):
     if use_ptoolkit() and ptcolors['displaymethod'] == "prompt-toolkit":
         col1 = ptcolors[col1] if col1 and ptcolors[col1] else ""
-        val = ptprompt(to_formatted_text(str, col1))
+        val = ptprompt(to_formatted_text(str, col1), default=default)
     else:
         clb1 = "\x1B[{}m".format(colors[col1]) if col1 and colors[col1] and colors[col1][0].isdigit() else ""
         cle1 = "\x1B[0m" if col1 and colors[col1] and colors[col1][0].isdigit() else ""
@@ -205,11 +206,7 @@ def input_line(str, col1="default", col2="default"):
 def input_number(maxn, default=0):
     bell()
     print()
-    val = input_line(
-        "Enter a number from above (default 0):",
-        "selection-prompt",
-        "selection-value",
-    )
+    val = input_line("Enter a number from above (default 0):", "selection-prompt")
     if not val:
         return default
     elif not re.match("^\d+$", val) or 0 > int(val) or int(val) > maxn:
@@ -626,16 +623,16 @@ def first_to_second_person(text):
         variations = mapping_variation_pairs(pair)
         for variation in variations:
             text = replace_outside_quotes(text, variation[0], variation[1])
-
-    return capitalize_first_letters(text[1:])
+    return text
 
 
 def second_to_first_person(text):
     text = " " + text
     text = standardize_punctuation(text)
+    if text[-1] not in [".", "?", "!"]:
+        text += "."
     for pair in second_to_first_mappings:
         variations = mapping_variation_pairs(pair)
         for variation in variations:
             text = replace_outside_quotes(text, variation[0], variation[1])
-
-    return capitalize_first_letters(text[1:])
+    return text

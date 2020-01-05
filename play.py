@@ -162,13 +162,12 @@ def new_story(generator, context, prompt, memory=None, first_result=None):
 
 def save_story(story):
     """Saves the existing story to a json file in the saves directory to be resumed later."""
-    savefile = story.savefile
+    savefile = story.savefile if story.savefile else ""
     while True:
         print()
-        temp_savefile = input_line("Please enter a name for this save: ",
-                                   "query", "user-text")
+        temp_savefile = input_line("Please enter a name for this save: ", "query")
         savefile = temp_savefile if len(temp_savefile.strip()) > 0 else savefile
-        if len(savefile.strip()) == 0:
+        if not savefile or len(savefile.strip()) == 0:
             output("Please enter a valid savefile name. ", "error")
         else:
             break
@@ -329,16 +328,10 @@ def play(generator):
                 output("Prompt>", "main-prompt")
                 prompt = edit_multiline()
             else:
-                context = input_line("Context> ", "main-prompt", "user-text")
-                prompt = input_line("Prompt> ", "main-prompt", "user-text")
-            filename = input_line(
-                "Name to save prompt as? (Leave blank for no save): ",
-                "query",
-                "user-text",
-            )
-            filename = re.sub(
-                "-$", "", re.sub("^-", "", re.sub("[^a-zA-Z0-9_-]+", "-", filename))
-            )
+                context = input_line("Context> ", "main-prompt")
+                prompt = input_line("Prompt> ", "main-prompt")
+            filename = input_line("Name to save prompt as? (Leave blank for no save): ", "query")
+            filename = re.sub("-$", "", re.sub("^-", "", re.sub("[^a-zA-Z0-9_-]+", "-", filename)))
             if filename != "":
                 try:
                     with open(
@@ -388,7 +381,11 @@ def play(generator):
 
             bell()
             print()
-            action = input_line("> You ", "main-prompt", "user-text")
+
+            if use_ptoolkit():
+                action = input_line("> ", "main-prompt", default="%s" % "You ")
+            else:
+                action = input_line("> You ", "main-prompt")
 
             # Clear suggestions and user input
             if act_alts > 0:
@@ -396,11 +393,12 @@ def play(generator):
                 if not IN_COLAB:
                     clear_lines(action_suggestion_lines)
 
-            cmd_regex = re.search(r"^/([^ ]+) *(.*)$", action)
+            # Users can type in "/command", or "You /command" if prompt_toolkit is on and they left the "You" in
+            cmd_regex = re.search(r"^(?: *you *)?/([^ ]+) *(.*)$", action, flags=re.IGNORECASE)
 
             # If this is a command
             if cmd_regex:
-                action = cmd_regex.group(1)
+                action = cmd_regex.group(1).strip().lower()
                 cmd_args = cmd_regex.group(2).strip().split()
                 if action == "set":
                     if len(cmd_args) < 2:
@@ -415,18 +413,8 @@ def play(generator):
                             )
                         )
                         settings[cmd_args[0]] = cmd_args[1]
-                        output("Save config file?", "query")
-                        output(
-                            "Saving an invalid option will corrupt file! ", "error"
-                        )
-                        if (
-                                input_line(
-                                    "y/n? >",
-                                    "selection-prompt",
-                                    "selection-value",
-                                )
-                                == "y"
-                        ):
+                        output("Saving an invalid option will corrupt file! ", "error")
+                        if input_bool("Save setting? (y/N): ", "selection-prompt"):
                             try:
                                 with open("config.ini", "w", encoding="utf-8") as file:
                                     config.write(file)
@@ -545,8 +533,7 @@ def play(generator):
                     first_result = story.results[-1]
                     output(story.context, "user-text", "(YOUR SUMMARY HERE)", "message")
                     output(story.results[-1], "ai-text")
-                    new_prompt = input_line("Enter the summary for the new story: ",
-                                            "query", "user-text")
+                    new_prompt = input_line("Enter the summary for the new story: ", "query")
                     new_prompt = format_result(new_prompt)
                     if len(new_prompt) == 0:
                         output("Invalid new prompt; cancelling. ", "error")
@@ -562,52 +549,57 @@ def play(generator):
 
             # Otherwise this is just a normal action.
             else:
-                # If we're using suggestions and a player entered one
-                if act_alts > 0:
-                    # Options to select a suggestion action
-                    if action in [str(i) for i in range(len(suggested_actions))]:
-                        action = suggested_actions[int(action)]
-
                 action = format_result(action)
 
+                story_insert_regex = re.search("^ *(?:you)? *! *(.*)$", action, flags=re.IGNORECASE)
+
                 # If the player enters a story insert.
-                if action != "" and action[0] == "!":
-                    if len(action) == 1:
+                if story_insert_regex:
+                    action = story_insert_regex.group(1)
+                    if not action or len(action.strip()) == 0:
                         output("Invalid story insert. ", "error")
                         continue
-                    action = action[1:]
                     output(format_result(action), "user-text")
 
                 # If the player enters a real action
                 elif action != "":
-                    # Roll a 20 sided dice to make things interesting
+                    # Roll a die. We'll use it later if action-d20 is enabled.
                     d = random.randint(1, 20)
                     logger.debug("roll d20=%s", d)
-                    # If it says 'You say "' then it's still dialouge. Normalise it by removing `You say `, we will add again soon
-                    action = re.sub("^ ?[Yy]ou say [\"']", '"', action)
-                    if any(action.lstrip().startswith(t) for t in ['"', "'"]):
+
+                    # Add the "you" if it's not prompt-toolkit
+                    if not settings.getboolean("prompt-toolkit"):
+                        action = re.sub("^ *(?:you)? *(?! *you)(.+)$", "You \\1", action, flags=re.IGNORECASE)
+
+                    sugg_action_regex = re.search(r"^ *(?:you)? *([0-9]+)$", action, flags=re.IGNORECASE)
+                    user_speech_regex = re.search(r"^ *you *say *([\"'].*[\"'])$", action, flags=re.IGNORECASE)
+                    user_action_regex = re.search(r"^ *you *(.+)$", action, flags=re.IGNORECASE)
+
+                    if sugg_action_regex:
+                        action = sugg_action_regex.group(1)
+                        if action in [str(i) for i in range(len(suggested_actions))]:
+                            action = "You " + suggested_actions[int(action)].strip()
+
+                    if user_speech_regex:
+                        action = user_speech_regex.group(1)
                         if settings.getboolean("action-d20"):
                             action = d20ify_speech(action, d)
                         else:
                             action = "You say " + action
-                        logger.info("%r. %r, %r", action, any(action.lstrip().startswith(t) for t in ['"', "'"]),
-                                    settings.getboolean("action-d20"))
-                    else:
-                        action = first_to_second_person(action)
-                        if not action.lower().startswith(
-                                "you "
-                        ) and not action.lower().startswith("i "):
-                            action = action[0].lower() + action[1:]
-                            # roll a d20
-                            if settings.getboolean("action-d20"):
-                                action = d20ify_action(action, d)
-                            else:
-                                action = "You " + action
-                        if action[-1] not in [".", "?", "!"]:
-                            action = action + "."
 
-                    if use_ptoolkit():
-                        action = ptprompt("For REAL: ", default="%s" % action)
+                    elif user_action_regex:
+                        action = first_to_second_person(user_action_regex.group(1))
+                        if settings.getboolean("action-d20"):
+                            action = d20ify_action(action, d)
+                        else:
+                            action = "You " + action
+
+                    if action[-1] not in [".", "?", "!"]:
+                        action = action + "."
+
+                    # If the user enters nothing but leaves "you", treat it like an empty action (continue)
+                    if re.match(r"^ *you *[.?!]? *$", action, flags=re.IGNORECASE):
+                        action = ""
 
                     # Prompt the user with the formatted action
                     output("> " + format_result(action), "transformed-user-text")
