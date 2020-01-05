@@ -40,7 +40,8 @@ def convert_gpt2_checkpoint_to_pytorch(gpt2_checkpoint_path, full, gpt2_config_f
 
     if pytorch_dump_folder_path=='':
         prefix = '32BIT-' if full else '16BIT-'
-        pytorch_dump_folder_path=Path('pytorch-'+prefix+gpt2_checkpoint_path.name)
+        pytorch_dump_folder_path='pytorch-'+prefix+gpt2_checkpoint_path.name
+    pytorch_dump_folder_path=Path(pytorch_dump_folder_path)
 
 
     pytorch_dump_folder_path.mkdir(exist_ok=True)
