@@ -153,11 +153,10 @@ def settings_menu():
             output(key + ": " + setting_info[key][0], colors["menu"])
             output("Default: " + str(setting_info[key][1]), colors["menu"], beg='')
             output("Current: " + str(settings[key]), colors["menu"], beg='')
-            while True:
-                new_value = input_line("Enter the new value: ", colors["query"], colors["user-text"])
-                if len(new_value.strip()) != 0:
-                    break
-                output("Invalid settings value. ", colors["error"])
+            new_value = input_line("Enter the new value: ", colors["query"], colors["user-text"])
+            if len(new_value.strip()) == 0:
+                output("Invalid value; canceling. ", colors["error"])
+                continue
             output(key + ": " + setting_info[key][0], colors["menu"])
             output("Current: " + str(settings[key]), colors["menu"], beg='')
             output("New: " + str(new_value), colors["menu"], beg='')
