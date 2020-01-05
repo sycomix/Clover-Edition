@@ -346,7 +346,7 @@ def play(generator):
                     "Load a Saved Game",
                     "Change Settings"],
                    'menu')
-        new_game_option = input_number(2)
+        new_game_option = input_number(3)
 
         if new_game_option == 0:
             prompt_file = select_file(Path("prompts"), ".txt")
@@ -354,6 +354,7 @@ def play(generator):
                 context, prompt = load_prompt(prompt_file)
             else:
                 continue
+                
         elif new_game_option == 1:
             with open(
                     Path("interface", "prompt-instructions.txt"), "r", encoding="utf-8"
@@ -377,6 +378,7 @@ def play(generator):
                         f.write(context + "\n" + prompt)
                 except IOError:
                     output("Permission error! Unable to save custom prompt. ", "error")
+
         elif new_game_option == 2:
             story_file = select_file(Path("saves"), ".json")
             if story_file:
@@ -385,6 +387,10 @@ def play(generator):
                     continue
             else:
                 continue
+
+        elif new_game_option == 3:
+            settings_menu()
+            continue
 
         if len((context + prompt).strip()) == 0:
             output("Story has no prompt or context. Please enter a valid custom prompt. ", "error")
