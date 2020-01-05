@@ -37,7 +37,7 @@ A fork of AIDungeon2, now driven by huggingface's transformers repository using 
 #### Installation Instructions:
 ------------------------
 
-Officially we only support local installs. We encourage and recommend installing and running the game locally. However since the beginning most people have been playing it for free on Google's servers through their Colab platform. Allegedly it requires no effort to get started. Try [this link](https://colab.research.google.com/github/Kornilov1/AI-Dungeon-2-Anons-modded-Versions-Colab/blob/master/Open_CYOAI_Colab.ipynb) and go to the [4chan threads](https://boards.4chan.org/search#/aidungeon%20OR%20%22ai%20dungeon%22) for help and info.
+Officially we only support local installs. We encourage and recommend installing and running the game locally. However since the beginning most people have been playing it for free on Google's servers through their Colab platform. Allegedly it requires no effort to get started. Try [this link](https://colab.research.google.com/drive/1kYVhVeE6z4sUyyKDVxLGrzI4OTV43eEa) and go to the [4chan threads](https://boards.4chan.org/search#/aidungeon%20OR%20%22ai%20dungeon%22) for help and info.
 
 Video walkthrough of Windows install:
 
@@ -57,11 +57,13 @@ Next install pytorch (aka the `torch` python module.) For GPU support pytorch re
 pip3 install torch -f https://download.pytorch.org/whl/torch_stable.html
 ```
 
-Next install the necessary python modules: `transformers` and `pyjarowinkler`. This should be done with pip by entering a command like this:
+Next we'll install the necessary python module `transformers`. This should be done with pip by entering a command like this:
 
 ```
-pip3 install transformers pyjarowinkler
+pip3 install transformers
 ```
+
+A recommended optional addition for other than Colab users is the Python Prompt Toolkit. It revises the input scheme and provides an alternative color scheme. Install it with the command `pip install -r optional-requirements.txt`
 
 Windows users *may* want to install another module called "colorama". Though it may already be installed. If you see `[27m` glyphs, the color codes aren't working See the color support section.
 
