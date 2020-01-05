@@ -7,7 +7,7 @@ import gc
 import json
 from random import shuffle
 
-from getconfig import config
+from getconfig import config, setting_info
 from storymanager import Story
 from utils import *
 from gpt2generator import GPT2Generator
@@ -138,6 +138,37 @@ def d20ify_action(action, d):
         ]
         action = "You " + adjective + " " + action
     return action
+
+
+def settings_menu():
+    all_settings = list(setting_info.keys())
+    while True:
+        list_items(all_settings + ["(Cancel)"])
+        i = input_number(len(all_settings))
+        if i == len(all_settings):
+            output("Action cancelled. ", colors["menu"])
+            return
+        else:
+            key = all_settings[i]
+            output(key + ": " + setting_info[key][0], colors["menu"])
+            output("Default: " + str(setting_info[key][1]), colors["menu"], beg='')
+            output("Current: " + str(settings[key]), colors["menu"], beg='')
+            while True:
+                new_value = input_line("Enter the new value: ", colors["query"], colors["user-text"])
+                if len(new_value.strip()) != 0:
+                    break
+                output("Invalid settings value. ", colors["error"])
+            output(key + ": " + setting_info[key][0], colors["menu"])
+            output("Current: " + str(settings[key]), colors["menu"], beg='')
+            output("New: " + str(new_value), colors["menu"], beg='')
+            output("Saving an invalid option will corrupt file! ", colors["message"])
+            if input_bool("Change setting? (y/N): ", colors["selection-prompt"], colors["selection-value"]):
+                settings[key] = new_value
+                try:
+                    with open("config.ini", "w", encoding="utf-8") as file:
+                        config.write(file)
+                except IOError:
+                    output("Permission error! Changes will not be saved for next session.", colors["error"])
 
 
 def load_prompt(f):
@@ -311,9 +342,12 @@ def play(generator):
         gc.collect()
         torch.cuda.empty_cache()
 
-        list_items(["Pick Prompt From File (Default if you type nothing)", "Write Custom Prompt", "Load a Saved Game"],
-                   colors['menu'])
-        new_game_option = input_number(2)
+        list_items(["Pick Prompt From File (Default if you type nothing)",
+                    "Write Custom Prompt",
+                    "Load a Saved Game",
+                    "Edit Settings"
+                    ], colors['menu'])
+        new_game_option = input_number(3)
 
         if new_game_option == 0:
             prompt_file = select_file(Path("prompts"), ".txt")
@@ -352,6 +386,9 @@ def play(generator):
                     continue
             else:
                 continue
+        elif new_game_option == 3:
+            settings_menu()
+            continue
 
         if len((context + prompt).strip()) == 0:
             output("Story has no prompt or context. Please enter a valid custom prompt. ", colors["error"])
@@ -407,23 +444,13 @@ def play(generator):
                     if cmd_args[0] in settings:
                         curr_setting_val = settings[cmd_args[0]]
                         output(
-                            "Current Value of {}: {}     Changing to: {}".format(
+                            "Current value of {}: {}    New value: {}".format(
                                 cmd_args[0], curr_setting_val, cmd_args[1]
                             )
                         )
-                        settings[cmd_args[0]] = cmd_args[1]
-                        output("Save config file?", colors["query"])
-                        output(
-                            "Saving an invalid option will corrupt file! ", colors["error"]
-                        )
-                        if (
-                                input_line(
-                                    "y/n? >",
-                                    colors["selection-prompt"],
-                                    colors["selection-value"],
-                                )
-                                == "y"
-                        ):
+                        output("Saving an invalid option will corrupt file! ", colors["error"])
+                        if input_bool("Change setting? (y/N): ", colors["selection-prompt"], colors["selection-value"]):
+                            settings[cmd_args[0]] = cmd_args[1]
                             try:
                                 with open("config.ini", "w", encoding="utf-8") as file:
                                     config.write(file)
@@ -432,6 +459,10 @@ def play(generator):
                     else:
                         output("Invalid setting", colors["error"])
                         instructions()
+
+                elif action == "settings":
+                    settings_menu()
+                    story.print_last()
 
                 elif action == "menu":
                     if input_bool("Do you want to save? (y/N): ", colors["query"], colors["user-text"]):

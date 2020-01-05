@@ -27,6 +27,7 @@ def instructions():
     print('  "/load"                  Loads a game from a file in the game\'s save directory')
     print('  "/summarize"             Create a new story using by summarizing your previous one')
     print('  "/help"                  Prints these instructions again')
+    print('  "/settings"              Opens the settings menu')
     print('  "/set [SETTING] [VALUE]" Sets the specified setting to the specified value:')
     for key, val in setting_info.items():
         print(pad_text("        " + key, 27) + (val[0] + " " if val[0] != "" else "") + "Default: " + str(val[1]))
