@@ -124,6 +124,11 @@ python3 play.py
 * Try using the Windows Subsystem for Linux.
 * use a bat program to enable the `ENABLE_VIRTUAL_TERMINAL_PROCESSING` flag via the `SetConsoleMode` API (not sure what the exact .bat command would be), then run the python script. (If someone figures this out I can put it in the repo and windows users can just run it without doing anything.)
 
+
+##### Troubleshooting for Linux
+* If pip commands fail because of an unsupported default Python version, try it with
+`supported_Python_version -m pip install -r requirements.txt` where `supported_Python_version` is replaced with a supported Python version (they might be 3.5 to 3.7.6 but don't quote me on that).
+
 #### Datasets and Finetuning the AI
 ---------------
 

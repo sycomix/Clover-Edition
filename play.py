@@ -562,13 +562,13 @@ def play(generator):
 
             # Otherwise this is just a normal action.
             else:
-                action = format_result(action)
-
                 # If we're using suggestions and a player entered one
                 if act_alts > 0:
                     # Options to select a suggestion action
                     if action in [str(i) for i in range(len(suggested_actions))]:
                         action = suggested_actions[int(action)]
+
+                action = format_result(action)
 
                 # If the player enters a story insert.
                 if action != "" and action[0] == "!":
@@ -605,13 +605,12 @@ def play(generator):
                                 action = "You " + action
                         if action[-1] not in [".", "?", "!"]:
                             action = action + "."
+
+                    if use_ptoolkit():
+                        action = ptprompt("For REAL: ", default="%s" % action)
+
                     # Prompt the user with the formatted action
                     output("> " + format_result(action), "transformed-user-text")
-
-                if use_ptoolkit():
-                    action = ptprompt("For REAL: ", default="%s" % action)
-
-                output("> " + format_result(action), "transformed-user-text")
 
                 result = story.act(action)
 
