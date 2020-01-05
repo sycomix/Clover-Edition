@@ -1,4 +1,4 @@
-rom urllib import request, error
+from urllib import request, error
 import re
 import os
 from utils import *
