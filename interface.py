@@ -6,8 +6,7 @@ def boolValue(bool):
 
 
 def instructions():
-    print('\033[' + colors["instructions"]
-		  + 'm\n' +
+    print('\n' +
           'AID2: Clover Edition Instructions: \n' +
           '  Enter actions starting with a verb ex. "go to the tavern" or "attack the orc."\n' +
           '  To speak enter say "(thing you want to say)" or just "(thing you want to say)"\n' +
@@ -46,4 +45,4 @@ def instructions():
     print('        action-d20         Make actions difficult. Default: on | Current:',
           boolValue(settings.getboolean("action-d20")))
     print('        action-temp        How random the suggested actions are. Default: 1 | Current:',
-          settings.getfloat("action-temp"), '\033[39m')
+          settings.getfloat("action-temp"))

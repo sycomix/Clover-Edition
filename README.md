@@ -63,6 +63,8 @@ Next we'll install the necessary python module `transformers`. This should be do
 pip3 install transformers
 ```
 
+A recommended optional addition for other than Colab users is the Python Prompt Toolkit. It revises the input scheme and provides an alternative color scheme. Install it with the command `pip install -r optional-requirements.txt`
+
 Windows users *may* want to install another module called "colorama". Though it may already be installed. If you see `[27m` glyphs, the color codes aren't working See the color support section.
 
 Then to install just download this repo. Github has a download option somewhere. Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"`
@@ -121,6 +123,11 @@ python3 play.py
 * Windows 10 users can edit a registry key (look up `Registry Editor`) at `HKEY_CURRENT_USER\Console\VirtualTerminalLevel` to `1` to permanently enable color support
 * Try using the Windows Subsystem for Linux.
 * use a bat program to enable the `ENABLE_VIRTUAL_TERMINAL_PROCESSING` flag via the `SetConsoleMode` API (not sure what the exact .bat command would be), then run the python script. (If someone figures this out I can put it in the repo and windows users can just run it without doing anything.)
+
+
+##### Troubleshooting for Linux
+* If pip commands fail because of an unsupported default Python version, try it with
+`supported_Python_version -m pip install -r requirements.txt` where `supported_Python_version` is replaced with a supported Python version (they might be 3.5 to 3.7.6 but don't quote me on that).
 
 #### Datasets and Finetuning the AI
 ---------------

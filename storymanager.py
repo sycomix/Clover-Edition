@@ -1,6 +1,6 @@
 import json
 import re
-from getconfig import settings, colors
+from getconfig import settings
 from utils import output, format_result, get_similarity
 
 
@@ -33,8 +33,8 @@ class Story:
 
     def print_story(self, wrap=True, color=True):
         first_result = format_result(self.actions[0] + ' ' + self.results[0])
-        col1 = colors['user-text'] if color else None
-        col2 = colors['ai-text'] if color else None
+        col1 = 'user-text' if color else None
+        col2 = 'ai-text' if color else None
         output(self.context, col1, first_result, col2, wrap=wrap)
         maxactions = len(self.actions)
         maxresults = len(self.results)
@@ -49,8 +49,8 @@ class Story:
         if len(self.actions) < 2:
             self.print_story()
         else:
-            col1 = colors['user-text'] if color else None
-            col2 = colors['ai-text'] if color else None
+            col1 = 'user-text' if color else None
+            col2 = 'ai-text' if color else None
             caret = "> " if re.match("^[Yy]ou +", self.actions[-1]) else ""
             output(caret + self.actions[-1], col1, wrap=wrap)
             output(self.results[-1], col2, wrap=wrap)
