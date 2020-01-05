@@ -37,7 +37,7 @@ A fork of AIDungeon2, now driven by huggingface's transformers repository using 
 #### Installation Instructions:
 ------------------------
 
-Officially we only support local installs. We encourage and recommend installing and running the game locally. However since the beginning most people have been playing it for free on Google's servers through their Colab platform. Allegedly it requires no effort to get started. Try [this link](https://colab.research.google.com/github/Kornilov1/AI-Dungeon-2-Anons-modded-Versions-Colab/blob/master/Open_CYOAI_Colab.ipynb) and go to the [4chan threads](https://boards.4chan.org/search#/aidungeon%20OR%20%22ai%20dungeon%22) for help and info.
+Officially we only support local installs. We encourage and recommend installing and running the game locally. However since the beginning most people have been playing it for free on Google's servers through their Colab platform. Allegedly it requires no effort to get started. Try [this link](https://colab.research.google.com/drive/1kYVhVeE6z4sUyyKDVxLGrzI4OTV43eEa) and go to the [4chan threads](https://boards.4chan.org/search#/aidungeon%20OR%20%22ai%20dungeon%22) for help and info.
 
 Video walkthrough of Windows install:
 
