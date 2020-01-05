@@ -690,8 +690,5 @@ def play(generator):
 if __name__ == "__main__":
     with open(Path("interface", "clover"), "r", encoding="utf-8") as file:
         print(file.read())
-    instructions()
-    settings_menu()
-    exit(0)
     generator = get_generator()
     play(generator)
