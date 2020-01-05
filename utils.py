@@ -1,5 +1,6 @@
 # coding: utf-8
 import re
+from pathlib import Path
 
 import torch
 import random
@@ -45,6 +46,42 @@ def format_result(text):
     return text.strip()
 
 
+def select_file(p, e, d=0):
+    """
+    Selects a file from a specific path matching a specific extension.
+    p: The current path (and subdirectories) to choose from.
+    e: The extension to filter based on.
+    d: The path depth. Used for knowing when to go back or when to abort a file selection. Do not set this yourself.
+    """
+    if p.is_dir():
+        t_dirs = sorted([x for x in p.iterdir() if x.is_dir()])
+        t_files = sorted([x for x in p.iterdir() if x.is_file() and x.name.endswith(e)])
+        files = t_dirs + t_files
+        list_items(
+            ["(Random)"] +
+            [f.name[:-len(e)] if f.is_file() else f.name + "/" for f in files] +
+            ["(Cancel)" if d == 0 else "(Back)"],
+            colors["menu"]
+        )
+        count = len(files) + 1
+        i = input_number(count)
+        if i == 0:
+            try:
+                i = random.randrange(1, count-1)
+            except ValueError:
+                i = 1
+        if i == count:
+            if d == 0:
+                output("Action cancelled. ", colors["message"])
+                return None
+            else:
+                return select_file(p.parent, e, d-1)
+        else:
+            return select_file(files[i-1], e, d+1)
+    else:
+        return p
+
+
 # ECMA-48 set graphics codes for the curious. Check out "man console_codes"
 def output(text1, col1=None, text2=None, col2=None, wrap=True, beg=None, end=None, sep=' '):
     print('', end=beg)
@@ -68,13 +105,15 @@ def output(text1, col1=None, text2=None, col2=None, wrap=True, beg=None, end=Non
 
 
 def input_bool(str, col1=colors["default"], col2=colors["default"], default=False):
-    val = input_line(str, col1, col2).strip().lower()
-    if val[0] == 'y':
-        return True
+    val = input_line(str, col1, col2).strip().lower().strip()
+    res = default
+    if val == "":
+        res = default
+    elif val[0] == 'y':
+        res = True
     elif val[0] == 'n':
-        return False
-    else:
-        return default
+        res = False
+    return res
 
 
 def input_line(str, col1=colors["default"], col2=colors["default"]):
@@ -168,66 +207,71 @@ def list_items(items, col=colors['menu'], start=0, end=None):
         output('', end=end)
 
 
+def remove_prefix(text, prefix):
+    return text[text.startswith(prefix) and len(prefix):]
+
+
 def _get_prefix(first_string ,second_string):
-	if not first_string or not second_string:
-		return ""
-	if first_string == second_string:
-		return first_string
-	maximum_length = min(len(first_string), len(second_string))
-	for i in range(0, maximum_length):
-		if not first_string[i] == second_string[i]:
-			return first_string[0:i]
-	return first_string[0:maximum_length]
+    if not first_string or not second_string:
+        return ""
+    if first_string == second_string:
+        return first_string
+    maximum_length = min(len(first_string), len(second_string))
+    for i in range(0, maximum_length):
+        if not first_string[i] == second_string[i]:
+            return first_string[0:i]
+    return first_string[0:maximum_length]
+
 
 def get_similarity(first_string, second_string, scaling=0.1):
-	first_string_length = len(first_string)
-	second_string_length = len(second_string)
-	a_matches = [False] * first_string_length
-	b_matches = [False] * second_string_length
-	matches = 0
-	transpositions = 0
-	jaro_distance = 0.0
+    first_string_length = len(first_string)
+    second_string_length = len(second_string)
+    a_matches = [False] * first_string_length
+    b_matches = [False] * second_string_length
+    matches = 0
+    transpositions = 0
+    jaro_distance = 0.0
 
-	if first_string_length == 0 or second_string_length == 0:
-		return 1.0
+    if first_string_length == 0 or second_string_length == 0:
+        return 1.0
 
-	maximum_matching_distance = (max(first_string_length, second_string_length) // 2) - 1
-	if maximum_matching_distance < 0:
-		maximum_matching_distance = 0
+    maximum_matching_distance = (max(first_string_length, second_string_length) // 2) - 1
+    if maximum_matching_distance < 0:
+        maximum_matching_distance = 0
 
-	for i in range (first_string_length):
-		start = max(0, i - maximum_matching_distance)
-		end = min(i + maximum_matching_distance + 1, second_string_length)
-		for x in range (start, end):
-			if b_matches[x]:
-				continue
-			if first_string[i] != second_string[x]:
-				continue
-			a_matches[i] = True
-			b_matches[x] = True
-			matches += 1
-			break
+    for i in range (first_string_length):
+        start = max(0, i - maximum_matching_distance)
+        end = min(i + maximum_matching_distance + 1, second_string_length)
+        for x in range (start, end):
+            if b_matches[x]:
+                continue
+            if first_string[i] != second_string[x]:
+                continue
+            a_matches[i] = True
+            b_matches[x] = True
+            matches += 1
+            break
 
-	if matches == 0:
-		return 0.0
+    if matches == 0:
+        return 0.0
 
-	k = 0
-	for i in range(first_string_length):
-		if not a_matches[i]:
-			continue
-		while not b_matches[k]:
-			k += 1
-		if first_string[i] != second_string[k]:
-			transpositions += 1
-		k += 1
+    k = 0
+    for i in range(first_string_length):
+        if not a_matches[i]:
+            continue
+        while not b_matches[k]:
+            k += 1
+        if first_string[i] != second_string[k]:
+            transpositions += 1
+        k += 1
 
-	jaro_distance = ((matches / first_string_length) +
-					(matches / second_string_length) +
-					((matches - transpositions / 2) / matches)) / 3.0
-	prefix = min(len(_get_prefix(first_string, second_string)), 4)
+    jaro_distance = ((matches / first_string_length) +
+                    (matches / second_string_length) +
+                    ((matches - transpositions / 2) / matches)) / 3.0
+    prefix = min(len(_get_prefix(first_string, second_string)), 4)
 
     # Round to 2 places of percision to match pyjarowinkler formatting
-	return round((jaro_distance + prefix * scaling * (1.0 - jaro_distance)) * 100.0) / 100.0
+    return round((jaro_distance + prefix * scaling * (1.0 - jaro_distance)) * 100.0) / 100.0
 
 def get_num_options(num):
 
