@@ -74,6 +74,12 @@ if termWidth < 5:
     termWidth = 999999999
 
 
+def pad_text(text, width, sep=' '):
+    while len(text) < width:
+        text += sep
+    return text
+
+
 def format_result(text):
     """
     Formats the result text from the AI to be more human-readable.
@@ -258,15 +264,16 @@ def sentence_split(text):
     return sentences
 
 
-def list_items(items, col='menu', start=0, end=None):
+def list_items(items, col='menu', start=0, end=None, wrap=False):
     """Lists a generic list of items, numbered, starting from the number passed to start. If end is not None,
     an additional element will be added with its name as the value """
     i = start
+    digits = len(str(len(items)-1))
     for s in items:
-        output(str(i) + ") " + s, col, end='')
+        output(str(i).rjust(digits) + ") " + s, col, end='', wrap=wrap)
         i += 1
     if end is not None:
-        output('', end=end)
+        output('', end=end, wrap=wrap)
 
 
 def remove_prefix(text, prefix):
