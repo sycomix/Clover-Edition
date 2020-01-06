@@ -34,7 +34,7 @@ def instructions():
     print('        text-wrap-width    Maximum width of lines printed by computer. Default: 80 | Current:',
           settings.getint("text-wrap-width"))
     print('        console-bell       Beep after AI generates text? Default: on | Current:',
-          boolValue(settings.getboolean("bell")))
+          boolValue(settings.getboolean("console-bell")))
     print('        top-keks           Number of words the AI can randomly choose. Default: 20 | Current:',
           settings.getint("top-keks"))
     print('        generate-num       Default: 60 | Current:', settings.getint("generate-num"))

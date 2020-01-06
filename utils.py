@@ -180,16 +180,11 @@ def output(text1, col1=None, text2=None, col2=None, wrap=True, beg=None, end='\n
     return linecount
 
 
-def input_bool(str, col1="default", default=False):
-    val = input_line(str, col1).strip().lower()
-    if not val:
+def input_bool(prompt, col1="default", default: bool = False):
+    val = input_line(prompt, col1).strip().lower()
+    if not val or val[0] not in "yn":
         return default
-    if val[0] == 'y':
-        return True
-    elif val[0] == 'n':
-        res = False
-    return res
-
+    return val[0] == "y"
 
 def input_line(str, col1="default", default=""):
     if use_ptoolkit() and ptcolors['displaymethod'] == "prompt-toolkit":
@@ -206,7 +201,7 @@ def input_line(str, col1="default", default=""):
 def input_number(maxn, default=0):
     bell()
     print()
-    val = input_line("Enter a number from above (default 0):", "selection-prompt")
+    val = input_line(f"Enter a number from above (default {default}):", "selection-prompt")
     if not val:
         return default
     elif not re.match("^\d+$", val) or 0 > int(val) or int(val) > maxn:
