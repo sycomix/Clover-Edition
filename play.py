@@ -196,11 +196,11 @@ def new_story(generator, context, prompt, memory=None, first_result=None):
 
 def save_story(story):
     """Saves the existing story to a json file in the saves directory to be resumed later."""
-    savefile = story.savefile if story.savefile else ""
+    savefile = story.savefile
     while True:
         print()
         temp_savefile = input_line("Please enter a name for this save: ", "query")
-        savefile = temp_savefile if len(temp_savefile.strip()) > 0 else savefile
+        savefile = temp_savefile if not temp_savefile or len(temp_savefile.strip()) > 0 else savefile
         if not savefile or len(savefile.strip()) == 0:
             output("Please enter a valid savefile name. ", "error")
         else:
@@ -225,7 +225,7 @@ def load_story(f):
     with f.open('r', encoding="utf-8") as file:
         try:
             story = Story(generator, "")
-            story.savefile = os.path.splitext(file.name.strip())
+            story.savefile = os.path.splitext(file.name.strip())[0]
             story.from_json(file.read())
             return story, story.context, story.actions[-1] if len(story.actions) > 0 else ""
         except FileNotFoundError:
