@@ -6,7 +6,7 @@ with open(Path('interface', 'start-message.txt'), 'r') as file:
 import gc
 import torch
 
-from getconfig import config
+from getconfig import config, setting_info
 from storymanager import Story
 from utils import *
 from gpt2generator import GPT2Generator
@@ -23,32 +23,47 @@ except ModuleNotFoundError:
 
 logger.info("Colab detected: {}".format(in_colab()))
 
+
 def get_generator():
     output(
         "\nInitializing AI Engine! (This might take a few minutes)",
         "loading-message", end="\n\n"
     )
     models = [x for x in Path('models').iterdir() if x.is_dir()]
-    if not models:
-        raise FileNotFoundError(
-            'There are no models in the models directory! You must download a pytorch compatible model!')
-    elif len(models) > 1:
-        output("You have multiple models in your models folder. Please select one to load:", 'message')
-        for n, model_path in enumerate(models):
-            output("{}: {}".format(n, model_path.name), 'menu')
-
-        model = models[input_number(len(models) - 1)]
-    else:
-        model = models[0]
-        logger.info("Using model: " + str(model))
-    return GPT2Generator(
-        model_path=model,
-        generate_num=settings.getint("generate-num"),
-        temperature=settings.getfloat("temp"),
-        top_k=settings.getint("top-keks"),
-        top_p=settings.getfloat("top-p"),
-        repetition_penalty=settings.getfloat("rep-pen"),
-    )
+    generator = None
+    while True:
+        try:
+            if not models:
+                raise FileNotFoundError(
+                    'There are no models in the models directory! You must download a pytorch compatible model!')
+            elif len(models) > 1:
+                output("You have multiple models in your models folder. Please select one to load:", 'message')
+                list_items([m.name for m in models] + ["(Exit)"], "menu")
+                model_selection = input_number(len(models))
+                if model_selection == len(models):
+                    output("Exiting. ", "message")
+                    exit(0)
+                else:
+                    model = models[model_selection]
+            else:
+                model = models[0]
+                logger.info("Using model: " + str(model))
+            generator = GPT2Generator(
+                model_path=model,
+                generate_num=settings.getint("generate-num"),
+                temperature=settings.getfloat("temp"),
+                top_k=settings.getint("top-keks"),
+                top_p=settings.getfloat("top-p"),
+                repetition_penalty=settings.getfloat("rep-pen"),
+            )
+            break
+        except OSError:
+            output("Model could not be loaded. Please try another model. ", "error")
+            continue
+        except KeyboardInterrupt:
+            output("Model load cancelled. ", "error")
+            exit(0)
+    return generator
 
 
 if not Path("prompts", "Anime").exists():
@@ -126,6 +141,39 @@ def d20ify_action(action, d):
     return action
 
 
+def settings_menu():
+    all_settings = list(setting_info.keys())
+    while True:
+        list_items([pad_text(k, 19) + v[0] + (" " if v[0] else "") +
+                    "Default: " + str(v[1]) + " | "
+                    "Current: " + settings.get(k) for k, v in setting_info.items()] + [
+                    "(Finish)"])
+        i = input_number(len(all_settings))
+        if i == len(all_settings):
+            output("Done editing settings. ", "menu")
+            return
+        else:
+            key = all_settings[i]
+            output(key + ": " + setting_info[key][0], "menu")
+            output("Default: " + str(setting_info[key][1]), "menu", beg='')
+            output("Current: " + str(settings[key]), "menu", beg='')
+            new_value = input_line("Enter the new value: ", "query")
+            if len(new_value.strip()) == 0:
+                output("Invalid value; cancelling. ", "error")
+                continue
+            output(key + ": " + setting_info[key][0], "menu")
+            output("Current: " + str(settings[key]), "menu", beg='')
+            output("New: " + str(new_value), "menu", beg='')
+            output("Saving an invalid option will corrupt file! ", "message")
+            if input_bool("Change setting? (y/N): ", "selection-prompt"):
+                settings[key] = new_value
+                try:
+                    with open("config.ini", "w", encoding="utf-8") as file:
+                        config.write(file)
+                except IOError:
+                    output("Permission error! Changes will not be saved for next session.", "error")
+
+
 def load_prompt(f):
     with f.open('r', encoding="utf-8") as file:
         try:
@@ -162,11 +210,11 @@ def new_story(generator, context, prompt, memory=None, first_result=None):
 
 def save_story(story):
     """Saves the existing story to a json file in the saves directory to be resumed later."""
-    savefile = story.savefile if story.savefile else ""
+    savefile = story.savefile
     while True:
         print()
         temp_savefile = input_line("Please enter a name for this save: ", "query")
-        savefile = temp_savefile if len(temp_savefile.strip()) > 0 else savefile
+        savefile = savefile if not temp_savefile or len(temp_savefile.strip()) == 0 else temp_savefile
         if not savefile or len(savefile.strip()) == 0:
             output("Please enter a valid savefile name. ", "error")
         else:
@@ -191,7 +239,7 @@ def load_story(f):
     with f.open('r', encoding="utf-8") as file:
         try:
             story = Story(generator, "")
-            story.savefile = os.path.splitext(file.name.strip())
+            story.savefile = os.path.splitext(file.name.strip())[0]
             story.from_json(file.read())
             return story, story.context, story.actions[-1] if len(story.actions) > 0 else ""
         except FileNotFoundError:
@@ -271,6 +319,12 @@ def alter_text(text):
 
 
 def play(generator):
+
+    # Prevent reference before assignment
+    story = None
+    context = None
+    prompt = None
+
     print()
 
     with open(Path("interface", "mainTitle.txt"), "r", encoding="utf-8") as file:
@@ -279,15 +333,15 @@ def play(generator):
     with open(Path("interface", "subTitle.txt"), "r", encoding="utf-8") as file:
         cols = termWidth
         for line in file:
-            line=re.sub(r'\n', '', line)
-            line=line[:cols]
-            #fills in the graphic using reverse video mode substituted into the areas between |'s
+            line = re.sub(r'\n', '', line)
+            line = line[:cols]
+            # fills in the graphic using reverse video mode substituted into the areas between |'s
             if use_ptoolkit():
                 style = Style.from_dict({
                     'nor': ptcolors['subtitle'],
                     'rev': ptcolors['subtitle'] + ' reverse',
                 })
-                text = re.sub(r'\|[ _]*(\||$)', lambda x: '<rev>'+x.group(0)+'</rev>', line)
+                text = re.sub(r'\|[ _]*(\||$)', lambda x: '<rev>' + x.group(0) + '</rev>', line)
                 print_formatted_text(HTML('<nor>' + text + '</nor>'), style=style)
             else:
                 output(re.sub(r'\|[ _]*(\||$)', lambda x: '\x1B[7m' + x.group(0) + '\x1B[27m', line), 'subtitle',
@@ -297,19 +351,17 @@ def play(generator):
            "or email cloveranon@nuke.africa for bug reports, help, and feature requests.",
            'subsubtitle')
 
-    # Prevent reference before assignment
-    story = None
-    context = None
-    prompt = None
-
     while True:
         # May be needed to avoid out of mem
         gc.collect()
         torch.cuda.empty_cache()
 
-        list_items(["Pick Prompt From File (Default if you type nothing)", "Write Custom Prompt", "Load a Saved Game"],
+        list_items(["Pick Prompt From File (Default if you type nothing)",
+                    "Write Custom Prompt",
+                    "Load a Saved Game",
+                    "Change Settings"],
                    'menu')
-        new_game_option = input_number(2)
+        new_game_option = input_number(3)
 
         if new_game_option == 0:
             prompt_file = select_file(Path("prompts"), ".txt")
@@ -317,6 +369,7 @@ def play(generator):
                 context, prompt = load_prompt(prompt_file)
             else:
                 continue
+                
         elif new_game_option == 1:
             with open(
                     Path("interface", "prompt-instructions.txt"), "r", encoding="utf-8"
@@ -340,6 +393,7 @@ def play(generator):
                         f.write(context + "\n" + prompt)
                 except IOError:
                     output("Permission error! Unable to save custom prompt. ", "error")
+
         elif new_game_option == 2:
             story_file = select_file(Path("saves"), ".json")
             if story_file:
@@ -348,6 +402,10 @@ def play(generator):
                     continue
             else:
                 continue
+
+        elif new_game_option == 3:
+            settings_menu()
+            continue
 
         if len((context + prompt).strip()) == 0:
             output("Story has no prompt or context. Please enter a valid custom prompt. ", "error")
@@ -400,6 +458,7 @@ def play(generator):
             if cmd_regex:
                 action = cmd_regex.group(1).strip().lower()
                 cmd_args = cmd_regex.group(2).strip().split()
+
                 if action == "set":
                     if len(cmd_args) < 2:
                         output("Invalid number of arguments for set command. ", "error")
@@ -412,9 +471,9 @@ def play(generator):
                                 cmd_args[0], curr_setting_val, cmd_args[1]
                             )
                         )
-                        settings[cmd_args[0]] = cmd_args[1]
                         output("Saving an invalid option will corrupt file! ", "error")
                         if input_bool("Save setting? (y/N): ", "selection-prompt"):
+                            settings[cmd_args[0]] = cmd_args[1]
                             try:
                                 with open("config.ini", "w", encoding="utf-8") as file:
                                     config.write(file)
@@ -423,6 +482,10 @@ def play(generator):
                     else:
                         output("Invalid setting", "error")
                         instructions()
+
+                elif action == "settings":
+                    settings_menu()
+                    story.print_last()
 
                 elif action == "menu":
                     if input_bool("Do you want to save? (y/N): ", "query", "user-text"):
