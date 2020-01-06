@@ -56,7 +56,8 @@ def get_generator():
             output("Model could not be loaded. Please try another model. ", "error")
             continue
         except KeyboardInterrupt:
-            output("Model load cancelled. Please select a model to load. ", "message")
+            output("Model load cancelled. ", "error")
+            exit(0)
     return generator
 
 
@@ -202,10 +203,10 @@ def new_story(generator, context, prompt, memory=None, first_result=None):
     return story
 
 
-def save_story(story):
+def save_story(story, savefile_override=""):
     """Saves the existing story to a json file in the saves directory to be resumed later."""
-    savefile = story.savefile
-    while True:
+    savefile = savefile_override or story.savefile
+    while True or not savefile_override:
         print()
         temp_savefile = input_line("Please enter a name for this save: ", "query")
         savefile = savefile if not temp_savefile or len(temp_savefile.strip()) == 0 else temp_savefile
@@ -312,6 +313,12 @@ def alter_text(text):
     return " ".join(sentences).strip()
 
 
+# Prevent reference before assignment
+story = None
+context = None
+prompt = None
+
+
 def play(generator):
     print()
 
@@ -338,11 +345,6 @@ def play(generator):
     output("Go to https://github.com/cloveranon/Clover-Edition/ "
            "or email cloveranon@nuke.africa for bug reports, help, and feature requests.",
            'subsubtitle')
-
-    # Prevent reference before assignment
-    story = None
-    context = None
-    prompt = None
 
     while True:
         # May be needed to avoid out of mem
@@ -705,4 +707,8 @@ if __name__ == "__main__":
     with open(Path("interface", "clover"), "r", encoding="utf-8") as file:
         print(file.read())
     generator = get_generator()
-    play(generator)
+    try:
+        play(generator)
+    except:
+        if story is not None:
+            save_story(story, "crash")
