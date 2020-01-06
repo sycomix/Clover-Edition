@@ -30,26 +30,34 @@ def get_generator():
         "loading-message", end="\n\n"
     )
     models = [x for x in Path('models').iterdir() if x.is_dir()]
-    if not models:
-        raise FileNotFoundError(
-            'There are no models in the models directory! You must download a pytorch compatible model!')
-    elif len(models) > 1:
-        output("You have multiple models in your models folder. Please select one to load:", 'message')
-        for n, model_path in enumerate(models):
-            output("{}: {}".format(n, model_path.name), 'menu')
-
-        model = models[input_number(len(models) - 1)]
-    else:
-        model = models[0]
-        logger.info("Using model: " + str(model))
-    return GPT2Generator(
-        model_path=model,
-        generate_num=settings.getint("generate-num"),
-        temperature=settings.getfloat("temp"),
-        top_k=settings.getint("top-keks"),
-        top_p=settings.getfloat("top-p"),
-        repetition_penalty=settings.getfloat("rep-pen"),
-    )
+    generator = None
+    while True:
+        try:
+            if not models:
+                raise FileNotFoundError(
+                    'There are no models in the models directory! You must download a pytorch compatible model!')
+            elif len(models) > 1:
+                output("You have multiple models in your models folder. Please select one to load:", 'message')
+                list_items([m.name for m in models], "menu")
+                model = models[input_number(len(models) - 1)]
+            else:
+                model = models[0]
+                logger.info("Using model: " + str(model))
+            generator = GPT2Generator(
+                model_path=model,
+                generate_num=settings.getint("generate-num"),
+                temperature=settings.getfloat("temp"),
+                top_k=settings.getint("top-keks"),
+                top_p=settings.getfloat("top-p"),
+                repetition_penalty=settings.getfloat("rep-pen"),
+            )
+            break
+        except OSError:
+            output("Model could not be loaded. Please try another model. ", "error")
+            continue
+        except KeyboardInterrupt:
+            output("Model load cancelled. Please select a model to load. ", "message")
+    return generator
 
 
 if not Path("prompts", "Anime").exists():
@@ -200,7 +208,7 @@ def save_story(story):
     while True:
         print()
         temp_savefile = input_line("Please enter a name for this save: ", "query")
-        savefile = temp_savefile if not temp_savefile or len(temp_savefile.strip()) == 0 else savefile
+        savefile = savefile if not temp_savefile or len(temp_savefile.strip()) == 0 else temp_savefile
         if not savefile or len(savefile.strip()) == 0:
             output("Please enter a valid savefile name. ", "error")
         else:
