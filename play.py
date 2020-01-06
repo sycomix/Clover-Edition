@@ -38,8 +38,13 @@ def get_generator():
                     'There are no models in the models directory! You must download a pytorch compatible model!')
             elif len(models) > 1:
                 output("You have multiple models in your models folder. Please select one to load:", 'message')
-                list_items([m.name for m in models], "menu")
-                model = models[input_number(len(models) - 1)]
+                list_items([m.name for m in models] + ["(Exit)"], "menu")
+                model_selection = input_number(len(models))
+                if model_selection == len(models):
+                    output("Exiting. ", "message")
+                    exit(0)
+                else:
+                    model = models[model_selection]
             else:
                 model = models[0]
                 logger.info("Using model: " + str(model))
