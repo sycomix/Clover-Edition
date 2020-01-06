@@ -1,4 +1,4 @@
-**/__pychache__
+**/__pycache__
 *.py[cod]
 venv/
 saves/*
@@ -11,3 +11,4 @@ story*.json
 !/models/.gitkeep
 .vscode/
 .idea/
+.python-version
