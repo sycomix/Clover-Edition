@@ -338,7 +338,7 @@ def print_intro():
 
     output("Go to https://github.com/cloveranon/Clover-Edition/ "
            "or email cloveranon@nuke.africa for bug reports, help, and feature requests.",
-           'subsubtitle')
+           'subsubtitle', end="\n\n")
 
 
 class GameManager:
@@ -613,9 +613,9 @@ class GameManager:
             # If the user enters nothing but leaves "you", treat it like an empty action (continue)
             if re.match(r"^ *you *[.?!]? *$", action, flags=re.IGNORECASE):
                 action = ""
-
-            # Prompt the user with the formatted action
-            output("> " + format_result(action), "transformed-user-text")
+            else:
+                # Prompt the user with the formatted action
+                output("> " + format_result(action), "transformed-user-text")
 
         result = self.story.act(action)
 
@@ -696,6 +696,7 @@ if __name__ == "__main__":
     with open(Path("interface", "clover"), "r", encoding="utf-8") as file_:
         print(file_.read())
     gm = GameManager(get_generator())
+    print_intro()
     while True:
         # May be needed to avoid out of mem
         gc.collect()
