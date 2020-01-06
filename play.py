@@ -203,10 +203,10 @@ def new_story(generator, context, prompt, memory=None, first_result=None):
     return story
 
 
-def save_story(story, savefile_override=""):
+def save_story(story):
     """Saves the existing story to a json file in the saves directory to be resumed later."""
-    savefile = savefile_override or story.savefile
-    while True or not savefile_override:
+    savefile = story.savefile
+    while True:
         print()
         temp_savefile = input_line("Please enter a name for this save: ", "query")
         savefile = savefile if not temp_savefile or len(temp_savefile.strip()) == 0 else temp_savefile
@@ -313,13 +313,13 @@ def alter_text(text):
     return " ".join(sentences).strip()
 
 
-# Prevent reference before assignment
-story = None
-context = None
-prompt = None
-
-
 def play(generator):
+
+    # Prevent reference before assignment
+    story = None
+    context = None
+    prompt = None
+
     print()
 
     with open(Path("interface", "mainTitle.txt"), "r", encoding="utf-8") as file:
@@ -707,8 +707,4 @@ if __name__ == "__main__":
     with open(Path("interface", "clover"), "r", encoding="utf-8") as file:
         print(file.read())
     generator = get_generator()
-    try:
-        play(generator)
-    except:
-        if story is not None:
-            save_story(story, "crash")
+    play(generator)
