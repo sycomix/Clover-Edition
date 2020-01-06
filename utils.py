@@ -273,8 +273,9 @@ def list_items(items, col='menu', start=0, end=None, wrap=False):
     """Lists a generic list of items, numbered, starting from the number passed to start. If end is not None,
     an additional element will be added with its name as the value """
     i = start
+    digits = len(str(len(items)-1))
     for s in items:
-        output(str(i) + ") " + s, col, end='', wrap=wrap)
+        output(str(i).rjust(digits) + ") " + s, col, end='', wrap=wrap)
         i += 1
     if end is not None:
         output('', end=end, wrap=wrap)
