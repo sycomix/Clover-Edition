@@ -144,7 +144,7 @@ def settings_menu():
                     "Default: " + str(v[1]) + " | "
                                               "Current: " + settings.get(k) for k, v in setting_info.items()] + [
                        "(Finish)"])
-        i = input_number(len(all_settings))
+        i = input_number(len(all_settings), default=-1)
         if i == len(all_settings):
             output("Done editing settings. ", "menu")
             return
@@ -231,10 +231,10 @@ def save_story(story):
             output("Unable to write to file; aborting. ", "error")
 
 
-def load_story(f):
+def load_story(f, gen):
     with f.open('r', encoding="utf-8") as file:
         try:
-            story = Story(generator, "")
+            story = Story(gen, "")
             story.savefile = os.path.splitext(file.name.strip())[0]
             story.from_json(file.read())
             return story, story.context, story.actions[-1] if len(story.actions) > 0 else ""
@@ -268,7 +268,7 @@ def alter_text(text):
             while True:
                 output("Choose the sentence you want to edit.", "menu")
                 list_items(sentences + ["(Back)"], "menu")
-                i = input_number(len(sentences))
+                i = input_number(len(sentences), default=-1)
                 if i == len(sentences):
                     break
                 else:
@@ -282,7 +282,7 @@ def alter_text(text):
             while True:
                 output("Choose the sentence you want to remove.", "menu")
                 list_items(sentences + ["(Back)"], "menu")
-                i = input_number(len(sentences))
+                i = input_number(len(sentences), default=-1)
                 if i == len(sentences):
                     break
                 else:
@@ -291,9 +291,9 @@ def alter_text(text):
             while True:
                 output("Choose the sentence you want to insert after.", "menu")
                 list_items(["(Beginning)"] + sentences + ["(Back)"], "menu")
-                max = len(sentences) + 1
-                i = input_number(max)
-                if i == max:
+                maxn = len(sentences) + 1
+                i = input_number(maxn, default=-1)
+                if i == maxn:
                     break
                 else:
                     res = input_line("Enter the new sentence: ", 'menu').strip()
@@ -307,7 +307,6 @@ def alter_text(text):
             if len(res) == 0:
                 output("Invalid prompt entered: returning to previous menu. ", 'error')
                 continue
-            text = res
             sentences = sentence_split(res)
         elif i == 4:
             break
@@ -349,6 +348,7 @@ class GameManager:
         self.story, self.context, self.prompt = None, None, None
 
     def init_story(self) -> bool:
+        self.story, self.context, self.prompt = None, None, None
         list_items(["Pick Prompt From File (Default if you type nothing)",
                     "Write Custom Prompt",
                     "Load a Saved Game",
@@ -386,7 +386,7 @@ class GameManager:
         elif new_game_option == 2:
             story_file = select_file(Path("saves"), ".json")
             if story_file:
-                self.story, self.context, self.prompt = load_story(story_file)
+                self.story, self.context, self.prompt = load_story(story_file, self.generator)
             else:
                 return False
         elif new_game_option == 3:
@@ -437,11 +437,11 @@ class GameManager:
                 instructions()
 
         elif action == "settings":
-             settings_menu()
-             story.print_last()
+            settings_menu()
+            self.story.print_last()
 
         elif action == "menu":
-            if input_bool("Do you want to save? (y/N): ", "query", "user-text"):
+            if input_bool("Do you want to save? (y/N): ", "query"):
                 save_story(self.story)
             # self.story, self.context, self.prompt = None, None, None
             return True
@@ -454,7 +454,7 @@ class GameManager:
             self.story = new_story(self.generator, self.story.context, self.prompt)
 
         elif action == "quit":
-            if input_bool("Do you want to save? (y/N): ", "query", "user-text"):
+            if input_bool("Do you want to save? (y/N): ", "query"):
                 save_story(self.story)
             exit()
 
@@ -462,8 +462,8 @@ class GameManager:
             instructions()
 
         elif action == "print":
-            use_wrap = input_bool("Print with wrapping? (y/N): ", "query", "user-text")
-            use_color = input_bool("Print with colors? (y/N): ", "query", "user-text")
+            use_wrap = input_bool("Print with wrapping? (y/N): ", "query")
+            use_color = input_bool("Print with colors? (y/N): ", "query")
             output("Printing story...", "message")
             self.story.print_story(wrap=use_wrap, color=use_color)
 
@@ -518,7 +518,7 @@ class GameManager:
             while True:
                 output("Select a memory to forget: ", "menu")
                 list_items(self.story.memory + ["(Finish)"], "menu")
-                i = input_number(len(self.story.memory), default=len(self.story.memory))
+                i = input_number(len(self.story.memory), default=-1)
                 if i == len(self.story.memory):
                     break
                 else:
@@ -530,7 +530,7 @@ class GameManager:
         elif action == "load":
             story_file = select_file(Path("saves"), ".json")
             if story_file:
-                tstory, tcontext, tprompt = load_story(story_file)
+                tstory, tcontext, tprompt = load_story(story_file, self.generator)
                 if tstory:
                     output("Loading story...", "message")
                     self.story = tstory
@@ -552,30 +552,108 @@ class GameManager:
                 output("Invalid new prompt; cancelling. ", "error")
                 self.story.print_last()
                 return False
-            if input_bool("Do you want to save your previous story? (y/N): ",
-                          "query", "user-text"):
+            if input_bool("Do you want to save your previous story? (y/N): ", "query"):
                 save_story(self.story)
             self.story = new_story(self.generator, self.context, new_prompt, memory=self.story.memory,
                                    first_result=first_result)
 
         else:
             output("Invalid command: " + action, "error")
+        return False
+
+    def process_action(self, action, suggested_actions=[]):
+        action = format_result(action)
+
+        story_insert_regex = re.search("^ *(?:you)? *! *(.*)$", action, flags=re.IGNORECASE)
+
+        # If the player enters a story insert.
+        if story_insert_regex:
+            action = story_insert_regex.group(1)
+            if not action or len(action.strip()) == 0:
+                output("Invalid story insert. ", "error")
+                return
+            output(format_result(action), "user-text")
+
+        # If the player enters a real action
+        elif action != "":
+            # Roll a die. We'll use it later if action-d20 is enabled.
+            d = random.randint(1, 20)
+            logger.debug("roll d20=%s", d)
+
+            # Add the "you" if it's not prompt-toolkit
+            if not settings.getboolean("prompt-toolkit"):
+                action = re.sub("^ *(?:you)? *(?! *you)(.+)$", "You \\1", action, flags=re.IGNORECASE)
+
+            sugg_action_regex = re.search(r"^ *(?:you)? *([0-9]+)$", action, flags=re.IGNORECASE)
+            user_speech_regex = re.search(r"^ *you *say *([\"'].*[\"'])$", action, flags=re.IGNORECASE)
+            user_action_regex = re.search(r"^ *you *(.+)$", action, flags=re.IGNORECASE)
+
+            if sugg_action_regex:
+                action = sugg_action_regex.group(1)
+                if action in [str(i) for i in range(len(suggested_actions))]:
+                    action = "You " + suggested_actions[int(action)].strip()
+
+            if user_speech_regex:
+                action = user_speech_regex.group(1)
+                if settings.getboolean("action-d20"):
+                    action = d20ify_speech(action, d)
+                else:
+                    action = "You say " + action
+
+            elif user_action_regex:
+                action = first_to_second_person(user_action_regex.group(1))
+                if settings.getboolean("action-d20"):
+                    action = d20ify_action(action, d)
+                else:
+                    action = "You " + action
+
+            if action[-1] not in [".", "?", "!"]:
+                action = action + "."
+
+            # If the user enters nothing but leaves "you", treat it like an empty action (continue)
+            if re.match(r"^ *you *[.?!]? *$", action, flags=re.IGNORECASE):
+                action = ""
+
+            # Prompt the user with the formatted action
+            output("> " + format_result(action), "transformed-user-text")
+
+        result = self.story.act(action)
+
+        # Check for loops
+        if self.story.is_looping():
+            self.story.revert()
+            output("That action caused the model to start looping. Try something else instead. ",
+                   "error")
+
+        pwon, pdied = player_won(result), player_died(result)
+        # If the player won or died, ask them if they want to continue.
+        if pwon or pdied:
+            output(result, "ai-text")
+            if pwon:
+                output("YOU WON. CONGRATULATIONS", "message")
+                list_items(["Start a New Game", "\"I'm not done yet!\" (If you still want to play)"])
+            else:
+                output("YOU DIED. GAME OVER", "message")
+                list_items(["Start a New Game", "\"I'm not dead yet!\" (If you didn't actually die)"])
+            choice = input_number(1)
+            if choice == 0:
+                return True
+            else:
+                output("Sorry about that...where were we?", "query")
+
+        # Output the AI's result.
+        output(result, "ai-text")
 
     def play_story(self):
-        # May be needed to avoid out of mem
-        gc.collect()
-        torch.cuda.empty_cache()
-
-        # can move to storymanager
-        if not self.init_story():
+        if not self.init_story():  # Failed init
             return
 
         while True:
             # Generate suggested actions
             act_alts = settings.getint("action-sugg")
+            suggested_actions = []
             if act_alts > 0:
                 # TODO change this to two messages for different colors
-                suggested_actions = []
                 output("Suggested actions:", "selection-value")
                 action_suggestion_lines = 2
                 for i in range(act_alts):
@@ -596,120 +674,31 @@ class GameManager:
                 action = input_line("> You ", "main-prompt")
 
             # Clear suggestions and user input
-            if act_alts > 0:
-                action_suggestion_lines += 2
-                if not IN_COLAB:
-                    clear_lines(action_suggestion_lines)
+            if act_alts and not IN_COLAB:
+                clear_lines(action_suggestion_lines + 2)
 
             # Users can type in "/command", or "You /command" if prompt_toolkit is on and they left the "You" in
             cmd_regex = re.search(r"^(?: *you *)?/([^ ]+) *(.*)$", action, flags=re.IGNORECASE)
 
             # If this is a command
             if cmd_regex:
-                self.process_cmd(cmd_regex)
+                if self.process_cmd(cmd_regex):  # Go back to the menu
+                    return
 
             # Otherwise this is just a normal action.
             else:
-                action = format_result(action)
-
-                story_insert_regex = re.search("^ *(?:you)? *! *(.*)$", action, flags=re.IGNORECASE)
-
-                # If the player enters a story insert.
-                if story_insert_regex:
-                    action = story_insert_regex.group(1)
-                    if not action or len(action.strip()) == 0:
-                        output("Invalid story insert. ", "error")
-                        continue
-                    output(format_result(action), "user-text")
-
-                # If the player enters a real action
-                elif action != "":
-                    # Roll a die. We'll use it later if action-d20 is enabled.
-                    d = random.randint(1, 20)
-                    logger.debug("roll d20=%s", d)
-
-                    # Add the "you" if it's not prompt-toolkit
-                    if not settings.getboolean("prompt-toolkit"):
-                        action = re.sub("^ *(?:you)? *(?! *you)(.+)$", "You \\1", action, flags=re.IGNORECASE)
-
-                    sugg_action_regex = re.search(r"^ *(?:you)? *([0-9]+)$", action, flags=re.IGNORECASE)
-                    user_speech_regex = re.search(r"^ *you *say *([\"'].*[\"'])$", action, flags=re.IGNORECASE)
-                    user_action_regex = re.search(r"^ *you *(.+)$", action, flags=re.IGNORECASE)
-
-                    if sugg_action_regex:
-                        action = sugg_action_regex.group(1)
-                        if action in [str(i) for i in range(len(suggested_actions))]:
-                            action = "You " + suggested_actions[int(action)].strip()
-
-                    if user_speech_regex:
-                        action = user_speech_regex.group(1)
-                        if settings.getboolean("action-d20"):
-                            action = d20ify_speech(action, d)
-                        else:
-                            action = "You say " + action
-
-                    elif user_action_regex:
-                        action = first_to_second_person(user_action_regex.group(1))
-                        if settings.getboolean("action-d20"):
-                            action = d20ify_action(action, d)
-                        else:
-                            action = "You " + action
-
-                    if action[-1] not in [".", "?", "!"]:
-                        action = action + "."
-
-                    # If the user enters nothing but leaves "you", treat it like an empty action (continue)
-                    if re.match(r"^ *you *[.?!]? *$", action, flags=re.IGNORECASE):
-                        action = ""
-
-                    # Prompt the user with the formatted action
-                    output("> " + format_result(action), "transformed-user-text")
-
-                result = story.act(action)
-
-                # Check for loops
-                if story.is_looping():
-                    story.revert()
-                    output("That action caused the model to start looping. Try something else instead. ",
-                           "error")
-
-                # If the player won, ask them if they want to continue or not.
-                if player_won(result):
-                    output(result, "ai-text")
-                    output("YOU WON. CONGRATULATIONS", "message")
-                    list_items(["Start a New Game", "\"I'm not done yet!\" (If you still want to play)"])
-                    choice = input_number(1)
-                    if choice == 0:
-                        story = None
-                        context = None
-                        prompt = None
-                        break
-                    else:
-                        output("Sorry about that...where were we?", "query")
-
-                # If the player lost, ask them if they want to continue or not.
-                elif player_died(result):
-                    output(result, "ai-text")
-                    output("YOU DIED. GAME OVER", "message")
-                    list_items(["Start a New Game", "\"I'm not dead yet!\" (If you didn't actually die)"])
-                    choice = input_number(1)
-                    if choice == 0:
-                        story = None
-                        context = None
-                        prompt = None
-                        break
-                    else:
-                        output("Sorry about that...where were we?", "query")
-
-                # Output the AI's result.
-                output(result, "ai-text")
-
-
+                if self.process_action(action, suggested_actions):  # End of story
+                    return
 
 
 # This is here for rapid development, without reloading the model. You import play into a jupyternotebook with autoreload
 if __name__ == "__main__":
     with open(Path("interface", "clover"), "r", encoding="utf-8") as file_:
         print(file_.read())
-    generator = get_generator()
-    play(generator)
+    gm = GameManager(get_generator())
+    while True:
+        # May be needed to avoid out of mem
+        gc.collect()
+        torch.cuda.empty_cache()
+
+        gm.play_story()
