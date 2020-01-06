@@ -31,3 +31,24 @@ logging.basicConfig(
     level=logLevel + oneLevelUp,
 )
 logger.setLevel(logLevel)
+
+"""
+Settings descriptions and their default values keyed by their name.
+These settings, their descriptions, and their defaults appear in the settings menu and the /help prompt.
+"""
+setting_info = {
+    "temp":             ["Higher values make the AI more random.", 0.4],
+    "rep-pen":          ["Controls how repetitive the AI is allowed to be.", 1.2],
+    "text-wrap-width":  ["Maximum width of lines printed by computer.", 80],
+    "console-bell":     ["Beep after AI generates text.", "on"],
+    "top-keks":         ["Number of words the AI can randomly choose.", 20],
+    "action-sugg":      ["How many actions to generate; 0 is off.", 4],
+    "action-d20":       ["Makes actions difficult.", "on"],
+    "action-temp":      ["How random the suggested actions are.", 1],
+    "prompt-toolkit":   ["Whether or not to use the prompt_toolkit library.", "on"],
+    "generate-num":     ["", 60],
+    "top-p":            ["", 0.9],
+    "log-level":        ["", 3],
+}
+
+

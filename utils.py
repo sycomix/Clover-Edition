@@ -74,6 +74,12 @@ if termWidth < 5:
     termWidth = 999999999
 
 
+def pad_text(text, width, sep=' '):
+    while len(text) < width:
+        text += sep
+    return text
+
+
 def format_result(text):
     """
     Formats the result text from the AI to be more human-readable.
@@ -180,16 +186,11 @@ def output(text1, col1=None, text2=None, col2=None, wrap=True, beg=None, end='\n
     return linecount
 
 
-def input_bool(str, col1="default", default=False):
-    val = input_line(str, col1).strip().lower()
-    if not val:
+def input_bool(prompt, col1="default", default: bool = False):
+    val = input_line(prompt, col1).strip().lower()
+    if not val or val[0] not in "yn":
         return default
-    if val[0] == 'y':
-        return True
-    elif val[0] == 'n':
-        res = False
-    return res
-
+    return val[0] == "y"
 
 def input_line(str, col1="default", default=""):
     if use_ptoolkit() and ptcolors['displaymethod'] == "prompt-toolkit":
@@ -265,15 +266,16 @@ def sentence_split(text):
     return sentences
 
 
-def list_items(items, col='menu', start=0, end=None):
+def list_items(items, col='menu', start=0, end=None, wrap=False):
     """Lists a generic list of items, numbered, starting from the number passed to start. If end is not None,
     an additional element will be added with its name as the value """
     i = start
+    digits = len(str(len(items)-1))
     for s in items:
-        output(str(i) + ") " + s, col, end='')
+        output(str(i).rjust(digits) + ") " + s, col, end='', wrap=wrap)
         i += 1
     if end is not None:
-        output('', end=end)
+        output('', end=end, wrap=wrap)
 
 
 def remove_prefix(text, prefix):

@@ -15,7 +15,7 @@ class Story:
         self.memory = memory
         self.actions = []
         self.results = []
-        self.savefile = None
+        self.savefile = ""
 
     def act(self, action):
         assert (self.context.strip() + action.strip())

@@ -223,9 +223,9 @@ def save_story(story):
         os.makedirs(os.path.dirname(finalpath), exist_ok=True)
     except OSError:
         output("Error when creating subdirectory; aborting. ", "error")
-    with open(finalpath, 'w') as file:
+    with open(finalpath, 'w') as f:
         try:
-            file.write(savedata)
+            f.write(savedata)
             output("Successfully saved to " + savefile, "message")
         except IOError:
             output("Unable to write to file; aborting. ", "error")
@@ -365,8 +365,8 @@ class GameManager:
         elif new_game_option == 1:
             with open(
                     Path("interface", "prompt-instructions.txt"), "r", encoding="utf-8"
-            ) as f:
-                output(f.read(), "instructions", wrap=False)
+            ) as file:
+                output(file.read(), "instructions", wrap=False)
             if use_ptoolkit():
                 output("Context>", "main-prompt")
                 self.context = edit_multiline()
@@ -709,7 +709,7 @@ class GameManager:
 
 # This is here for rapid development, without reloading the model. You import play into a jupyternotebook with autoreload
 if __name__ == "__main__":
-    with open(Path("interface", "clover"), "r", encoding="utf-8") as file:
-        print(file.read())
+    with open(Path("interface", "clover"), "r", encoding="utf-8") as file_:
+        print(file_.read())
     generator = get_generator()
     play(generator)
