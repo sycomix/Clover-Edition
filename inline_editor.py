@@ -79,7 +79,10 @@ def edit_multiline(default_text=""):
         textf.buffer.selection_state = None
         width = getTermWidth()
         doc = textf.document
-        textf.buffer.cursor_position = doc._line_start_indexes[cursor_row()] + int(cursor_col() / width) * width
+        if textf.buffer.cursor_position == doc._line_start_indexes[cursor_row()] + int(cursor_col() / width) * width:
+            textf.buffer.cursor_position = doc._line_start_indexes[cursor_row()]
+        else:
+            textf.buffer.cursor_position = doc._line_start_indexes[cursor_row()] + int(cursor_col() / width) * width
         update_stored_pos(None)
 
     @kb.add('end')
@@ -88,7 +91,10 @@ def edit_multiline(default_text=""):
         width = getTermWidth()
         doc = textf.document
         row = cursor_row()
-        textf.buffer.cursor_position = min(doc._line_start_indexes[row] + (int(cursor_col() / width) + 1) * width - 1, doc._line_start_indexes[row] +  len(doc.current_line))
+        if textf.buffer.cursor_position == doc._line_start_indexes[row] + (int(cursor_col() / width) + 1) * width - 1:
+            textf.buffer.cursor_position = doc._line_start_indexes[row] + len(doc.current_line)
+        else:
+            textf.buffer.cursor_position = min(doc._line_start_indexes[row] + (int(cursor_col() / width) + 1) * width - 1, doc._line_start_indexes[row] + len(doc.current_line))
         update_stored_pos(None)
 
     @kb.add('up')
@@ -196,4 +202,11 @@ def edit_multiline(default_text=""):
 
 
 if __name__ == "__main__":
-    edit_multiline("Testing\nwith\na\ndefault\nstring.")
+    print()
+    print()
+    print()
+    editthis = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam eu fringilla sapien. Maecenas sodales consequat lorem, in consectetur mi interdum eu. Nullam ut odio mattis, congue odio non, vulputate metus. Integer vel eros eu risus ultricies venenatis a id diam. Nullam viverra congue quam, in aliquam tellus posuere et. Fusce pharetra interdum velit eget hendrerit. Nulla nec velit nibh. Integer at quam sem. Suspendisse tincidunt est non porttitor lobortis. Nulla orci justo, euismod a venenatis eget, feugiat et orci." +\
+    "\nDonec faucibus volutpat diam, nec varius arcu condimentum eget." +\
+    "\nUt sollicitudin blandit leo in faucibus. Etiam dictum pretium placerat. Nulla blandit diam vel justo fermentum, sit amet tempor ante gravida." +\
+    "\n\nDonec maximus cursus eros, sit amet dapibus tellus. Nullam sed ultrices lacus. Sed nibh nisi, ornare a libero et, mattis facilisis tellus. Cras mauris metus, vulputate ut dolor at, viverra ullamcorper nisi. Nulla ornare augue eget orci semper, ac congue nibh placerat. Duis rhoncus ipsum ut eros eleifend, sed mollis odio ullamcorper. Sed at justo magna."
+    edit_multiline(editthis)
