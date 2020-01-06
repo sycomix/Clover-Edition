@@ -317,7 +317,7 @@ def alter_text(text):
             break
     return " ".join(sentences).strip()
 
-
+# TODO refactor this huge function
 def play(generator):
 
     # Prevent reference before assignment
@@ -488,7 +488,7 @@ def play(generator):
                     story.print_last()
 
                 elif action == "menu":
-                    if input_bool("Do you want to save? (y/N): ", "query", "user-text"):
+                    if input_bool("Do you want to save? (y/N): ", "query"):
                         save_story(story)
                     story = None
                     context = None
@@ -503,7 +503,7 @@ def play(generator):
                     story = new_story(generator, story.context, prompt)
 
                 elif action == "quit":
-                    if input_bool("Do you want to save? (y/N): ", "query", "user-text"):
+                    if input_bool("Do you want to save? (y/N): ", "query"):
                         save_story(story)
                     exit()
 
@@ -511,8 +511,8 @@ def play(generator):
                     instructions()
 
                 elif action == "print":
-                    use_wrap = input_bool("Print with wrapping? (y/N): ", "query", "user-text")
-                    use_color = input_bool("Print with colors? (y/N): ", "query", "user-text")
+                    use_wrap = input_bool("Print with wrapping? (y/N): ", "query")
+                    use_color = input_bool("Print with colors? (y/N): ", "query")
                     output("Printing story...", "message")
                     story.print_story(wrap=use_wrap, color=use_color)
 
@@ -565,10 +565,9 @@ def play(generator):
 
                 elif action == "forget":
                     while True:
-                        i = 0
                         output("Select a memory to forget: ", "menu")
                         list_items(story.memory + ["(Finish)"], "menu")
-                        i = input_number(len(story.memory))
+                        i = input_number(len(story.memory), default=len(story.memory))
                         if i == len(story.memory):
                             break
                         else:
@@ -603,7 +602,7 @@ def play(generator):
                         story.print_last()
                         continue
                     if input_bool("Do you want to save your previous story? (y/N): ",
-                                  "query", "user-text"):
+                                  "query"):
                         save_story(story)
                     story = new_story(generator, context, new_prompt, memory=story.memory, first_result=first_result)
 
@@ -622,7 +621,7 @@ def play(generator):
                     if not action or len(action.strip()) == 0:
                         output("Invalid story insert. ", "error")
                         continue
-                    output(format_result(action), "user-text")
+                    output(format_result(action), col1="user-text")
 
                 # If the player enters a real action
                 elif action != "":

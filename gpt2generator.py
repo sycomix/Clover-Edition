@@ -189,8 +189,8 @@ class GPT2Generator:
             raise FileNotFoundError("Could not find {} Make sure to download a pytorch model and put it in the models directory!".format(str(self.checkpoint_path)))
        
         if os.environ.get("DEBUG_GPT2", False):
-            self.checkpoint_path = Path('gpt2')
-            logger.warning("using DEBUG_GPT2 MODE! This is just for devs to quickly check a small GPT2 model with poor output")
+            self.checkpoint_path = 'gpt2'
+            logger.warning("using DEBUG_GPT2 MODE! This is just for devs to quickly check a small (124M) GPT2 model with poor output")
         self.device = torch.device("cuda" if self.dtype==torch.float16 else "cpu")
         logger.info("Using device={}, checkpoint={}, dtype={}".format(self.device, str(self.checkpoint_path), self.dtype))
 
