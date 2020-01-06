@@ -456,9 +456,9 @@ def play(generator):
                                 cmd_args[0], curr_setting_val, cmd_args[1]
                             )
                         )
-                        settings[cmd_args[0]] = cmd_args[1]
                         output("Saving an invalid option will corrupt file! ", "error")
                         if input_bool("Save setting? (y/N): ", "selection-prompt"):
+                            settings[cmd_args[0]] = cmd_args[1]
                             try:
                                 with open("config.ini", "w", encoding="utf-8") as file:
                                     config.write(file)
