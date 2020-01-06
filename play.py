@@ -1,8 +1,8 @@
 from pathlib import Path
 
 # remove this in a few days
-with open(Path('interface', 'start-message.txt'), 'r') as file:
-    print('\x1B[7m' + file.read() + '\x1B[27m')
+with open(Path('interface', 'start-message.txt'), 'r') as file_:
+    print('\x1B[7m' + file_.read() + '\x1B[27m')
 import gc
 import torch
 
@@ -22,6 +22,7 @@ except ModuleNotFoundError:
     pass
 
 logger.info("Colab detected: {}".format(in_colab()))
+
 
 def get_generator():
     output(
@@ -106,9 +107,7 @@ def d20ify_action(action, d):
         "masterfully",
     ]
     if d == 1:
-        adjective = random.sample(adjective_action_d01, 1)[
-            0
-        ]
+        adjective = random.sample(adjective_action_d01, 1)[0]
         action = "You " + adjective + " fail to " + action
     elif d < 5:
         action = "You attempt to " + action
@@ -119,9 +118,7 @@ def d20ify_action(action, d):
     elif d < 20:
         action = "You " + action
     else:
-        adjective = random.sample(adjective_action_d20, 1)[
-            0
-        ]
+        adjective = random.sample(adjective_action_d20, 1)[0]
         action = "You " + adjective + " " + action
     return action
 
@@ -179,9 +176,9 @@ def save_story(story):
         os.makedirs(os.path.dirname(finalpath), exist_ok=True)
     except OSError:
         output("Error when creating subdirectory; aborting. ", "error")
-    with open(finalpath, 'w') as f:
+    with open(finalpath, 'w') as file:
         try:
-            f.write(savedata)
+            file.write(savedata)
             output("Successfully saved to " + savefile, "message")
         except IOError:
             output("Unable to write to file; aborting. ", "error")
@@ -270,7 +267,7 @@ def alter_text(text):
     return " ".join(sentences).strip()
 
 
-def play(generator):
+def print_intro():
     print()
 
     with open(Path("interface", "mainTitle.txt"), "r", encoding="utf-8") as file:
@@ -279,15 +276,15 @@ def play(generator):
     with open(Path("interface", "subTitle.txt"), "r", encoding="utf-8") as file:
         cols = termWidth
         for line in file:
-            line=re.sub(r'\n', '', line)
-            line=line[:cols]
-            #fills in the graphic using reverse video mode substituted into the areas between |'s
+            line = re.sub(r'\n', '', line)
+            line = line[:cols]
+            # fills in the graphic using reverse video mode substituted into the areas between |'s
             if use_ptoolkit():
                 style = Style.from_dict({
                     'nor': ptcolors['subtitle'],
                     'rev': ptcolors['subtitle'] + ' reverse',
                 })
-                text = re.sub(r'\|[ _]*(\||$)', lambda x: '<rev>'+x.group(0)+'</rev>', line)
+                text = re.sub(r'\|[ _]*(\||$)', lambda x: '<rev>' + x.group(0) + '</rev>', line)
                 print_formatted_text(HTML('<nor>' + text + '</nor>'), style=style)
             else:
                 output(re.sub(r'\|[ _]*(\||$)', lambda x: '\x1B[7m' + x.group(0) + '\x1B[27m', line), 'subtitle',
@@ -297,16 +294,14 @@ def play(generator):
            "or email cloveranon@nuke.africa for bug reports, help, and feature requests.",
            'subsubtitle')
 
-    # Prevent reference before assignment
-    story = None
-    context = None
-    prompt = None
 
-    while True:
-        # May be needed to avoid out of mem
-        gc.collect()
-        torch.cuda.empty_cache()
+class GameManager:
 
+    def __init__(self, gen: GPT2Generator):
+        self.generator = gen
+        self.story, self.context, self.prompt = None, None, None
+
+    def init_story(self) -> bool:
         list_items(["Pick Prompt From File (Default if you type nothing)", "Write Custom Prompt", "Load a Saved Game"],
                    'menu')
         new_game_option = input_number(2)
@@ -314,53 +309,209 @@ def play(generator):
         if new_game_option == 0:
             prompt_file = select_file(Path("prompts"), ".txt")
             if prompt_file:
-                context, prompt = load_prompt(prompt_file)
+                self.context, self.prompt = load_prompt(prompt_file)
             else:
-                continue
+                return False
         elif new_game_option == 1:
             with open(
                     Path("interface", "prompt-instructions.txt"), "r", encoding="utf-8"
-            ) as file:
-                output(file.read(), "instructions", wrap=False)
+            ) as f:
+                output(f.read(), "instructions", wrap=False)
             if use_ptoolkit():
                 output("Context>", "main-prompt")
-                context = edit_multiline()
+                self.context = edit_multiline()
                 output("Prompt>", "main-prompt")
-                prompt = edit_multiline()
+                self.prompt = edit_multiline()
             else:
-                context = input_line("Context> ", "main-prompt")
-                prompt = input_line("Prompt> ", "main-prompt")
+                self.context = input_line("Context> ", "main-prompt")
+                self.prompt = input_line("Prompt> ", "main-prompt")
             filename = input_line("Name to save prompt as? (Leave blank for no save): ", "query")
             filename = re.sub("-$", "", re.sub("^-", "", re.sub("[^a-zA-Z0-9_-]+", "-", filename)))
             if filename != "":
                 try:
-                    with open(
-                            Path("prompts", filename + ".txt"), "w", encoding="utf-8"
-                    ) as f:
-                        f.write(context + "\n" + prompt)
+                    with open(Path("prompts", filename + ".txt"), "w", encoding="utf-8") as f:
+                        f.write(self.context + "\n" + self.prompt)
                 except IOError:
                     output("Permission error! Unable to save custom prompt. ", "error")
         elif new_game_option == 2:
             story_file = select_file(Path("saves"), ".json")
             if story_file:
-                story, context, prompt = load_story(story_file)
-                if not story:
-                    continue
+                self.story, self.context, self.prompt = load_story(story_file)
             else:
-                continue
+                return False
 
-        if len((context + prompt).strip()) == 0:
+        if len((self.context + self.prompt).strip()) == 0:
             output("Story has no prompt or context. Please enter a valid custom prompt. ", "error")
-            continue
+            return False
 
         instructions()
 
-        if story is None:
+        if self.story is None:
             output("Generating story...", "loading-message")
-            story = new_story(generator, context, prompt)
+            self.story = new_story(self.generator, self.context, self.prompt)
         else:
             output("Loading story...", "loading-message")
-            story.print_story()
+            self.story.print_story()
+
+        return True
+
+    # returns true if going back to menu
+    def process_cmd(self, cmd_regex) -> bool:
+        action = cmd_regex.group(1).strip().lower()
+        cmd_args = cmd_regex.group(2).strip().split()
+        if action == "set":
+            if len(cmd_args) < 2:
+                output("Invalid number of arguments for set command. ", "error")
+                instructions()
+                return False
+            if cmd_args[0] in settings:
+                curr_setting_val = settings[cmd_args[0]]
+                output(
+                    "Current Value of {}: {}     Changing to: {}".format(
+                        cmd_args[0], curr_setting_val, cmd_args[1]
+                    )
+                )
+                settings[cmd_args[0]] = cmd_args[1]
+                output("Saving an invalid option will corrupt file! ", "error")
+                if input_bool("Save setting? (y/N): ", "selection-prompt"):
+                    try:
+                        with open("config.ini", "w", encoding="utf-8") as f:
+                            config.write(f)
+                    except IOError:
+                        output("Permission error! Changes will not be saved for next session.", "error")
+            else:
+                output("Invalid setting", "error")
+                instructions()
+
+        elif action == "menu":
+            if input_bool("Do you want to save? (y/N): ", "query", "user-text"):
+                save_story(self.story)
+            # self.story, self.context, self.prompt = None, None, None
+            return True
+
+        elif action == "restart":
+            output("Restarting story...", "loading-message")
+            if len((self.context + self.prompt).strip()) == 0:
+                output("Story has no prompt or context. Please enter a valid prompt. ", "error")
+                return False
+            self.story = new_story(self.generator, self.story.context, self.prompt)
+
+        elif action == "quit":
+            if input_bool("Do you want to save? (y/N): ", "query", "user-text"):
+                save_story(self.story)
+            exit()
+
+        elif action == "help":
+            instructions()
+
+        elif action == "print":
+            use_wrap = input_bool("Print with wrapping? (y/N): ", "query", "user-text")
+            use_color = input_bool("Print with colors? (y/N): ", "query", "user-text")
+            output("Printing story...", "message")
+            self.story.print_story(wrap=use_wrap, color=use_color)
+
+        elif action == "retry":
+            if len(self.story.actions) < 2:
+                output("Restarting story...", "loading-message")
+                if len((self.context + self.prompt).strip()) == 0:
+                    output("Story has no prompt or context. Please enter a valid prompt. ", "error")
+                    return False
+                self.story = new_story(self.generator, self.story.context, self.prompt)
+                return False
+            else:
+                new_action = self.story.actions[-1]
+                self.story.revert()
+                result = self.story.act(new_action)
+                if self.story.is_looping():
+                    self.story.revert()
+                    output("That action caused the model to start looping. Try something else instead. ",
+                           "error")
+                    return False
+                self.story.print_last()
+
+        elif action == "revert":
+            if len(self.story.actions) < 2:
+                output("You can't go back any farther. ", "error")
+                return False
+            self.story.revert()
+            output("Last action reverted. ", "message")
+            self.story.print_last()
+
+        elif action == "alter":
+            self.story.results[-1] = alter_text(self.story.results[-1])
+            self.story.print_last()
+
+        elif action == "context":
+            self.story.context = alter_text(self.story.context)
+            self.story.print_last()
+
+        elif action == "remember":
+            memory = cmd_regex.group(2).strip()
+            if len(memory) > 0:
+                memory = re.sub("^[Tt]hat +(.*)", "\\1", memory)
+                memory = memory.strip('.')
+                memory = memory.strip('!')
+                memory = memory.strip('?')
+                self.story.memory.append(memory[0].upper() + memory[1:] + ".")
+                output("You remember " + memory + ". ", "message")
+            else:
+                output("Please enter something valid to remember. ", "error")
+
+        elif action == "forget":
+            while True:
+                output("Select a memory to forget: ", "menu")
+                list_items(self.story.memory + ["(Finish)"], "menu")
+                i = input_number(len(self.story.memory), default=len(self.story.memory))
+                if i == len(self.story.memory):
+                    break
+                else:
+                    del self.story.memory[i]
+
+        elif action == "save":
+            save_story(self.story)
+
+        elif action == "load":
+            story_file = select_file(Path("saves"), ".json")
+            if story_file:
+                tstory, tcontext, tprompt = load_story(story_file)
+                if tstory:
+                    output("Loading story...", "message")
+                    self.story = tstory
+                    self.context = tcontext
+                    self.prompt = tprompt
+                    self.story.print_story()
+                else:
+                    self.story.print_last()
+            else:
+                self.story.print_last()
+
+        elif action == "summarize":
+            first_result = self.story.results[-1]
+            output(self.story.context, "user-text", "(YOUR SUMMARY HERE)", "message")
+            output(self.story.results[-1], "ai-text")
+            new_prompt = input_line("Enter the summary for the new story: ", "query")
+            new_prompt = format_result(new_prompt)
+            if len(new_prompt) == 0:
+                output("Invalid new prompt; cancelling. ", "error")
+                self.story.print_last()
+                return False
+            if input_bool("Do you want to save your previous story? (y/N): ",
+                          "query", "user-text"):
+                save_story(self.story)
+            self.story = new_story(self.generator, self.context, new_prompt, memory=self.story.memory,
+                                   first_result=first_result)
+
+        else:
+            output("Invalid command: " + action, "error")
+
+    def play_story(self):
+        # May be needed to avoid out of mem
+        gc.collect()
+        torch.cuda.empty_cache()
+
+        # can move to storymanager
+        if not self.init_story():
+            return
 
         while True:
             # Generate suggested actions
@@ -371,7 +522,7 @@ def play(generator):
                 output("Suggested actions:", "selection-value")
                 action_suggestion_lines = 2
                 for i in range(act_alts):
-                    suggested_action = story.get_suggestion()
+                    suggested_action = self.story.get_suggestion()
                     if len(suggested_action.strip()) > 0:
                         j = len(suggested_actions)
                         suggested_actions.append(suggested_action)
@@ -398,154 +549,7 @@ def play(generator):
 
             # If this is a command
             if cmd_regex:
-                action = cmd_regex.group(1).strip().lower()
-                cmd_args = cmd_regex.group(2).strip().split()
-                if action == "set":
-                    if len(cmd_args) < 2:
-                        output("Invalid number of arguments for set command. ", "error")
-                        instructions()
-                        continue
-                    if cmd_args[0] in settings:
-                        curr_setting_val = settings[cmd_args[0]]
-                        output(
-                            "Current Value of {}: {}     Changing to: {}".format(
-                                cmd_args[0], curr_setting_val, cmd_args[1]
-                            )
-                        )
-                        settings[cmd_args[0]] = cmd_args[1]
-                        output("Saving an invalid option will corrupt file! ", "error")
-                        if input_bool("Save setting? (y/N): ", "selection-prompt"):
-                            try:
-                                with open("config.ini", "w", encoding="utf-8") as file:
-                                    config.write(file)
-                            except IOError:
-                                output("Permission error! Changes will not be saved for next session.", "error")
-                    else:
-                        output("Invalid setting", "error")
-                        instructions()
-
-                elif action == "menu":
-                    if input_bool("Do you want to save? (y/N): ", "query", "user-text"):
-                        save_story(story)
-                    story = None
-                    context = None
-                    prompt = None
-                    break
-
-                elif action == "restart":
-                    output("Restarting story...", "loading-message")
-                    if len((context + prompt).strip()) == 0:
-                        output("Story has no prompt or context. Please enter a valid prompt. ", "error")
-                        continue
-                    story = new_story(generator, story.context, prompt)
-
-                elif action == "quit":
-                    if input_bool("Do you want to save? (y/N): ", "query", "user-text"):
-                        save_story(story)
-                    exit()
-
-                elif action == "help":
-                    instructions()
-
-                elif action == "print":
-                    use_wrap = input_bool("Print with wrapping? (y/N): ", "query", "user-text")
-                    use_color = input_bool("Print with colors? (y/N): ", "query", "user-text")
-                    output("Printing story...", "message")
-                    story.print_story(wrap=use_wrap, color=use_color)
-
-                elif action == "retry":
-                    if len(story.actions) < 2:
-                        output("Restarting story...", "loading-message")
-                        if len((context + prompt).strip()) == 0:
-                            output("Story has no prompt or context. Please enter a valid prompt. ", "error")
-                            continue
-                        story = new_story(generator, story.context, prompt)
-                        continue
-                    else:
-                        new_action = story.actions[-1]
-                        story.revert()
-                        result = story.act(new_action)
-                        if story.is_looping():
-                            story.revert()
-                            output("That action caused the model to start looping. Try something else instead. ",
-                                   "error")
-                            continue
-                        story.print_last()
-
-                elif action == "revert":
-                    if len(story.actions) < 2:
-                        output("You can't go back any farther. ", "error")
-                        continue
-                    story.revert()
-                    output("Last action reverted. ", "message")
-                    story.print_last()
-
-                elif action == "alter":
-                    story.results[-1] = alter_text(story.results[-1])
-                    story.print_last()
-
-                elif action == "context":
-                    story.context = alter_text(story.context)
-                    story.print_last()
-
-                elif action == "remember":
-                    memory = cmd_regex.group(2).strip()
-                    if len(memory) > 0:
-                        memory = re.sub("^[Tt]hat +(.*)", "\\1", memory)
-                        memory = memory.strip('.')
-                        memory = memory.strip('!')
-                        memory = memory.strip('?')
-                        story.memory.append(memory[0].upper() + memory[1:] + ".")
-                        output("You remember " + memory + ". ", "message")
-                    else:
-                        output("Please enter something valid to remember. ", "error")
-
-                elif action == "forget":
-                    while True:
-                        i = 0
-                        output("Select a memory to forget: ", "menu")
-                        list_items(story.memory + ["(Finish)"], "menu")
-                        i = input_number(len(story.memory))
-                        if i == len(story.memory):
-                            break
-                        else:
-                            del story.memory[i]
-
-                elif action == "save":
-                    save_story(story)
-
-                elif action == "load":
-                    story_file = select_file(Path("saves"), ".json")
-                    if story_file:
-                        tstory, tcontext, tprompt = load_story(story_file)
-                        if tstory:
-                            output("Loading story...", "message")
-                            story = tstory
-                            context = tcontext
-                            prompt = tprompt
-                            story.print_story()
-                        else:
-                            story.print_last()
-                    else:
-                        story.print_last()
-
-                elif action == "summarize":
-                    first_result = story.results[-1]
-                    output(story.context, "user-text", "(YOUR SUMMARY HERE)", "message")
-                    output(story.results[-1], "ai-text")
-                    new_prompt = input_line("Enter the summary for the new story: ", "query")
-                    new_prompt = format_result(new_prompt)
-                    if len(new_prompt) == 0:
-                        output("Invalid new prompt; cancelling. ", "error")
-                        story.print_last()
-                        continue
-                    if input_bool("Do you want to save your previous story? (y/N): ",
-                                  "query", "user-text"):
-                        save_story(story)
-                    story = new_story(generator, context, new_prompt, memory=story.memory, first_result=first_result)
-
-                else:
-                    output("Invalid command: " + action, "error")
+                self.process_cmd(cmd_regex)
 
             # Otherwise this is just a normal action.
             else:
@@ -642,6 +646,10 @@ def play(generator):
 
                 # Output the AI's result.
                 output(result, "ai-text")
+
+
+def play(gen):
+    while True:
 
 
 # This is here for rapid development, without reloading the model. You import play into a jupyternotebook with autoreload

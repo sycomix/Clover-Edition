@@ -204,9 +204,11 @@ def input_line(str, col1="default", default=""):
 
 
 def input_number(maxn, default=0):
+    if default == -1:
+        default = maxn
     bell()
     print()
-    val = input_line("Enter a number from above (default 0):", "selection-prompt")
+    val = input_line(f"Enter a number from above (default {default}):", "selection-prompt")
     if not val:
         return default
     elif not re.match("^\d+$", val) or 0 > int(val) or int(val) > maxn:
