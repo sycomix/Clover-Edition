@@ -204,15 +204,18 @@ def input_line(str, col1="default", default=""):
     return val
 
 
-def input_number(maxn, default=0):
+def input_number(max_choice, default=0):
+    # Inputs an integer from 0 to max_choice (inclusive)
+    if default == -1:
+        default = max_choice
     bell()
     print()
     val = input_line(f"Enter a number from above (default {default}):", "selection-prompt")
     if not val:
         return default
-    elif not re.match("^\d+$", val) or 0 > int(val) or int(val) > maxn:
+    elif not re.match("^\d+$", val) or 0 > int(val) or int(val) > max_choice:
         output("Invalid choice. ", "error")
-        return input_number(maxn)
+        return input_number(max_choice)
     else:
         return int(val)
 
