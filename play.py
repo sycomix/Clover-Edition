@@ -200,7 +200,7 @@ def save_story(story):
     while True:
         print()
         temp_savefile = input_line("Please enter a name for this save: ", "query")
-        savefile = temp_savefile if not temp_savefile or len(temp_savefile.strip()) > 0 else savefile
+        savefile = temp_savefile if not temp_savefile or len(temp_savefile.strip()) == 0 else savefile
         if not savefile or len(savefile.strip()) == 0:
             output("Please enter a valid savefile name. ", "error")
         else:
