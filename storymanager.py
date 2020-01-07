@@ -20,7 +20,6 @@ class Story:
     def act(self, action):
         assert (self.context.strip() + action.strip())
         assert (settings.getint('top-keks') is not None)
-        self.actions.append(format_result(action))
         result = self.generator.generate(
             self.get_story() + action,
             self.context + ' '.join(self.memory),
@@ -28,6 +27,7 @@ class Story:
             top_p=settings.getfloat('top-p'),
             top_k=settings.getint('top-keks'),
             repetition_penalty=settings.getfloat('rep-pen'))
+        self.actions.append(format_result(action))
         self.results.append(format_result(result))
         return self.results[-1]
 
