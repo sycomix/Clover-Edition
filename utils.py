@@ -13,6 +13,8 @@ from shutil import get_terminal_size
 def in_colab():
     """Some terminal codes don't work in a colab notebook."""
     # from https://github.com/tqdm/tqdm/blob/master/tqdm/autonotebook.py
+    if settings.getboolean("colab-mode"):
+        return True
     try:
         from IPython import get_ipython
         if (not get_ipython()) or ('IPKernelApp' not in get_ipython().config):  # pragma: no cover
