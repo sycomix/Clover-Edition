@@ -21,7 +21,7 @@ def in_colab():
             raise ImportError("vscode")
     except ImportError:
         if get_terminal_size()[0]==0 or 'google.colab' in sys.modules:
-            settings["colab-mode"] = True
+            settings["colab-mode"] = "on"
             return True
         return False
     else:
