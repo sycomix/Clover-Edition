@@ -206,7 +206,7 @@ def new_story(generator, context, prompt, memory=None, first_result=None):
     return story
 
 
-def save_story(story, file_override=None):
+def save_story(story, file_override=None, autosave=False):
     """Saves the existing story to a json file in the saves directory to be resumed later."""
     if not file_override:
         savefile = story.savefile
@@ -227,13 +227,16 @@ def save_story(story, file_override=None):
     try:
         os.makedirs(os.path.dirname(finalpath), exist_ok=True)
     except OSError:
-        output("Error when creating subdirectory; aborting. ", "error")
+        if not autosave:
+            output("Error when creating subdirectory; aborting. ", "error")
     with open(finalpath, 'w') as f:
         try:
             f.write(savedata)
-            output("Successfully saved to " + savefile, "message")
+            if not autosave:
+                output("Successfully saved to " + savefile, "message")
         except IOError:
-            output("Unable to write to file; aborting. ", "error")
+            if not autosave:
+                output("Unable to write to file; aborting. ", "error")
 
 
 def load_story(f, gen):
@@ -402,14 +405,26 @@ class GameManager:
             output("Story has no prompt or context. Please enter a valid custom prompt. ", "error")
             return False
 
-        instructions()
-
         if self.story is None:
+            auto_file = ""
+            if settings.getboolean("autosave"):
+                while True:
+                    auto_file = input_line("Autosaving enabled. Please enter a save name: ", "query")
+                    if not auto_file or len(auto_file.strip()) == 0:
+                        output("Please enter a valid savefile name. ", "error")
+                    else:
+                        break
+            instructions()
             output("Generating story...", "loading-message")
             self.story = new_story(self.generator, self.context, self.prompt)
+            self.story.savefile = auto_file
         else:
+            instructions()
             output("Loading story...", "loading-message")
             self.story.print_story()
+
+        if settings.getboolean("autosave"):
+            save_story(self.story, file_override=self.story.savefile, log=False)
 
         return True
 
@@ -624,6 +639,9 @@ class GameManager:
 
         result = self.story.act(action)
 
+        if settings.getboolean("autosave"):
+            save_story(self.story, file_override=self.story.savefile, autosave=True)
+
         # Check for loops
         if self.story.is_looping():
             self.story.revert()
@@ -712,5 +730,5 @@ if __name__ == "__main__":
         traceback.print_exc()
         output("A fatal error has occurred. ", "error")
         if gm and gm.story:
-            save_story(gm.story, datetime.now().strftime("crashes/%d-%m-%Y_%H%M%S"))
+            save_story(gm.story, file_override=datetime.now().strftime("crashes/%d-%m-%Y_%H%M%S"))
         exit(1)
