@@ -1,4 +1,6 @@
+import traceback
 from pathlib import Path
+from datetime import datetime
 
 # remove this in a few days
 with open(Path('interface', 'start-message.txt'), 'r') as file_:
@@ -204,19 +206,22 @@ def new_story(generator, context, prompt, memory=None, first_result=None):
     return story
 
 
-def save_story(story):
+def save_story(story, file_override=None):
     """Saves the existing story to a json file in the saves directory to be resumed later."""
-    savefile = story.savefile
-    while True:
-        print()
-        temp_savefile = input_line("Please enter a name for this save: ", "query")
-        savefile = savefile if not temp_savefile or len(temp_savefile.strip()) == 0 else temp_savefile
-        if not savefile or len(savefile.strip()) == 0:
-            output("Please enter a valid savefile name. ", "error")
-        else:
-            break
-    savefile = os.path.splitext(remove_prefix(savefile, "saves/").strip())[0]
-    story.savefile = savefile
+    if not file_override:
+        savefile = story.savefile
+        while True:
+            print()
+            temp_savefile = input_line("Please enter a name for this save: ", "query")
+            savefile = savefile if not temp_savefile or len(temp_savefile.strip()) == 0 else temp_savefile
+            if not savefile or len(savefile.strip()) == 0:
+                output("Please enter a valid savefile name. ", "error")
+            else:
+                break
+        savefile = os.path.splitext(remove_prefix(savefile, "saves/").strip())[0]
+        story.savefile = savefile
+    else:
+        savefile = file_override
     savedata = story.to_json()
     finalpath = "saves/" + savefile + ".json"
     try:
@@ -695,10 +700,16 @@ class GameManager:
 if __name__ == "__main__":
     with open(Path("interface", "clover"), "r", encoding="utf-8") as file_:
         print(file_.read())
-    gm = GameManager(get_generator())
-    while True:
-        # May be needed to avoid out of mem
-        gc.collect()
-        torch.cuda.empty_cache()
-        print_intro()
-        gm.play_story()
+    try:
+        gm = GameManager(get_generator())
+        while True:
+            # May be needed to avoid out of mem
+            gc.collect()
+            torch.cuda.empty_cache()
+            print_intro()
+            gm.play_story()
+    except Exception as e:
+        traceback.print_exc()
+        output("A fatal error has occurred. ", "error")
+        if gm and gm.story:
+            save_story(gm.story, datetime.now().strftime("crashes/%d-%m-%Y_%H%M%S"))
