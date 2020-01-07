@@ -605,7 +605,7 @@ class GameManager:
 
             # Add the "you" if it's not prompt-toolkit
             if not settings.getboolean("prompt-toolkit"):
-                action = re.sub("^ *(?:you)? *(?! *you)(.+)$", "You \\1", action, flags=re.IGNORECASE)
+                action = re.sub("^(?: *you *)*(.+)$", "You \\1", action, flags=re.IGNORECASE)
 
             sugg_action_regex = re.search(r"^ *(?:you)? *([0-9]+)$", action, flags=re.IGNORECASE)
             user_speech_regex = re.search(r"^ *you *say *([\"'].*[\"'])$", action, flags=re.IGNORECASE)
