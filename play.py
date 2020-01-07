@@ -700,5 +700,5 @@ if __name__ == "__main__":
         # May be needed to avoid out of mem
         gc.collect()
         torch.cuda.empty_cache()
-
+        print_intro()
         gm.play_story()
