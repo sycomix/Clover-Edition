@@ -46,10 +46,10 @@ setting_info = {
     "action-d20":       ["Makes actions difficult.", "on"],
     "action-temp":      ["How random the suggested actions are.", 1],
     "prompt-toolkit":   ["Whether or not to use the prompt_toolkit library.", "on"],
-    "generate-num":     ["", 60],
-    "top-p":            ["", 0.9],
-    "log-level":        ["", 3],
     "autosave":         ["Whether or not to save after every action.", "on"],
+    "generate-num":     ["Approximate number of words to generate.", 60],
+    "top-p":            ["Changes number of words nucleus sampled by the AI.", 0.9],
+    "log-level":        ["Development log level. <30 is for developers.", 30],
 }
 
 
