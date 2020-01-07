@@ -623,7 +623,7 @@ class GameManager:
                 else:
                     action = "You say " + action
 
-            if user_action_regex:
+            elif user_action_regex:
                 action = first_to_second_person(user_action_regex.group(1))
                 if settings.getboolean("action-d20"):
                     action = d20ify_action(action, d)
