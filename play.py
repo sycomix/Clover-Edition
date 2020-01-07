@@ -245,7 +245,7 @@ def load_story(f, gen):
         try:
             story = Story(gen, "")
             savefile = os.path.splitext(file.name.strip())[0]
-            savefile = re.sub(r" *saves *[/\\] *(.*) *(?:\.json)?", "\\1", savefile).strip()
+            savefile = re.sub(r"^ *saves *[/\\] *(.*) *(?:\.json)?", "\\1", savefile).strip()
             story.savefile = savefile
             story.from_json(file.read())
             return story, story.context, story.actions[-1] if len(story.actions) > 0 else ""
