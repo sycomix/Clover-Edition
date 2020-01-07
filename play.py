@@ -424,7 +424,7 @@ class GameManager:
             self.story.print_story()
 
         if settings.getboolean("autosave"):
-            save_story(self.story, file_override=self.story.savefile, log=False)
+            save_story(self.story, file_override=self.story.savefile, autosave=True)
 
         return True
 
