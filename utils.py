@@ -24,9 +24,12 @@ def in_colab():
     except ImportError:
         if get_terminal_size()[0]==0 or 'google.colab' in sys.modules:
             settings["colab-mode"] = "on"
+            settings["prompt-toolkit"] = "off"
             return True
         return False
     else:
+        settings["colab-mode"] = "on"
+        settings["prompt-toolkit"] = "off"
         return True
 
 
