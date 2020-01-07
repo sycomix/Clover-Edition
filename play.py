@@ -623,7 +623,7 @@ class GameManager:
                 else:
                     action = "You say " + action
 
-            elif user_action_regex:
+            if user_action_regex:
                 action = first_to_second_person(user_action_regex.group(1))
                 if settings.getboolean("action-d20"):
                     action = d20ify_action(action, d)
@@ -634,11 +634,15 @@ class GameManager:
                 action = action + "."
 
             # If the user enters nothing but leaves "you", treat it like an empty action (continue)
-            if re.match(r"^ *you *[.?!]? *$", action, flags=re.IGNORECASE):
+            if re.match(r"^(?: *you *)*[.?!]? *$", action, flags=re.IGNORECASE):
                 action = ""
 
             # Prompt the user with the formatted action
-            output("> " + format_result(action), "transformed-user-text")
+            if action != "":
+                output("> " + format_result(action), "transformed-user-text")
+
+        if action == "":
+            output("Continuing...", "message")
 
         result = self.story.act(action)
 
