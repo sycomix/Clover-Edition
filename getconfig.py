@@ -49,6 +49,7 @@ setting_info = {
     "generate-num":     ["", 60],
     "top-p":            ["", 0.9],
     "log-level":        ["", 3],
+    "autosave":         ["Whether or not to save after every action.", "on"],
 }
 
 
