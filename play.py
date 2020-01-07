@@ -713,3 +713,4 @@ if __name__ == "__main__":
         output("A fatal error has occurred. ", "error")
         if gm and gm.story:
             save_story(gm.story, datetime.now().strftime("crashes/%d-%m-%Y_%H%M%S"))
+        exit(1)
