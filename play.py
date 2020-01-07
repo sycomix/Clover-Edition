@@ -733,5 +733,9 @@ if __name__ == "__main__":
         traceback.print_exc()
         output("A fatal error has occurred. ", "error")
         if gm and gm.story:
-            save_story(gm.story, file_override=datetime.now().strftime("crashes/%d-%m-%Y_%H%M%S"))
+            if not gm.story.savefile or len(gm.story.savefile.strip()) == 0:
+                savefile = datetime.now().strftime("crashes/%d-%m-%Y_%H%M%S")
+            else:
+                savefile = gm.story.savefile
+            save_story(gm.story, file_override=savefile)
         exit(1)
