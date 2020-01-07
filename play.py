@@ -218,10 +218,11 @@ def save_story(story, file_override=None, autosave=False):
                 output("Please enter a valid savefile name. ", "error")
             else:
                 break
-        savefile = os.path.splitext(remove_prefix(savefile, "saves/").strip())[0]
-        story.savefile = savefile
     else:
         savefile = file_override
+    savefile = os.path.splitext(savefile.strip())[0]
+    savefile = re.sub(r"^ *saves *[/\\] *(.*) *(?:\.json)?", "\\1", savefile).strip()
+    story.savefile = savefile
     savedata = story.to_json()
     finalpath = "saves/" + savefile + ".json"
     try:
@@ -243,7 +244,9 @@ def load_story(f, gen):
     with f.open('r', encoding="utf-8") as file:
         try:
             story = Story(gen, "")
-            story.savefile = os.path.splitext(file.name.strip())[0]
+            savefile = os.path.splitext(file.name.strip())[0]
+            savefile = re.sub(r" *saves *[/\\] *(.*) *(?:\.json)?", "\\1", savefile).strip()
+            story.savefile = savefile
             story.from_json(file.read())
             return story, story.context, story.actions[-1] if len(story.actions) > 0 else ""
         except FileNotFoundError:
