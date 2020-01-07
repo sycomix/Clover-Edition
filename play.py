@@ -700,7 +700,7 @@ class GameManager:
                 action = input_line("> You ", "main-prompt")
 
             # Clear suggestions and user input
-            if act_alts and not IN_COLAB:
+            if act_alts and not in_colab():
                 clear_lines(action_suggestion_lines + 2)
 
             # Users can type in "/command", or "You /command" if prompt_toolkit is on and they left the "You" in

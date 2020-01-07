@@ -21,6 +21,7 @@ def in_colab():
             raise ImportError("vscode")
     except ImportError:
         if get_terminal_size()[0]==0 or 'google.colab' in sys.modules:
+            settings["colab-mode"] = True
             return True
         return False
     else:
@@ -28,10 +29,7 @@ def in_colab():
 
 
 def use_ptoolkit():
-    return not in_colab() and not settings.getboolean('colab-mode') and settings.getboolean('prompt-toolkit')
-
-
-IN_COLAB = in_colab() or settings.getboolean('colab-mode')
+    return not in_colab() and settings.getboolean('prompt-toolkit')
 
 
 def clear_lines(n):
@@ -44,17 +42,16 @@ def clear_lines(n):
         print(screen_code, end="\r")
 
 
-if IN_COLAB:
+if in_colab():
     logger.warning("Colab mode enabled, disabling line clearing and readline to avoid colab bugs.")
 else:
     try:
-        if not settings.getboolean('prompt-toolkit'):
-            raise ModuleNotFoundError
-        from inline_editor import edit_multiline
-        from prompt_toolkit import prompt as ptprompt
-        from prompt_toolkit import print_formatted_text
-        from prompt_toolkit.styles import Style
-        from prompt_toolkit.formatted_text import to_formatted_text, HTML
+        if settings.getboolean('prompt-toolkit'):
+            from inline_editor import edit_multiline
+            from prompt_toolkit import prompt as ptprompt
+            from prompt_toolkit import print_formatted_text
+            from prompt_toolkit.styles import Style
+            from prompt_toolkit.formatted_text import to_formatted_text, HTML
 
         logger.info(
             'Python Prompt Toolkit has been imported. This enables a number of editing features but may cause bugs for colab users.')
