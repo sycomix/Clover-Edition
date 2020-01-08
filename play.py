@@ -634,11 +634,15 @@ class GameManager:
                 action = action + "."
 
             # If the user enters nothing but leaves "you", treat it like an empty action (continue)
-            if re.match(r"^ *you *[.?!]? *$", action, flags=re.IGNORECASE):
+            if re.match(r"^(?: *you *)*[.?!]? *$", action, flags=re.IGNORECASE):
                 action = ""
 
             # Prompt the user with the formatted action
-            output("> " + format_result(action), "transformed-user-text")
+            if action != "":
+                output("> " + format_result(action), "transformed-user-text")
+
+        if action == "":
+            output("Continuing...", "message")
 
         result = self.story.act(action)
 
