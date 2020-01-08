@@ -1,4 +1,6 @@
+import traceback
 from pathlib import Path
+from datetime import datetime
 
 # remove this in a few days
 with open(Path('interface', 'start-message.txt'), 'r') as file_:
@@ -204,38 +206,47 @@ def new_story(generator, context, prompt, memory=None, first_result=None):
     return story
 
 
-def save_story(story):
+def save_story(story, file_override=None, autosave=False):
     """Saves the existing story to a json file in the saves directory to be resumed later."""
-    savefile = story.savefile
-    while True:
-        print()
-        temp_savefile = input_line("Please enter a name for this save: ", "query")
-        savefile = savefile if not temp_savefile or len(temp_savefile.strip()) == 0 else temp_savefile
-        if not savefile or len(savefile.strip()) == 0:
-            output("Please enter a valid savefile name. ", "error")
-        else:
-            break
-    savefile = os.path.splitext(remove_prefix(savefile, "saves/").strip())[0]
+    if not file_override:
+        savefile = story.savefile
+        while True:
+            print()
+            temp_savefile = input_line("Please enter a name for this save: ", "query")
+            savefile = savefile if not temp_savefile or len(temp_savefile.strip()) == 0 else temp_savefile
+            if not savefile or len(savefile.strip()) == 0:
+                output("Please enter a valid savefile name. ", "error")
+            else:
+                break
+    else:
+        savefile = file_override
+    savefile = os.path.splitext(savefile.strip())[0]
+    savefile = re.sub(r"^ *saves *[/\\] *(.*) *(?:\.json)?", "\\1", savefile).strip()
     story.savefile = savefile
     savedata = story.to_json()
     finalpath = "saves/" + savefile + ".json"
     try:
         os.makedirs(os.path.dirname(finalpath), exist_ok=True)
     except OSError:
-        output("Error when creating subdirectory; aborting. ", "error")
+        if not autosave:
+            output("Error when creating subdirectory; aborting. ", "error")
     with open(finalpath, 'w') as f:
         try:
             f.write(savedata)
-            output("Successfully saved to " + savefile, "message")
+            if not autosave:
+                output("Successfully saved to " + savefile, "message")
         except IOError:
-            output("Unable to write to file; aborting. ", "error")
+            if not autosave:
+                output("Unable to write to file; aborting. ", "error")
 
 
 def load_story(f, gen):
     with f.open('r', encoding="utf-8") as file:
         try:
             story = Story(gen, "")
-            story.savefile = os.path.splitext(file.name.strip())[0]
+            savefile = os.path.splitext(file.name.strip())[0]
+            savefile = re.sub(r"^ *saves *[/\\] *(.*) *(?:\.json)?", "\\1", savefile).strip()
+            story.savefile = savefile
             story.from_json(file.read())
             return story, story.context, story.actions[-1] if len(story.actions) > 0 else ""
         except FileNotFoundError:
@@ -397,14 +408,26 @@ class GameManager:
             output("Story has no prompt or context. Please enter a valid custom prompt. ", "error")
             return False
 
-        instructions()
-
         if self.story is None:
+            auto_file = ""
+            if settings.getboolean("autosave"):
+                while True:
+                    auto_file = input_line("Autosaving enabled. Please enter a save name: ", "query")
+                    if not auto_file or len(auto_file.strip()) == 0:
+                        output("Please enter a valid savefile name. ", "error")
+                    else:
+                        break
+            instructions()
             output("Generating story...", "loading-message")
             self.story = new_story(self.generator, self.context, self.prompt)
+            self.story.savefile = auto_file
         else:
+            instructions()
             output("Loading story...", "loading-message")
             self.story.print_story()
+
+        if settings.getboolean("autosave"):
+            save_story(self.story, file_override=self.story.savefile, autosave=True)
 
         return True
 
@@ -582,7 +605,7 @@ class GameManager:
 
             # Add the "you" if it's not prompt-toolkit
             if not settings.getboolean("prompt-toolkit"):
-                action = re.sub("^ *(?:you)? *(?! *you)(.+)$", "You \\1", action, flags=re.IGNORECASE)
+                action = re.sub("^(?: *you *)*(.+)$", "You \\1", action, flags=re.IGNORECASE)
 
             sugg_action_regex = re.search(r"^ *(?:you)? *([0-9]+)$", action, flags=re.IGNORECASE)
             user_speech_regex = re.search(r"^ *you *say *([\"'].*[\"'])$", action, flags=re.IGNORECASE)
@@ -611,13 +634,19 @@ class GameManager:
                 action = action + "."
 
             # If the user enters nothing but leaves "you", treat it like an empty action (continue)
-            if re.match(r"^ *you *[.?!]? *$", action, flags=re.IGNORECASE):
+            if re.match(r"^(?: *you *)*[.?!]? *$", action, flags=re.IGNORECASE):
                 action = ""
             else:
                 # Prompt the user with the formatted action
                 output("> " + format_result(action), "transformed-user-text")
 
+        if action == "":
+            output("Continuing...", "message")
+
         result = self.story.act(action)
+
+        if settings.getboolean("autosave"):
+            save_story(self.story, file_override=self.story.savefile, autosave=True)
 
         # Check for loops
         if self.story.is_looping():
@@ -674,7 +703,7 @@ class GameManager:
                 action = input_line("> You ", "main-prompt")
 
             # Clear suggestions and user input
-            if act_alts and not IN_COLAB:
+            if act_alts and not in_colab():
                 clear_lines(action_suggestion_lines + 2)
 
             # Users can type in "/command", or "You /command" if prompt_toolkit is on and they left the "You" in
@@ -695,11 +724,21 @@ class GameManager:
 if __name__ == "__main__":
     with open(Path("interface", "clover"), "r", encoding="utf-8") as file_:
         print(file_.read())
-    gm = GameManager(get_generator())
-    print_intro()
-    while True:
-        # May be needed to avoid out of mem
-        gc.collect()
-        torch.cuda.empty_cache()
-
-        gm.play_story()
+    try:
+        gm = GameManager(get_generator())
+        while True:
+            # May be needed to avoid out of mem
+            gc.collect()
+            torch.cuda.empty_cache()
+            print_intro()
+            gm.play_story()
+    except Exception as e:
+        traceback.print_exc()
+        output("A fatal error has occurred. ", "error")
+        if gm and gm.story:
+            if not gm.story.savefile or len(gm.story.savefile.strip()) == 0:
+                savefile = datetime.now().strftime("crashes/%d-%m-%Y_%H%M%S")
+            else:
+                savefile = gm.story.savefile
+            save_story(gm.story, file_override=savefile)
+        exit(1)
