@@ -20,6 +20,7 @@ def instructions():
     print('  "/restart"               Restarts the current story')
     print('  "/print"                 Prints a transcript of your adventure (without extra newline formatting)')
     print('  "/alter"                 Edit the last prompt from the AI')
+    print('  "/altergen"              Edit the last result from the AI and have it generate on top of it')
     print('  "/context"               Edit the story\'s permanent context paragraph')
     print('  "/remember [SENTENCE]"   Commits something permanently to the AI\'s memory')
     print('  "/forget"                Opens a menu allowing you to remove permanent memories')

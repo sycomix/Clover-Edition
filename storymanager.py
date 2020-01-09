@@ -17,7 +17,7 @@ class Story:
         self.results = []
         self.savefile = ""
 
-    def act(self, action):
+    def act(self, action, record=True, format=True):
         assert (self.context.strip() + action.strip())
         assert (settings.getint('top-keks') is not None)
         result = self.generator.generate(
@@ -27,9 +27,13 @@ class Story:
             top_p=settings.getfloat('top-p'),
             top_k=settings.getint('top-keks'),
             repetition_penalty=settings.getfloat('rep-pen'))
-        self.actions.append(format_result(action))
-        self.results.append(format_result(result))
-        return self.results[-1]
+        if format:
+            action = format_result(action)
+            result = format_result(result)
+        if record:
+            self.actions.append(action)
+            self.results.append(result)
+        return result
 
     def print_story(self, wrap=True, color=True):
         first_result = format_result(self.actions[0] + ' ' + self.results[0])

@@ -581,6 +581,13 @@ class GameManager:
             self.story = new_story(self.generator, self.context, self.prompt, memory=self.story.memory,
                                    first_result=first_result)
 
+        elif action == "altergen":
+            result = alter_text(self.story.results[-1])
+            self.story.results[-1] = ""
+            result = result + ' ' + self.story.act(result, record=False)
+            self.story.results[-1] = result
+            self.story.print_last()
+
         else:
             output("Invalid command: " + action, "error")
         return False
