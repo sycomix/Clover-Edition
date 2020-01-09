@@ -584,7 +584,8 @@ class GameManager:
         elif action == "altergen":
             result = alter_text(self.story.results[-1])
             self.story.results[-1] = ""
-            result = result + ' ' + self.story.act(result, record=False)
+            output("Regenerating result...", "message")
+            result += ' ' + self.story.act(result, record=False)
             self.story.results[-1] = result
             self.story.print_last()
 
