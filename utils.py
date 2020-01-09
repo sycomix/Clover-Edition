@@ -10,6 +10,17 @@ from getconfig import logger, settings, colors, ptcolors
 from shutil import get_terminal_size
 
 
+def getTermWidth():
+    termWidth = get_terminal_size()[0]
+    if termWidth < 5:
+        logger.warning("Your detected terminal width is: "+str(get_terminal_size()[0]))
+        termWidth = 999999999
+    return termWidth
+
+
+termWidth = getTermWidth()
+
+
 def in_colab():
     """Some terminal codes don't work in a colab notebook."""
     # from https://github.com/tqdm/tqdm/blob/master/tqdm/autonotebook.py
@@ -57,6 +68,8 @@ else:
             from prompt_toolkit import print_formatted_text
             from prompt_toolkit.styles import Style
             from prompt_toolkit.formatted_text import to_formatted_text, HTML
+        else:
+            raise ModuleNotFoundError
 
         logger.info(
             'Python Prompt Toolkit has been imported. This enables a number of editing features but may cause bugs for colab users.')
@@ -69,11 +82,6 @@ else:
                 'readline has been imported. This enables a number of editting features but may cause bugs for colab users.')
         except (ImportError, ModuleNotFoundError):
             pass
-
-termWidth = get_terminal_size()[0]
-if termWidth < 5:
-    logger.warning("Your detected terminal width is: "+str(get_terminal_size()[0]))
-    termWidth = 999999999
 
 
 def pad_text(text, width, sep=' '):
