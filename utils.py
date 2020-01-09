@@ -138,7 +138,11 @@ def select_file(p, e, d=0):
 
 
 # ECMA-48 set graphics codes for the curious. Check out "man console_codes"
-def output(text1, col1=None, text2=None, col2=None, wrap=True, beg=None, end='\n', sep=' '):
+def output(text1, col1=None,
+           text2=None, col2=None,
+           wrap=True,
+           beg=None, end='\n', sep=' ',
+           rem_beg_spaces=True):
     print('', end=beg)
     ptoolkit = use_ptoolkit() and ptcolors['displaymethod'] == "prompt-toolkit"
 
@@ -160,6 +164,7 @@ def output(text1, col1=None, text2=None, col2=None, wrap=True, beg=None, end='\n
         text1 = textwrap.fill(
             text1, width, replace_whitespace=False, drop_whitespace=False
         )
+        text1 = re.sub(r"\n[ \t]+", "\n", text1) if rem_beg_spaces else text1
         if text2:
             if len(text1)+1+len(text2) >= width:
                 if not re.match("^\n+$", sep):
@@ -167,6 +172,7 @@ def output(text1, col1=None, text2=None, col2=None, wrap=True, beg=None, end='\n
             text2 = textwrap.fill(
                 text2, width, replace_whitespace=False, drop_whitespace=False
             )
+            text2 = re.sub(r"\n[ \t]+", "\n", text2) if rem_beg_spaces else text2
 
     if ptoolkit:
         col1 = ptcolors[col1] if col1 and ptcolors[col1] else ""
