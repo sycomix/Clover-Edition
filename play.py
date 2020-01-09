@@ -577,7 +577,8 @@ class GameManager:
                 return False
             if input_bool("Do you want to save your previous story? (y/N): ", "query"):
                 save_story(self.story)
-            self.story = new_story(self.generator, self.context, new_prompt, memory=self.story.memory,
+            self.prompt = new_prompt
+            self.story = new_story(self.generator, self.context, self.prompt, memory=self.story.memory,
                                    first_result=first_result)
 
         else:
@@ -587,7 +588,7 @@ class GameManager:
     def process_action(self, action, suggested_actions=[]):
         action = format_result(action)
 
-        story_insert_regex = re.search("^ *(?:you)? *! *(.*)$", action, flags=re.IGNORECASE)
+        story_insert_regex = re.search("^(?: *you +)?! *(.*)$", action, flags=re.I)
 
         # If the player enters a story insert.
         if story_insert_regex:
@@ -605,11 +606,11 @@ class GameManager:
 
             # Add the "you" if it's not prompt-toolkit
             if not settings.getboolean("prompt-toolkit"):
-                action = re.sub("^(?: *you *)*(.+)$", "You \\1", action, flags=re.IGNORECASE)
+                action = re.sub("^(?: *you +)*(.+)$", "You \\1", action, flags=re.I)
 
-            sugg_action_regex = re.search(r"^ *(?:you)? *([0-9]+)$", action, flags=re.IGNORECASE)
-            user_speech_regex = re.search(r"^ *you *say *([\"'].*[\"'])$", action, flags=re.IGNORECASE)
-            user_action_regex = re.search(r"^ *you *(.+)$", action, flags=re.IGNORECASE)
+            sugg_action_regex = re.search(r"^(?: *you +)?([0-9]+)$", action, flags=re.I)
+            user_speech_regex = re.search(r"^(?: *you +say +)?([\"'].*[\"'])$", action, flags=re.I)
+            user_action_regex = re.search(r"^(?: *you +)(.+)$", action, flags=re.I)
 
             if sugg_action_regex:
                 action = sugg_action_regex.group(1)
@@ -634,7 +635,7 @@ class GameManager:
                 action = action + "."
 
             # If the user enters nothing but leaves "you", treat it like an empty action (continue)
-            if re.match(r"^(?: *you *)*[.?!]? *$", action, flags=re.IGNORECASE):
+            if re.match(r"^(?: *you *)*[.?!]? *$", action, flags=re.I):
                 action = ""
             else:
                 # Prompt the user with the formatted action
@@ -707,7 +708,7 @@ class GameManager:
                 clear_lines(action_suggestion_lines + 2)
 
             # Users can type in "/command", or "You /command" if prompt_toolkit is on and they left the "You" in
-            cmd_regex = re.search(r"^(?: *you *)?/([^ ]+) *(.*)$", action, flags=re.IGNORECASE)
+            cmd_regex = re.search(r"^(?: *you *)?/([^ ]+) *(.*)$", action, flags=re.I)
 
             # If this is a command
             if cmd_regex:
