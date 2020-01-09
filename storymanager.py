@@ -49,7 +49,7 @@ class Story:
                 output(self.results[i], col2, wrap=wrap)
 
     def print_story(self, wrap=True, color=True):
-        for i in range(1, max(len(self.actions), len(self.results))):
+        for i in range(0, max(len(self.actions), len(self.results))):
             self.print_action_result(i, wrap=wrap, color=color)
 
     def print_last(self, wrap=True, color=True):
