@@ -172,20 +172,20 @@ def settings_menu():
                     output("Permission error! Changes will not be saved for next session.", "error")
 
 
-def load_prompt(f):
+def load_prompt(f, format=True):
     with f.open('r', encoding="utf-8") as file:
         try:
             lines = file.read().strip().split('\n')
             if len(lines) < 2:
                 context = lines[0]
                 prompt = ""
-            elif len(lines) == 2:
-                context = lines[0]
-                prompt = lines[1]
             else:
-                context = ' '.join(lines[0:-1])
-                prompt = lines[-1]
-            return context, prompt
+                context = lines[0]
+                prompt = ' '.join(lines[1:])
+            if format:
+                return format_result(context), format_result(prompt)
+            else:
+                return context, prompt
         except IOError:
             output("Something went wrong; aborting. ", "error")
     return None, None
