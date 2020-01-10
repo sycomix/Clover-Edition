@@ -35,29 +35,25 @@ class Story:
             self.results.append(result)
         return result
 
-    def print_story(self, wrap=True, color=True):
-        first_result = format_result(self.actions[0] + ' ' + self.results[0])
+    def print_action_result(self, i, wrap=True, color=True):
         col1 = 'user-text' if color else None
         col2 = 'ai-text' if color else None
-        output(self.context, col1, first_result, col2, wrap=wrap)
-        maxactions = len(self.actions)
-        maxresults = len(self.results)
-        for i in range(1, max(maxactions, maxresults)):
-            if i < maxactions and self.actions[i].strip() != "":
-                caret = "> " if re.match("^[Yy]ou +", self.actions[i]) else ""
+        if i == 0:
+            first_result = format_result(self.actions[0] + ' ' + self.results[0])
+            output(self.context, col1, first_result, col2, wrap=wrap)
+        else:
+            if i < len(self.actions) and self.actions[i].strip() != "":
+                caret = "> " if re.match("^ *you +", self.actions[i], flags=re.I) else ""
                 output(caret + self.actions[i], col1, wrap=wrap)
-            if i < maxresults and self.results[i].strip() != "":
+            if i < len(self.results) and self.results[i].strip() != "":
                 output(self.results[i], col2, wrap=wrap)
 
+    def print_story(self, wrap=True, color=True):
+        for i in range(0, max(len(self.actions), len(self.results))):
+            self.print_action_result(i, wrap=wrap, color=color)
+
     def print_last(self, wrap=True, color=True):
-        if len(self.actions) < 2:
-            self.print_story()
-        else:
-            col1 = 'user-text' if color else None
-            col2 = 'ai-text' if color else None
-            caret = "> " if re.match("^[Yy]ou +", self.actions[-1]) else ""
-            output(caret + self.actions[-1], col1, wrap=wrap)
-            output(self.results[-1], col2, wrap=wrap)
+        self.print_action_result(-1, wrap=wrap, color=color)
 
     def get_story(self):
         lines = [val for pair in zip(self.actions, self.results) for val in pair]
