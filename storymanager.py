@@ -42,7 +42,7 @@ class Story:
             start = self.context + ' ' + self.actions[0]
             result = self.results[0]
             is_start_end = re.match(r"[.!?]\s*$", start)
-            is_result_beg = re.match(r"^\s*[a-z.\"]", result)
+            is_result_beg = re.match(r"^\s*[a-z.!?,\"]", result)
             sep = ' ' if not is_start_end and is_result_beg else '\n'
             output(self.context + self.actions[0], col1, self.results[0], col2, sep=sep)
         else:
