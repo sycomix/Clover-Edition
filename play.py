@@ -196,12 +196,16 @@ def new_story(generator, context, prompt, memory=None, first_result=None):
         memory = []
     context = context.strip()
     prompt = prompt.strip()
+    erase = 0
+    if use_ptoolkit():
+        erase = output(context, 'user-text', prompt, 'user-text', sep="\n\n")
     story = Story(generator, context, memory)
     if first_result is None:
         story.act(prompt)
     else:
         story.actions.append(prompt)
         story.results.append(first_result)
+    clear_lines(erase)
     story.print_story()
     return story
 
@@ -613,7 +617,7 @@ class GameManager:
             logger.debug("roll d20=%s", d)
 
             # Add the "you" if it's not prompt-toolkit
-            if not settings.getboolean("prompt-toolkit"):
+            if not use_ptoolkit():
                 action = re.sub("^(?: *you +)*(.+)$", "You \\1", action, flags=re.I)
 
             sugg_action_regex = re.search(r"^(?: *you +)?([0-9]+)$", action, flags=re.I)
@@ -683,6 +687,7 @@ class GameManager:
         output(result, "ai-text")
 
     def play_story(self):
+        """The main in-game loop"""
         if not self.init_story():  # Failed init
             return
 

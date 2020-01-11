@@ -25,6 +25,7 @@ def in_colab():
     """Some terminal codes don't work in a colab notebook."""
     # from https://github.com/tqdm/tqdm/blob/master/tqdm/autonotebook.py
     if settings.getboolean("colab-mode"):
+        settings["prompt-toolkit"] = "off"
         return True
     try:
         from IPython import get_ipython
@@ -45,7 +46,7 @@ def in_colab():
 
 
 def use_ptoolkit():
-    return not in_colab() and settings.getboolean('prompt-toolkit')
+    return not settings.getboolean("colab-mode") and settings.getboolean('prompt-toolkit')
 
 
 def clear_lines(n):
@@ -191,14 +192,16 @@ def output(text1, col1=None,
             print(text2, end=end)
 
     linecount = 1
+    if beg:
+        linecount += beg.count('\n')
     if text1:
         linecount += text1.count('\n')
     if end:
         linecount += end.count('\n')
-    if sep:
-        linecount += sep.count('\n')
     if text2:
         linecount += text2.count('\n')
+        if sep:
+            linecount += sep.count('\n')
     return linecount
 
 

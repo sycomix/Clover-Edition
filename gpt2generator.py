@@ -6,7 +6,7 @@ import torch.nn.functional as F
 import re
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 from getconfig import settings, logger
-from utils import cut_trailing_sentence
+from utils import cut_trailing_sentence, output, clear_lines, format_result, use_ptoolkit
 
 if not settings.getboolean('force-cpu') and not torch.cuda.is_available():
     logger.warning('CUDA is not available, you are limited to CPU only.')
@@ -101,13 +101,16 @@ def sample_sequence(
     stop_tokens=None,
     tokenizer=None
 ):
+    """Actually generate the tokens"""
     logger.debug('temp: {}    top_k: {}    top_p: {}    rep-pen: {}'.format(temperature, top_k, top_p, repetition_penalty))
+    context_tokens = context
     context = torch.tensor(context, dtype=torch.long, device=device)
     context = context.unsqueeze(0).repeat(num_samples, 1)
     generated = context
     USE_PAST = True
     next_token = context
     outputs = None
+    clines = 0
     with torch.no_grad():
         for j in range(length):
             #why would we ever not use past?
@@ -146,6 +149,15 @@ def sample_sequence(
                     F.softmax(logits, dim=-1), num_samples=1
                 )
             generated = torch.cat((generated, next_token), dim=1)
+            # Decode into plain text
+            o = generated[:, len(context_tokens) :].tolist()[0]
+            generated.text = tokenizer.decode(
+                o, clean_up_tokenization_spaces=False, skip_special_tokens=True
+            )
+            if use_ptoolkit():
+                clear_lines(clines)
+                generated.text = format_result(generated.text)
+                clines = output(generated.text, "ai-text")
             if (
                 (stop_tokens is not None)
                 and (j > 4)
@@ -159,6 +171,7 @@ def sample_sequence(
                     j,
                 )
                 break
+    clear_lines(clines)
     return generated
 
 
@@ -281,6 +294,7 @@ class GPT2Generator:
             ),
         ) 
         generated = 0
+        text = ""
         for _ in range(self.samples // self.batch_size):
             out = self.sample_sequence(
                 context_tokens,
@@ -291,24 +305,20 @@ class GPT2Generator:
                 repetition_penalty=repetition_penalty,
                 stop_tokens=stop_tokens,
             )
-            out = out[:, len(context_tokens) :].tolist()
-            for o in out:
-                generated += 1
-                #disabled clean up of spaces, see what effect this has TODO
-                text = self.tokenizer.decode(
-                    o, clean_up_tokenization_spaces=False, skip_special_tokens=True
-                )
-                if self.stop_token:
+            text += out.text
+            generated += 1
+            #disabled clean up of spaces, see what effect this has TODO
+            if self.stop_token:
+                index = text.find(self.stop_token)
+                if index == -1:
+                    index = None
+                text = text[:index]
+            if stop_tokens is not None:
+                for stop_token in stop_tokens:
                     index = text.find(self.stop_token)
                     if index == -1:
                         index = None
                     text = text[:index]
-                if stop_tokens is not None:
-                    for stop_token in stop_tokens:
-                        index = text.find(self.stop_token)
-                        if index == -1:
-                            index = None
-                        text = text[:index]
         return text
 
     def generate(self, context, prompt='', temperature=None, top_p=None, top_k=None, repetition_penalty=None, depth=0):
