@@ -41,9 +41,9 @@ class Story:
         if i == 0 or len(self.actions) == 1:
             start = self.context + ' ' + self.actions[0]
             result = self.results[0]
-            is_start_end = re.match(r"[.!?]\s*$", start)
-            is_result_beg = re.match(r"^\s*[a-z.!?,\"]", result)
-            sep = ' ' if not is_start_end and is_result_beg else '\n'
+            is_start_end = re.match(r"[.!?]\s*$", start)  # if start ends logically
+            is_result_continue = re.match(r"^\s*[a-z.!?,\"]", result)  # if result is a continuation
+            sep = ' ' if not is_start_end and is_result_continue else '\n'
             output(self.context + self.actions[0], col1, self.results[0], col2, sep=sep)
         else:
             if i < len(self.actions) and self.actions[i].strip() != "":
