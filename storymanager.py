@@ -38,13 +38,19 @@ class Story:
     def print_action_result(self, i, wrap=True, color=True):
         col1 = 'user-text' if color else None
         col2 = 'ai-text' if color else None
-        if i == 0:
-            output(self.context, col1)
-        if i < len(self.actions) and self.actions[i].strip() != "":
-            caret = "> " if re.match("^ *you +", self.actions[i], flags=re.I) else ""
-            output(caret + self.actions[i], col1, wrap=wrap)
-        if i < len(self.results) and self.results[i].strip() != "":
-            output(self.results[i], col2, wrap=wrap)
+        if i == 0 or len(self.actions) == 1:
+            start = self.context + ' ' + self.actions[0]
+            result = self.results[0]
+            is_start_end = re.match(r"[.!?]\s*$", start)
+            is_result_beg = re.match(r"^\s*[a-z.\"]", result)
+            sep = ' ' if not is_start_end and is_result_beg else '\n'
+            output(self.context + self.actions[0], col1, self.results[0], col2, sep=sep)
+        else:
+            if i < len(self.actions) and self.actions[i].strip() != "":
+                caret = "> " if re.match(r"^ *you +", self.actions[i], flags=re.I) else ""
+                output(caret + self.actions[i], col1, wrap=wrap)
+            if i < len(self.results) and self.results[i].strip() != "":
+                output(self.results[i], col2, wrap=wrap)
 
     def print_story(self, wrap=True, color=True):
         for i in range(0, max(len(self.actions), len(self.results))):
