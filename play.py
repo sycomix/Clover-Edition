@@ -198,7 +198,7 @@ def new_story(generator, context, prompt, memory=None, first_result=None):
     prompt = prompt.strip()
     erase = 0
     if use_ptoolkit():
-        erase = output(context, 'user-text', prompt, 'user-text')
+        erase = output(context, 'user-text', prompt, 'user-text', sep="\n\n")
     story = Story(generator, context, memory)
     if first_result is None:
         story.act(prompt)

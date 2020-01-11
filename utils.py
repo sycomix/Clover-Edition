@@ -198,10 +198,10 @@ def output(text1, col1=None,
         linecount += text1.count('\n')
     if end:
         linecount += end.count('\n')
-    if sep:
-        linecount += sep.count('\n')
     if text2:
         linecount += text2.count('\n')
+        if sep:
+            linecount += sep.count('\n')
     return linecount
 
 
