@@ -683,6 +683,7 @@ class GameManager:
         output(result, "ai-text")
 
     def play_story(self):
+        """The main in-game loop"""
         if not self.init_story():  # Failed init
             return
 
