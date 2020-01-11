@@ -746,7 +746,12 @@ if __name__ == "__main__":
             torch.cuda.empty_cache()
             print_intro()
             gm.play_story()
-    except Exception as e:
+    except KeyboardInterrupt:
+        output("Quitting game.", "message")
+        if gm and gm.story:
+            if input_bool("Do you want to save? (y/N): ", "query"):
+                save_story(gm.story)
+    except Exception:
         traceback.print_exc()
         output("A fatal error has occurred. ", "error")
         if gm and gm.story:
