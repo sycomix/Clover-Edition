@@ -91,6 +91,14 @@ def pad_text(text, width, sep=' '):
     return text
 
 
+def format_input(text):
+    """
+    Formats the text for purposes of storage.
+    """
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
 def format_result(text):
     """
     Formats the result text from the AI to be more human-readable.
