@@ -41,8 +41,11 @@ class Story:
             is_start_end = re.match(r"[.!?]\s*$", start)  # if start ends logically
             is_result_continue = re.match(r"^\s*[a-z.!?,\"]", result)  # if result is a continuation
             sep = ' ' if not is_start_end and is_result_continue else '\n'
-            output(self.context, col1)
-            output(self.actions[0], col1, self.results[0], col2, sep=sep)
+            if not self.actions[0]:
+                output(self.context, col1, self.results[0], col2, sep=sep)
+            else:
+                output(self.context, col1)
+                output(self.actions[0], col1, self.results[0], col2, sep=sep)
         else:
             if i < len(self.actions) and self.actions[i].strip() != "":
                 caret = "> " if re.match(r"^ *you +", self.actions[i], flags=re.I) else ""
