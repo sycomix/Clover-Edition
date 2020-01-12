@@ -99,7 +99,7 @@ def format_result(text):
     text = re.sub(r" {2,}", " ", text)
     text = re.sub(r"\n", " ", text)
     text = re.sub(r"<br>", "\n", text)
-    text = re.sub(r"(\"[.!?]?) ([A-Z])", "\\1\n\n\\2", text)
+    text = re.sub(r"(\"[.!?]) ([A-Z])", "\\1\n\n\\2", text)
     text = re.sub(r"([^\"][.!?]) \"", "\\1\n\n\"", text)
     text = re.sub(r"([\".!?]) \"", "\\1\n\"", text)
     return text.strip()
