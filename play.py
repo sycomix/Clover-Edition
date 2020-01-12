@@ -635,6 +635,7 @@ class GameManager:
                     action = d20ify_speech(action, d)
                 else:
                     action = "You say " + action
+                action = end_sentence(action)
 
             elif user_action_regex:
                 action = first_to_second_person(user_action_regex.group(1))
@@ -642,9 +643,7 @@ class GameManager:
                     action = d20ify_action(action, d)
                 else:
                     action = "You " + action
-
-            if action[-1] not in [".", "?", "!"]:
-                action = action + "."
+                action = end_sentence(action)
 
             # If the user enters nothing but leaves "you", treat it like an empty action (continue)
             if re.match(r"^(?: *you *)*[.?!]? *$", action, flags=re.I):

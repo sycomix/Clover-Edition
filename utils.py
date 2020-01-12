@@ -113,6 +113,12 @@ def format_result(text):
     return text.strip()
 
 
+def end_sentence(text):
+    if text[-1] not in [".", "?", "!"]:
+        text = text + "."
+    return text
+
+
 def select_file(p, e, d=0):
     """
     Selects a file from a specific path matching a specific extension.
