@@ -489,6 +489,7 @@ class GameManager:
                 self.story = new_story(self.generator, self.story.context, self.prompt)
                 return False
             else:
+                output("Retrying...", "loading-message")
                 new_action = self.story.actions[-1]
                 self.story.revert()
                 result = self.story.act(new_action)
