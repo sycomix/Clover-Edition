@@ -657,9 +657,6 @@ class GameManager:
 
         result = self.story.act(action)
 
-        if settings.getboolean("autosave"):
-            save_story(self.story, file_override=self.story.savefile, autosave=True)
-
         # Check for loops
         if self.story.is_looping():
             self.story.revert()
@@ -724,13 +721,15 @@ class GameManager:
 
             # If this is a command
             if cmd_regex:
-                if self.process_cmd(cmd_regex):  # Go back to the menu
-                    return
+                self.process_cmd(cmd_regex)
 
             # Otherwise this is just a normal action.
             else:
-                if self.process_action(action, suggested_actions):  # End of story
-                    return
+                self.process_action(action, suggested_actions)
+
+            # Autosave after every input from the user (if it's enabled)
+            if settings.getboolean("autosave"):
+                save_story(self.story, file_override=self.story.savefile, autosave=True)
 
 
 # This is here for rapid development, without reloading the model. You import play into a jupyternotebook with autoreload
