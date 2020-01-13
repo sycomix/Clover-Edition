@@ -584,6 +584,7 @@ class GameManager:
             self.prompt = new_prompt
             self.story = new_story(self.generator, self.context, self.prompt, memory=self.story.memory,
                                    first_result=first_result)
+            self.story.savefile = ""
 
         elif action == "altergen":
             result = alter_text(self.story.results[-1])
@@ -598,7 +599,7 @@ class GameManager:
         return False
 
     def process_action(self, action, suggested_actions=[]):
-        action = format_result(action)
+        action = format_input(action)
 
         story_insert_regex = re.search("^(?: *you +)?! *(.*)$", action, flags=re.I)
 
