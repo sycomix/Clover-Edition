@@ -335,21 +335,7 @@ def print_intro():
         output(file.read(), "title", wrap=False, beg='')
 
     with open(Path("interface", "subTitle.txt"), "r", encoding="utf-8") as file:
-        cols = termWidth
-        for line in file:
-            line = re.sub(r'\n', '', line)
-            line = line[:cols]
-            # fills in the graphic using reverse video mode substituted into the areas between |'s
-            if use_ptoolkit():
-                style = Style.from_dict({
-                    'nor': ptcolors['subtitle'],
-                    'rev': ptcolors['subtitle'] + ' reverse',
-                })
-                text = re.sub(r'\|[ _]*(\||$)', lambda x: '<rev>' + x.group(0) + '</rev>', line)
-                print_formatted_text(HTML('<nor>' + text + '</nor>'), style=style)
-            else:
-                output(re.sub(r'\|[ _]*(\||$)', lambda x: '\x1B[7m' + x.group(0) + '\x1B[27m', line), 'subtitle',
-                       wrap=False, beg='')
+        output(file.read(), "subtitle", wrap=False, beg='')
 
     output("Go to https://github.com/cloveranon/Clover-Edition/ "
            "or email cloveranon@nuke.africa for bug reports, help, and feature requests.",
@@ -574,7 +560,7 @@ class GameManager:
             output(self.story.context, "user-text", "(YOUR SUMMARY HERE)", "message")
             output(self.story.results[-1], "ai-text")
             new_prompt = input_line("Enter the summary for the new story: ", "query")
-            new_prompt = format_result(new_prompt)
+            new_prompt = new_prompt.strip()
             if len(new_prompt) == 0:
                 output("Invalid new prompt; cancelling. ", "error")
                 self.story.print_last()
