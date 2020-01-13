@@ -708,11 +708,13 @@ class GameManager:
 
             # If this is a command
             if cmd_regex:
-                self.process_cmd(cmd_regex)
+                if self.process_cmd(cmd_regex):  # Go back to the menu
+                    return
 
             # Otherwise this is just a normal action.
             else:
-                self.process_action(action, suggested_actions)
+                if self.process_action(action, suggested_actions):  # End of story
+                    return
 
             # Autosave after every input from the user (if it's enabled)
             if settings.getboolean("autosave"):
