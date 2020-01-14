@@ -426,13 +426,14 @@ class GameManager:
         return True
 
     # returns true if going back to menu
-    def process_command(self, command, args=[]) -> bool:
+    def process_command(self, cmd_regex) -> bool:
         """
         Processes an in-game command.
-        :param command: The command to process.
-        :param args: The optional list of arguments (str[]) to pass with the command.
+        :param cmd_regex: The regular expression for the command.
         :return: True if the command causes the game to exit, false otherwise.
         """
+        command = cmd_regex.group(1).strip().lower()
+        args = cmd_regex.group(2).strip().split()
         if command == "set":
             if len(args) < 2:
                 output("Invalid number of arguments for set command. ", "error")
@@ -723,9 +724,7 @@ class GameManager:
 
             # If this is a command
             if cmd_regex:
-                command = cmd_regex.group(1).strip().lower()
-                args = cmd_regex.group(2).strip().split()
-                if self.process_command(command, args):  # Go back to the menu
+                if self.process_command(cmd_regex):  # Go back to the menu
                     return
 
             # Otherwise this is just a normal action.
