@@ -180,13 +180,14 @@ def output(text1, col1=None,
         width = settings.getint("text-wrap-width")
         width = 999999999 if width < 2 else width
         width = min(width, termWidth)
-        wtext = text1 + '\u200D' + text2 if text2 is not None else text1
+        wtext = text1 + '\u200D' + sep + '\u200D' + text2 if text2 is not None else text1
         wtext = fill_text(wtext, width)
         wtext = re.sub(r"\n[ \t]+", "\n", wtext) if rem_beg_spaces else wtext
         wtext = wtext.split('\u200D')
         text1 = wtext[0]
         if text2 is not None:
-            text2 = ' '.join(wtext[1:])
+            sep = wtext[1]
+            text2 = ' '.join(wtext[2:])
 
     if ptoolkit:
         col1 = ptcolors[col1] if col1 and ptcolors[col1] else ""
