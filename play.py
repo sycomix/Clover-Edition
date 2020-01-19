@@ -66,7 +66,6 @@ def get_generator():
                 input("")
                 # Scan for models again
                 models = [x for x in Path('models').iterdir() if x.is_dir()]
-                continue
             else:
                 output("Model could not be loaded. Please try another model. ", "error")
             continue
