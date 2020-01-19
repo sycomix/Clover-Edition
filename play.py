@@ -60,7 +60,15 @@ def get_generator():
             )
             break
         except OSError:
-            output("Model could not be loaded. Please try another model. ", "error")
+            if len(models) == 0:
+                output("You do not seem to have any models installed.", "error")
+                output("Place a model in the 'models' subfolder and press enter", "error")
+                input("")
+                # Scan for models again
+                models = [x for x in Path('models').iterdir() if x.is_dir()]
+                continue
+            else:
+                output("Model could not be loaded. Please try another model. ", "error")
             continue
         except KeyboardInterrupt:
             output("Model load cancelled. ", "error")
