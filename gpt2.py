@@ -25,9 +25,6 @@ class Conv1D(torch.nn.Module):
 
 
 class Attention(torch.nn.Module):
-    buffers = dict()
-    buffers_sliced = dict()
-
     def __init__(self, n_embd, n_ctx, config):
         super(Attention, self).__init__()
         # in Attention: n_embd=768 (nx=n_embd)
