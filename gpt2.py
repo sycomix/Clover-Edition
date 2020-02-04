@@ -31,7 +31,6 @@ class Attention(torch.nn.Module):
         # [switch nx => n_embd from Block to Attention to keep identical to TF implem]
         assert n_embd % config.n_head == 0
         self.register_buffer("m1e4", torch.full((1, 1, 1), -1e4))
-        self.n_ctx = n_ctx
         self.n_head = config.n_head
         self.n_embd = n_embd
 
@@ -52,7 +51,7 @@ class Attention(torch.nn.Module):
         return x.view(*new_x_shape)  # in Tensorflow implem: fct merge_states
 
     def split_heads(self, x):
-        new_x_shape = x.size()[:-1] + (self.n_head, self.n_embd // self.n_head)  # x.size(-1) // self.n_head)
+        new_x_shape = x.size()[:-1] + (self.n_head, self.n_embd // self.n_head)
         x = x.view(*new_x_shape)  # in Tensorflow implem: fct split_states
         return x.permute(1, 0, 2)  # (batch, head, seq_length, head_features)
 
@@ -123,7 +122,7 @@ class GPT2Model(GPT2PreTrainedModel):
         self.wpe = torch.nn.Embedding(config.n_positions, config.n_embd)
         self.h = torch.nn.ModuleList([Block(config.n_ctx, config) for _ in range(config.n_layer)])
         self.ln_f = torch.nn.LayerNorm(config.n_embd, eps=config.layer_norm_epsilon)
-        self.register_buffer("bigmask", torch.tril(torch.ones((config.n_ctx, config.n_ctx), dtype=torch.bool)))
+        self.register_buffer("bigmask", torch.tril(torch.ones((config.n_ctx, config.n_ctx), dtype=torch.uint8)))
         self.init_weights()
 
     def get_input_embeddings(self):
@@ -139,7 +138,7 @@ class GPT2Model(GPT2PreTrainedModel):
         input_len = input_ids.size(0)
         past_length = past.size(-2) if past is not None else 0
         total_len = input_len + past_length
-        position_embeds = self.wpe.weight.data[past_length:total_len].view(input_len, self.config.n_embd)
+        position_embeds = self.wpe.weight.data[past_length:total_len]
 
         inputs_embeds = self.wte(input_ids)
         hidden_states = inputs_embeds + position_embeds
