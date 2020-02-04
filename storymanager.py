@@ -1,7 +1,7 @@
 import json
 import re
 from getconfig import settings
-from utils import output, format_result, get_similarity
+from utils import output, format_result, format_input, get_similarity
 
 
 class Story:
@@ -27,24 +27,31 @@ class Story:
             top_p=settings.getfloat('top-p'),
             top_k=settings.getint('top-keks'),
             repetition_penalty=settings.getfloat('rep-pen'))
-        if format:
-            action = format_result(action)
-            result = format_result(result)
         if record:
-            self.actions.append(action)
-            self.results.append(result)
-        return result
+            self.actions.append(format_input(action))
+            self.results.append(format_input(result))
+        return format_result(result) if format else result
 
     def print_action_result(self, i, wrap=True, color=True):
         col1 = 'user-text' if color else None
         col2 = 'ai-text' if color else None
-        if i == 0:
-            output(self.context, col1)
-        if i < len(self.actions) and self.actions[i].strip() != "":
-            caret = "> " if re.match("^ *you +", self.actions[i], flags=re.I) else ""
-            output(caret + self.actions[i], col1, wrap=wrap)
-        if i < len(self.results) and self.results[i].strip() != "":
-            output(self.results[i], col2, wrap=wrap)
+        if i == 0 or len(self.actions) == 1:
+            start = format_result(self.context + ' ' + self.actions[0])
+            result = format_result(self.results[0])
+            is_start_end = re.match(r"[.!?]\s*$", start)  # if start ends logically
+            is_result_continue = re.match(r"^\s*[a-z.!?,\"]", result)  # if result is a continuation
+            sep = ' ' if not is_start_end and is_result_continue else '\n'
+            if not self.actions[0]:
+                output(self.context, col1, self.results[0], col2, sep=sep)
+            else:
+                output(self.context, col1)
+                output(self.actions[0], col1, self.results[0], col2, sep=sep)
+        else:
+            if i < len(self.actions) and self.actions[i].strip() != "":
+                caret = "> " if re.match(r"^ *you +", self.actions[i], flags=re.I) else ""
+                output(format_result(caret + self.actions[i]), col1, wrap=wrap)
+            if i < len(self.results) and self.results[i].strip() != "":
+                output(format_result(self.results[i]), col2, wrap=wrap)
 
     def print_story(self, wrap=True, color=True):
         for i in range(0, max(len(self.actions), len(self.results))):

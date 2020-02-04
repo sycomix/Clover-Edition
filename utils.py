@@ -91,15 +91,32 @@ def pad_text(text, width, sep=' '):
     return text
 
 
+def format_input(text):
+    """
+    Formats the text for purposes of storage.
+    """
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
 def format_result(text):
     """
     Formats the result text from the AI to be more human-readable.
     """
-    text = re.sub("\n{3,}", "<br>", text)
-    text = re.sub("\n", " ", text)
-    text = re.sub("<br>", "\n", text)
-    text = re.sub(" {2,}", " ", text)
+    text = re.sub(r"\n{3,}", "<br>", text)
+    text = re.sub(r" {2,}", " ", text)
+    text = re.sub(r"\n", " ", text)
+    text = re.sub(r"<br>", "\n", text)
+    text = re.sub(r"(\"[.!?]) ([A-Z])", "\\1\n\n\\2", text)
+    text = re.sub(r"([^\"][.!?]) \"", "\\1\n\n\"", text)
+    text = re.sub(r"([\".!?]) \"", "\\1\n\"", text)
     return text.strip()
+
+
+def end_sentence(text):
+    if text[-1] not in [".", "?", "!"]:
+        text = text + "."
+    return text
 
 
 def select_file(p, e, d=0):
@@ -138,6 +155,18 @@ def select_file(p, e, d=0):
         return p
 
 
+def fill_text(text, width):
+    texts = text.split('\n')
+    for i in range(0, len(texts)):
+        texts[i] = textwrap.fill(
+            texts[i],
+            width,
+            replace_whitespace=False,
+            drop_whitespace=False
+        )
+    return '\n'.join(texts)
+
+
 # ECMA-48 set graphics codes for the curious. Check out "man console_codes"
 def output(text1, col1=None,
            text2=None, col2=None,
@@ -147,7 +176,29 @@ def output(text1, col1=None,
     print('', end=beg)
     ptoolkit = use_ptoolkit() and ptcolors['displaymethod'] == "prompt-toolkit"
 
-    if not ptoolkit:
+    if wrap:
+        width = settings.getint("text-wrap-width")
+        width = 999999999 if width < 2 else width
+        width = min(width, termWidth)
+        wtext = text1 + '\u200D' + sep + '\u200D' + text2 if text2 is not None else text1
+        wtext = fill_text(wtext, width)
+        wtext = re.sub(r"\n[ \t]+", "\n", wtext) if rem_beg_spaces else wtext
+        wtext = wtext.split('\u200D')
+        text1 = wtext[0]
+        if text2 is not None:
+            sep = wtext[1]
+            text2 = ' '.join(wtext[2:])
+
+    if ptoolkit:
+        col1 = ptcolors[col1] if col1 and ptcolors[col1] else ""
+        col2 = ptcolors[col2] if col2 and ptcolors[col2] else ""
+        print_formatted_text(to_formatted_text(text1, col1), end='')
+        if text2:
+            print_formatted_text(to_formatted_text(sep), end='')
+            print_formatted_text(to_formatted_text(text2, col2), end='')
+        print('', end=end)
+
+    else:
         col1 = colors[col1] if col1 and colors[col1] and colors[col1][0].isdigit() else None
         col2 = colors[col2] if col2 and colors[col2] and colors[col2][0].isdigit() else None
 
@@ -158,38 +209,11 @@ def output(text1, col1=None,
         text1 = clb1 + text1 + cle1
         if text2 is not None:
             text2 = clb2 + text2 + cle2
-    if wrap:
-        width = settings.getint("text-wrap-width")
-        width = 999999999 if width < 2 else width
-        width=min(width, termWidth)
-        text1 = textwrap.fill(
-            text1, width, replace_whitespace=False, drop_whitespace=False
-        )
-        text1 = re.sub(r"\n[ \t]+", "\n", text1) if rem_beg_spaces else text1
-        if text2:
-            if len(text1)+1+len(text2) >= width:
-                if not re.match("^\n+$", sep):
-                    sep += '\n'
-            text2 = textwrap.fill(
-                text2, width, replace_whitespace=False, drop_whitespace=False
-            )
-            text2 = re.sub(r"\n[ \t]+", "\n", text2) if rem_beg_spaces else text2
-
-    if ptoolkit:
-        col1 = ptcolors[col1] if col1 and ptcolors[col1] else ""
-        col2 = ptcolors[col2] if col2 and ptcolors[col2] else ""
-        print_formatted_text(to_formatted_text(text1, col1), end='')
-        if text2:
-            print_formatted_text(to_formatted_text(sep), end='')
-            print_formatted_text(to_formatted_text(text2, col2), end='')
-        print('', end=end)
-    else:
-        if not text2:
-            print(text1, end=end)
-        else:
             print(text1, end='')
             print(sep, end='')
             print(text2, end=end)
+        else:
+            print(text1, end=end)
 
     linecount = 1
     if beg:

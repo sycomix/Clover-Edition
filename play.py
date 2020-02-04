@@ -342,21 +342,7 @@ def print_intro():
         output(file.read(), "title", wrap=False, beg='')
 
     with open(Path("interface", "subTitle.txt"), "r", encoding="utf-8") as file:
-        cols = termWidth
-        for line in file:
-            line = re.sub(r'\n', '', line)
-            line = line[:cols]
-            # fills in the graphic using reverse video mode substituted into the areas between |'s
-            if use_ptoolkit():
-                style = Style.from_dict({
-                    'nor': ptcolors['subtitle'],
-                    'rev': ptcolors['subtitle'] + ' reverse',
-                })
-                text = re.sub(r'\|[ _]*(\||$)', lambda x: '<rev>' + x.group(0) + '</rev>', line)
-                print_formatted_text(HTML('<nor>' + text + '</nor>'), style=style)
-            else:
-                output(re.sub(r'\|[ _]*(\||$)', lambda x: '\x1B[7m' + x.group(0) + '\x1B[27m', line), 'subtitle',
-                       wrap=False, beg='')
+        output(file.read(), "subtitle", wrap=False, beg='')
 
     output("Go to https://github.com/cloveranon/Clover-Edition/ "
            "or email cloveranon@nuke.africa for bug reports, help, and feature requests.",
@@ -370,6 +356,10 @@ class GameManager:
         self.story, self.context, self.prompt = None, None, None
 
     def init_story(self) -> bool:
+        """
+        Initializes the story. Called by play_story.
+        :return: True if the GameManager should progress to the story, false otherwise.
+        """
         self.story, self.context, self.prompt = None, None, None
         list_items(["Pick Prompt From File (Default if you type nothing)",
                     "Write Custom Prompt",
@@ -443,24 +433,29 @@ class GameManager:
         return True
 
     # returns true if going back to menu
-    def process_cmd(self, cmd_regex) -> bool:
-        action = cmd_regex.group(1).strip().lower()
-        cmd_args = cmd_regex.group(2).strip().split()
-        if action == "set":
-            if len(cmd_args) < 2:
+    def process_command(self, cmd_regex) -> bool:
+        """
+        Processes an in-game command.
+        :param cmd_regex: The regular expression for the command.
+        :return: True if the command causes the game to exit, false otherwise.
+        """
+        command = cmd_regex.group(1).strip().lower()
+        args = cmd_regex.group(2).strip().split()
+        if command == "set":
+            if len(args) < 2:
                 output("Invalid number of arguments for set command. ", "error")
                 instructions()
                 return False
-            if cmd_args[0] in settings:
-                curr_setting_val = settings[cmd_args[0]]
+            if args[0] in settings:
+                curr_setting_val = settings[args[0]]
                 output(
                     "Current Value of {}: {}     Changing to: {}".format(
-                        cmd_args[0], curr_setting_val, cmd_args[1]
+                        args[0], curr_setting_val, args[1]
                     )
                 )
                 output("Saving an invalid option will corrupt file! ", "error")
                 if input_bool("Save setting? (y/N): ", "selection-prompt"):
-                    settings[cmd_args[0]] = cmd_args[1]
+                    settings[args[0]] = args[1]
                     try:
                         with open("config.ini", "w", encoding="utf-8") as f:
                             config.write(f)
@@ -470,38 +465,38 @@ class GameManager:
                 output("Invalid setting", "error")
                 instructions()
 
-        elif action == "settings":
+        elif command == "settings":
             settings_menu()
             self.story.print_last()
 
-        elif action == "menu":
+        elif command == "menu":
             if input_bool("Do you want to save? (y/N): ", "query"):
                 save_story(self.story)
             # self.story, self.context, self.prompt = None, None, None
             return True
 
-        elif action == "restart":
+        elif command == "restart":
             output("Restarting story...", "loading-message")
             if len((self.context + self.prompt).strip()) == 0:
                 output("Story has no prompt or context. Please enter a valid prompt. ", "error")
                 return False
             self.story = new_story(self.generator, self.story.context, self.prompt)
 
-        elif action == "quit":
+        elif command == "quit":
             if input_bool("Do you want to save? (y/N): ", "query"):
                 save_story(self.story)
             exit()
 
-        elif action == "help":
+        elif command == "help":
             instructions()
 
-        elif action == "print":
+        elif command == "print":
             use_wrap = input_bool("Print with wrapping? (y/N): ", "query")
             use_color = input_bool("Print with colors? (y/N): ", "query")
             output("Printing story...", "message")
             self.story.print_story(wrap=use_wrap, color=use_color)
 
-        elif action == "retry":
+        elif command == "retry":
             if len(self.story.actions) < 2:
                 output("Restarting story...", "loading-message")
                 if len((self.context + self.prompt).strip()) == 0:
@@ -510,6 +505,7 @@ class GameManager:
                 self.story = new_story(self.generator, self.story.context, self.prompt)
                 return False
             else:
+                output("Retrying...", "loading-message")
                 new_action = self.story.actions[-1]
                 self.story.revert()
                 result = self.story.act(new_action)
@@ -520,7 +516,7 @@ class GameManager:
                     return False
                 self.story.print_last()
 
-        elif action == "revert":
+        elif command == "revert":
             if len(self.story.actions) < 2:
                 output("You can't go back any farther. ", "error")
                 return False
@@ -528,15 +524,15 @@ class GameManager:
             output("Last action reverted. ", "message")
             self.story.print_last()
 
-        elif action == "alter":
+        elif command == "alter":
             self.story.results[-1] = alter_text(self.story.results[-1])
             self.story.print_last()
 
-        elif action == "context":
+        elif command == "context":
             self.story.context = alter_text(self.story.context)
             self.story.print_last()
 
-        elif action == "remember":
+        elif command == "remember":
             memory = cmd_regex.group(2).strip()
             if len(memory) > 0:
                 memory = re.sub("^[Tt]hat +(.*)", "\\1", memory)
@@ -548,7 +544,7 @@ class GameManager:
             else:
                 output("Please enter something valid to remember. ", "error")
 
-        elif action == "forget":
+        elif command == "forget":
             while True:
                 output("Select a memory to forget: ", "menu")
                 list_items(self.story.memory + ["(Finish)"], "menu")
@@ -558,10 +554,10 @@ class GameManager:
                 else:
                     del self.story.memory[i]
 
-        elif action == "save":
+        elif command == "save":
             save_story(self.story)
 
-        elif action == "load":
+        elif command == "load":
             story_file = select_file(Path("saves"), ".json")
             if story_file:
                 tstory, tcontext, tprompt = load_story(story_file, self.generator)
@@ -576,12 +572,12 @@ class GameManager:
             else:
                 self.story.print_last()
 
-        elif action == "summarize":
+        elif command == "summarize":
             first_result = self.story.results[-1]
             output(self.story.context, "user-text", "(YOUR SUMMARY HERE)", "message")
             output(self.story.results[-1], "ai-text")
             new_prompt = input_line("Enter the summary for the new story: ", "query")
-            new_prompt = format_result(new_prompt)
+            new_prompt = new_prompt.strip()
             if len(new_prompt) == 0:
                 output("Invalid new prompt; cancelling. ", "error")
                 self.story.print_last()
@@ -591,8 +587,9 @@ class GameManager:
             self.prompt = new_prompt
             self.story = new_story(self.generator, self.context, self.prompt, memory=self.story.memory,
                                    first_result=first_result)
+            self.story.savefile = ""
 
-        elif action == "altergen":
+        elif command == "altergen":
             result = alter_text(self.story.results[-1])
             self.story.results[-1] = ""
             output("Regenerating result...", "message")
@@ -601,11 +598,17 @@ class GameManager:
             self.story.print_last()
 
         else:
-            output("Invalid command: " + action, "error")
+            output("Invalid command: " + command, "error")
         return False
 
-    def process_action(self, action, suggested_actions=[]):
-        action = format_result(action)
+    def process_action(self, action, suggested_actions=[]) -> bool:
+        """
+        Processes an action to be submitted to the AI.
+        :param action: The action being submitted to the AI.
+        :param suggested_actions: The suggested actions generated (if action-sugg > 0)
+        :return: True if the action ends the game, false otherwise.
+        """
+        action = format_input(action)
 
         story_insert_regex = re.search("^(?: *you +)?! *(.*)$", action, flags=re.I)
 
@@ -614,7 +617,7 @@ class GameManager:
             action = story_insert_regex.group(1)
             if not action or len(action.strip()) == 0:
                 output("Invalid story insert. ", "error")
-                return
+                return False
             output(format_result(action), "user-text")
 
         # If the player enters a real action
@@ -642,6 +645,7 @@ class GameManager:
                     action = d20ify_speech(action, d)
                 else:
                     action = "You say " + action
+                action = end_sentence(action)
 
             elif user_action_regex:
                 action = first_to_second_person(user_action_regex.group(1))
@@ -649,9 +653,7 @@ class GameManager:
                     action = d20ify_action(action, d)
                 else:
                     action = "You " + action
-
-            if action[-1] not in [".", "?", "!"]:
-                action = action + "."
+                action = end_sentence(action)
 
             # If the user enters nothing but leaves "you", treat it like an empty action (continue)
             if re.match(r"^(?: *you *)*[.?!]? *$", action, flags=re.I):
@@ -664,9 +666,6 @@ class GameManager:
             output("Continuing...", "message")
 
         result = self.story.act(action)
-
-        if settings.getboolean("autosave"):
-            save_story(self.story, file_override=self.story.savefile, autosave=True)
 
         # Check for loops
         if self.story.is_looping():
@@ -732,13 +731,17 @@ class GameManager:
 
             # If this is a command
             if cmd_regex:
-                if self.process_cmd(cmd_regex):  # Go back to the menu
+                if self.process_command(cmd_regex):  # Go back to the menu
                     return
 
             # Otherwise this is just a normal action.
             else:
                 if self.process_action(action, suggested_actions):  # End of story
                     return
+
+            # Autosave after every input from the user (if it's enabled)
+            if settings.getboolean("autosave"):
+                save_story(self.story, file_override=self.story.savefile, autosave=True)
 
 
 # This is here for rapid development, without reloading the model. You import play into a jupyternotebook with autoreload
@@ -753,7 +756,12 @@ if __name__ == "__main__":
             torch.cuda.empty_cache()
             print_intro()
             gm.play_story()
-    except Exception as e:
+    except KeyboardInterrupt:
+        output("Quitting game.", "message")
+        if gm and gm.story:
+            if input_bool("Do you want to save? (y/N): ", "query"):
+                save_story(gm.story)
+    except Exception:
         traceback.print_exc()
         output("A fatal error has occurred. ", "error")
         if gm and gm.story:
