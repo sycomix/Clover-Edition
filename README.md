@@ -60,7 +60,7 @@ pip3 install torch -f https://download.pytorch.org/whl/torch_stable.html
 Next we'll install the necessary python module `transformers`. This should be done with pip by entering a command like this:
 
 ```
-pip3 install transformers
+pip3 install transformers==2.3.0
 ```
 
 A recommended optional addition for other than Colab users is the Python Prompt Toolkit. It revises the input scheme and provides an alternative color scheme. Install it with the command `pip install -r optional-requirements.txt`
