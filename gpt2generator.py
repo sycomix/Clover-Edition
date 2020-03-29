@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+from typing import Union
+
 import torch
 import torch.nn.functional as F
 import re
@@ -184,7 +186,7 @@ def truncate_multiple_sequences(seqs, max_len=100):
 class GPT2Generator:
     def __init__(
             self, generate_num=60, temperature=0.4, top_k=40, top_p=0.9, dtype=DTYPE,
-            model_path=Path('models', 'pytorch-gpt2-xl-aid2-v5'), repetition_penalty=1,
+            model_path: Union[str, Path] = Path('models', 'pytorch-gpt2-xl-aid2-v5'), repetition_penalty=1,
     ):
         self.generate_num = generate_num
         self.temp = temperature
@@ -197,19 +199,19 @@ class GPT2Generator:
         self.max_history_tokens = 1024 - generate_num
         self.stop_token = "<|endoftext|>"
 
-        debug_model = os.environ.get("MODEL", False)
-        if debug_model:
-            assert isinstance(debug_model, str), "MODEL must be string"
-            self.checkpoint_path = debug_model
+        if isinstance(model_path, str):
+            self.checkpoint_path = model_path
             logger.warning(
-                f"Using DEBUG MODE! This is just for devs to quickly check a small (124M) GPT2 model with poor output. "
-                f"Selected pretrained {debug_model}")
-        else:
-            self.checkpoint_path = Path(model_path)
+                f"Using DEBUG MODE! This will load one of the generic (non-finetuned) GPT2 models. "
+                f"Selected: {model_path}")
+        elif isinstance(model_path, Path):
+            self.checkpoint_path = model_path
             if not self.checkpoint_path.exists():
                 raise FileNotFoundError(
                     "Could not find {} Make sure to download a pytorch model and put it in the models directory!".format(
                         str(self.checkpoint_path)))
+        else:
+            raise ValueError(f"model_path must be either str or Path, got {type(model_path)}")
 
         self.device = torch.device("cuda" if self.dtype == torch.float16 else "cpu")
         logger.info(
