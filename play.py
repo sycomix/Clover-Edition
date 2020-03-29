@@ -35,21 +35,24 @@ def get_generator():
     generator = None
     while True:
         try:
-            if not models:
-                raise FileNotFoundError(
-                    'There are no models in the models directory! You must download a pytorch compatible model!')
-            elif len(models) > 1:
-                output("You have multiple models in your models folder. Please select one to load:", 'message')
-                list_items([m.name for m in models] + ["(Exit)"], "menu")
-                model_selection = input_number(len(models))
-                if model_selection == len(models):
-                    output("Exiting. ", "message")
-                    exit(0)
-                else:
-                    model = models[model_selection]
+            if os.environ.get("DEBUG_GPT2", False):
+                model = None
             else:
-                model = models[0]
-                logger.info("Using model: " + str(model))
+                if not models:
+                    raise FileNotFoundError(
+                        'There are no models in the models directory! You must download a pytorch compatible model!')
+                elif len(models) > 1:
+                    output("You have multiple models in your models folder. Please select one to load:", 'message')
+                    list_items([m.name for m in models] + ["(Exit)"], "menu")
+                    model_selection = input_number(len(models))
+                    if model_selection == len(models):
+                        output("Exiting. ", "message")
+                        exit(0)
+                    else:
+                        model = models[model_selection]
+                else:
+                    model = models[0]
+                    logger.info("Using model: " + str(model))
             generator = GPT2Generator(
                 model_path=model,
                 generate_num=settings.getint("generate-num"),
