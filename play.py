@@ -35,7 +35,7 @@ def get_generator():
     generator = None
     while True:
         try:
-            if os.environ.get("DEBUG_GPT2", False):
+            if os.environ.get("MODEL", False):
                 model = None
             else:
                 if not models:

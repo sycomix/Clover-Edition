@@ -197,10 +197,13 @@ class GPT2Generator:
         self.max_history_tokens = 1024 - generate_num
         self.stop_token = "<|endoftext|>"
 
-        if os.environ.get("DEBUG_GPT2", False):
-            self.checkpoint_path = 'gpt2'
+        debug_model = os.environ.get("MODEL", False)
+        if debug_model:
+            assert isinstance(debug_model, str), "MODEL must be string"
+            self.checkpoint_path = debug_model
             logger.warning(
-                "using DEBUG_GPT2 MODE! This is just for devs to quickly check a small (124M) GPT2 model with poor output")
+                f"Using DEBUG MODE! This is just for devs to quickly check a small (124M) GPT2 model with poor output. "
+                f"Selected pretrained {debug_model}")
         else:
             self.checkpoint_path = Path(model_path)
             if not self.checkpoint_path.exists():
@@ -283,7 +286,6 @@ class GPT2Generator:
 
         context_tokens = memory_merge(prompt, context, self.tokenizer, self.max_history_tokens)
 
-        # if os.environ.get("DEBUG_GPT2", False):
         logger.debug(
             "Text passing into model `%r`",
             self.tokenizer.decode(
