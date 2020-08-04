@@ -55,6 +55,7 @@ def memory_merge(prompt, context, tokenizer, maxHistory=1024):
     # this is a hack and it should be up to the sampler to deal with max size
     if len(context_tokens) > maxHistory:
         logger.error("CONTEXT IS TOO LONG ERROR")
+        context_tokens = context_tokens[-maxHistory:]
     return context_tokens
 
 
