@@ -46,7 +46,7 @@ def memory_merge(prompt, context, tokenizer, maxHistory=1024):
     # the tokenizer is kind of broken for the first input, especially if it includes white space. Same with any trailing white space on the last output.
     # I'm going with the add prefix option but I'm not sure it's quite right
     prompt_tokens = tokenizer.encode(prompt, add_special_tokens=False, add_prefix_space=True)
-    if len(prompt_tokens) > maxHistory:
+    if len(prompt_tokens) >= maxHistory:
         logger.debug("Clamping the amount of prompt tokens.")
         context_tokens = prompt_tokens[-maxHistory:]
     else:
