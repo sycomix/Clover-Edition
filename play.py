@@ -655,7 +655,7 @@ class GameManager:
                 if action in [str(i) for i in range(len(suggested_actions))]:
                     action = "You " + suggested_actions[int(action)].strip()
 
-            if user_speech_regex:
+            elif user_speech_regex:
                 action = user_speech_regex.group(1)
                 if settings.getboolean("action-d20"):
                     action = d20ify_speech(action, d)
