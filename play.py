@@ -22,10 +22,6 @@ if not use_ptoolkit() and os.name == 'nt':
     except ModuleNotFoundError: #No colorama
         output("INFO: ColorAMA is not installed")
         pass
-        
-# remove this in a few days
-with open(Path('interface', 'start-message.txt'), 'r') as file_:
-    print('\x1B[7m' + file_.read() + '\x1B[27m')
 
 logger.info("Colab detected: {}".format(in_colab()))
 
