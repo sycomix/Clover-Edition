@@ -31,11 +31,11 @@ To play with GPU acceleration, you need an Nvidia GPU. The original "XL" 1558M p
 
 1. Install [Python](https://www.python.org/downloads/). The installer should install `pip` and it should add it to your `PATH` automatically. Make sure you have the relevant options selected if the installer gives you any options.
 2. Install PyTorch (aka the `torch` python module.) PyTorch's installation instructions are available [here](https://pytorch.org/get-started/locally/) on their official website. You do not need the `torchvision` nor the `torchaudio` packages.
-    - For Windows or Linux CUDA (Nvidia GPU support), the command will look like the following: `pip3 install torch==1.8.1+cu111 -f https://download.pytorch.org/whl/torch_stable.html`
-    - For Windows or Linux with only CPU support, it will look like: `pip3 install torch==1.8.1+cpu -f https://download.pytorch.org/whl/torch_stable.html`
-    - For MacOS users, you just have to: `pip3 install torch`, as the binaries don't support CUDA and you probably don't have an Nvidia GPU anyway.
-3. Install Transformers version 2.3.0: `pip3 install transformers==2.3.0`
-4. If you're playing on your desktop (i.e. not on Google Colab), install Prompt-Toolkit: `pip3 install prompt_toolkit`
+    - For Windows or Linux CUDA (Nvidia GPU support), the command will look like the following: `pip install torch==1.8.1+cu111 -f https://download.pytorch.org/whl/torch_stable.html`
+    - For Windows or Linux with only CPU support, it will look like: `pip install torch==1.8.1+cpu -f https://download.pytorch.org/whl/torch_stable.html`
+    - For MacOS users, you just have to: `pip install torch`, as the binaries don't support CUDA and you probably don't have an Nvidia GPU anyway.
+3. Install Transformers version 2.3.0: `pip install transformers==2.3.0`
+4. If you're playing on your desktop (i.e. not on Google Colab), install Prompt-Toolkit: `pip install prompt_toolkit`
 5. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it then select "Download Zip". Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed.
 
 Then you will need to download a PyTorch model and put it in the models folder:
@@ -80,12 +80,12 @@ Install [Windows Terminal](https://aka.ms/terminal)(recommended) or [cmder](http
 `[supported_Python_version] -m pip install -r requirements.txt` where `[supported_Python_version]` is replaced with a supported Python version (they might be 3.5 to 3.7.6 but don't quote me on that).
 
 
-## Datasets and Finetuning the AI
+## Datasets and Fine-tuning the AI
 ---------------
 
-I threw together a quick page of some tips [here](DATASETS.md). I plan to throw any links to interesting datasets or guides for training and finetuing the AI there. Please send me anything interesting.
+I threw together a quick page of some tips [here](DATASETS.md). I plan to throw any links to interesting datasets or guides for training and fine-tuning the AI there. Please send me anything interesting.
 
-Fine tunning is not currently a push button thing and requires some minimal technical ability. Most people are using the program gpt-simple. You may have more luck with the much more advanced [Huggingface-Transformers](https://github.com/huggingface/transformers) program that we use to power Clover-Edition. [This](https://huggingface.co/transformers/examples.html#language-model-fine-tuning) seems to be their documentation on fine-tuning.
+Fine-tuning is not currently a push button thing and requires some minimal technical ability. Most people are using the program gpt-simple. You may have more luck with the much more advanced [Huggingface-Transformers](https://github.com/huggingface/transformers) program that we use to power Clover-Edition. [This](https://huggingface.co/transformers/examples.html#language-model-fine-tuning) seems to be their documentation on fine-tuning.
 
 Anon says: "Here's an ipynb you can train new models with using the transformers lib that clover edition uses directly, rather than having to convert it: https://0x0.st/zDRC.ipynb "
 
