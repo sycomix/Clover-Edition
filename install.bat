@@ -43,17 +43,17 @@ cd venv
 
 :: Download Python
 echo Downloading Python...
-start "" /wait /b curl "%PythonURL%" -o python.zip
+curl "%PythonURL%" -o python.zip
 
 :: Extract Python
 echo Extracting Python
-start "" /wait /b tar -xf "python.zip"
+tar -xf "python.zip"
 
 :: Get pip
 echo Downloading pip...
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 echo Installing pip
-start "" /wait /b python.exe get-pip.py --no-warn-script-location
+python.exe get-pip.py --no-warn-script-location
 echo Lib\site-packages>>%PythonPathFile%
 echo ..>>%PythonPathFile%
 
@@ -69,19 +69,19 @@ cd ..
 
 :: Install Prompt_Toolkit
 echo Installing Prompt_Toolkit
-start "" /wait /b %PY% -m pip install prompt_toolkit --no-color --no-warn-script-location
+%PY% -m pip install prompt_toolkit --no-color --no-warn-script-location
 
 :: Install Transformers
 echo Installing Transformers
-start "" /wait /b %PY% -m pip install %TransformersPip% --no-color --no-warn-script-location
+%PY% -m pip install %TransformersPip% --no-color --no-warn-script-location
 
 :: Install Torch
 echo Installing PyTorch
 if %usecuda%==1 (
-  start "py" /wait /b %PY% -m pip install %TorchCudaPip% --no-color --no-warn-script-location
+  %PY% -m pip install %TorchCudaPip% --no-color --no-warn-script-location
 )
 if %usecuda%==2 (
-  start "py" /wait /b %PY% -m pip install torch --no-color --no-warn-script-location
+  %PY% -m pip install torch --no-color --no-warn-script-location
 )
 
 :: Check for and offer to help install Windows Terminal
@@ -93,7 +93,7 @@ echo It is highly recommended you install it.
 :selectwt
 set /p openwt="Would you like to install Microsoft Windows Terminal now? (y/n) "
 if "%openwt%"=="y" (
-  start "" /wait /b curl -L "%WindowsTerminalURL%" -o wt.msixbundle
+  curl -L "%WindowsTerminalURL%" -o wt.msixbundle
   start "" /wait /b wt.msixbundle
   pause
   del wt.msixbundle
