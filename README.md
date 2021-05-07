@@ -11,7 +11,7 @@ Take a look at [AIDungeonPastes](https://aidungeonpastes.github.io/AID2-Art/) fo
 * Complete rewrite of the user interface
   * Colored text
   * Suggested actions
-  * Console Bell dings when the AI finishes
+  * Console bell dings when the AI finishes
   * Much improved prompt selection
   * Ability to save custom prompts
 * Half precision floating point using significantly less GPU memory
@@ -27,23 +27,23 @@ Take a look at [AIDungeonPastes](https://aidungeonpastes.github.io/AID2-Art/) fo
 
 Officially we only support local installs. We encourage and recommend installing and running the game locally. However since the beginning most people have been playing it for free on Google's servers through their Colab platform. Allegedly it requires no effort to get started. Try [this link](https://colab.research.google.com/drive/1kYVhVeE6z4sUyyKDVxLGrzI4OTV43eEa) and go to the [4chan threads](https://boards.4chan.org/search#/aidungeon%20OR%20%22ai%20dungeon%22) for help and info.
 
-To play with GPU acceleration, you need an NVIDA GPU. The original "XL" 1558M parameter model requires at least 4GB of VRAM. Smaller models may consume less. On CPU response times vary from 30 to 90 seconds on the XL 1558M model, which is slow but usable.
+To play with GPU acceleration, you need an Nvidia GPU. The original "XL" 1558M parameter model requires at least 4GB of VRAM. Smaller models may consume less. On CPU response times vary from 30 to 90 seconds on the XL 1558M model, which is slow but usable.
 
 1. Install [Python](https://www.python.org/downloads/). The installer should install `pip` and it should add it to your `PATH` automatically. Make sure you have the relevant options selected if the installer gives you any options.
 2. Install PyTorch (aka the `torch` python module.) PyTorch's installation instructions are available [here](https://pytorch.org/get-started/locally/) on their official website. You do not need the `torchvision` nor the `torchaudio` packages.
     - For Windows or Linux CUDA (Nvidia GPU support), the command will look like the following: `pip3 install torch==1.8.1+cu111 -f https://download.pytorch.org/whl/torch_stable.html`
     - For Windows or Linux with only CPU support, it will look like: `pip3 install torch==1.8.1+cpu -f https://download.pytorch.org/whl/torch_stable.html`
     - For MacOS users, you just have to: `pip3 install torch`, as the binaries don't support CUDA and you probably don't have an Nvidia GPU anyway.
-3. Install the Python module `transformers` version 2.3.0: `pip3 install transformers==2.3.0`
+3. Install Transformers version 2.3.0: `pip3 install transformers==2.3.0`
 4. If you're playing on your desktop (i.e. not on Google Colab), install Prompt-Toolkit: `pip3 install prompt_toolkit`
-5. Download this repo. Github has a green download button that looks like `[⤓ Code]`. Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"`
+5. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it then select "Download Zip". Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed.
 
 Then you will need to download a PyTorch model and put it in the models folder:
 
 
 ## Models
 
-The pytorch version of the original AID2 model is being distributed by bittorrent:
+The PyTorch version of the original AID2 model is being distributed on bittorrent:
 
 - [Torrent File](model.torrent) 
 - [Magnet Link](magnet:?xt=urn:btih:17dcfe3d12849db04a3f64070489e6ff5fc6f63f&dn=model_v5_pytorch&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce&tr=udp%3a%2f%2fopen.stealth.si%3a80%2fannounce&tr=udp%3a%2f%2fp4p.arenabg.com%3a1337%2fannounce&tr=udp%3a%2f%2ftracker.coppersurfer.tk%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.cyberia.is%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.moeking.me%3a6969%2fannounce&tr=udp%3a%2f%2f9.rarbg.me%3a2710%2fannounce&tr=udp%3a%2f%2ftracker3.itzmx.com%3a6961%2fannounce)
@@ -64,7 +64,7 @@ Once downloaded, your model folder should look like this:
 
 ## Playing
 
-Enter the folder and run `play.py` with python3.
+Enter the folder and run `play.py` with Python.
 
 - Windows: `py play.py`
 - Linux: `python play.py`
