@@ -57,7 +57,7 @@ python.exe get-pip.py --no-warn-script-location
 echo Lib\site-packages>>%PythonPathFile%
 echo ..>>%PythonPathFile%
 
-:: Add \venv and \Scripts to path
+:: For lazy use down below
 SET PY="%CD%\python.exe"
 
 :: Delete zip
