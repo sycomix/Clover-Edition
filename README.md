@@ -49,6 +49,8 @@ After either of the following install steps, you must get one of the models.
 
 ## Models
 
+You can have multiple models installed, but you need at least one.
+
 | Model Name | Model Type | Parameters | File Size | RAM | VRAM | Links  |
 |---|---|---|---|---|---|---|
 | finetuneanon's horni - light novel | GPT-Neo | 2.7 billion | 5 GB | 8 GB | 8 GB | [[mega](https://mega.nz/file/rQcWCTZR#tCx3Ztf_PMe6OtfgI95KweFT5fFTcMm7Nx9Jly_0wpg)] [[gdrive](https://drive.google.com/file/d/1M1JY459RBIgLghtWDRDXlD4Z5DAjjMwg/view?usp=sharing)] [[torrent](https://tinyurl.com/pytorch-gptneo-horni)]  |
