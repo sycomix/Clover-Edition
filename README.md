@@ -83,12 +83,6 @@ Once downloaded, your model folder should look like this:
 Install [Windows Terminal](https://aka.ms/terminal) (recommended) or [cmder](https://cmder.net/) and use that as your terminal.
 
 
-## Troubleshooting for Linux
-
-* If pip commands fail because of an unsupported default Python version, try it with
-`[supported_Python_version] -m pip install -r requirements.txt` where `[supported_Python_version]` is replaced with a supported Python version (they might be 3.5 to 3.7.6 but don't quote me on that).
-
-
 ## Datasets and Fine-tuning the AI
 ---------------
 
