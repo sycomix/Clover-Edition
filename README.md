@@ -1,6 +1,6 @@
 # AIDungeon2 Clover Edition
 
-A fork of AIDungeon2, now driven by huggingface's transformers repository using PyTorch GPT2.
+A fork of AIDungeon2, now driven by huggingface's transformers repository using PyTorch GPT2 and GPT-Neo.
 
 Take a look at [AIDungeonPastes](https://aidungeonpastes.github.io/AID2-Art/) for some drawn gameplay examples.
 

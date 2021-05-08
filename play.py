@@ -68,6 +68,8 @@ def get_generator():
                 top_k=settings.getint("top-keks"),
                 top_p=settings.getfloat("top-p"),
                 repetition_penalty=settings.getfloat("rep-pen"),
+                repetition_penalty_range=settings.getint("rep-pen-range"),
+                repetition_penalty_slope=settings.getfloat("rep-pen-slope"),
             )
             break
         except OSError:
