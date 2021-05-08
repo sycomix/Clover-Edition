@@ -75,7 +75,7 @@ Once downloaded, your model folder should look like this:
 
 ## Playing
 
-- Windows: `run.bat`
+- Windows: `play.bat`
 - Linux: `python play.py`
 
 
