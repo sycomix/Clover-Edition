@@ -15,6 +15,10 @@ set TorchCudaPip=torch==1.8.1+cu111 -f https://download.pytorch.org/whl/torch_st
 :: in the future this might become: https://github.com/finetuneanon/transformers/archive/refs/heads/gpt-neo-dungeon-localattention1.zip
 set TransformersPip=transformers==2.3.0
 
+:: Checking if the user has curl and tar installed
+for %%X in (curl.exe) do (set HasCurl=%%~$PATH:X)
+for %%X in (tar.exe) do (set HasTar=%%~$PATH:X)
+
 
 echo AIDungeon2 Clover Edition installer for Windows 10 64-bit
 echo ----------------------------------------------------------------------------------------------
@@ -43,15 +47,28 @@ cd venv
 
 :: Download Python
 echo Downloading Python...
-curl "%PythonURL%" -o python.zip
+if defined HasCurl (
+  curl "%PythonURL%" -o %cd%\python.zip
+) else (
+  powershell Invoke-WebRequest -Uri "%PythonURL%" -OutFile %cd%\python.zip
+)
+
 
 :: Extract Python
 echo Extracting Python
-tar -xf "python.zip"
+if defined HasTar (
+  tar -xf "python.zip"
+) else (
+  powershell Expand-Archive python.zip ./ -Force
+)
 
 :: Get pip
 echo Downloading pip...
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+if defined HasCurl (
+  curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+) else (
+  powershell Invoke-WebRequest -Uri "https://bootstrap.pypa.io/get-pip.py" -OutFile %cd%\get-pip.py
+)
 echo Installing pip
 python.exe get-pip.py --no-warn-script-location
 echo Lib\site-packages>>%PythonPathFile%
@@ -85,15 +102,19 @@ if %usecuda%==2 (
 )
 
 :: Check for and offer to help install Windows Terminal
-for %%X in (wt.exe) do (set FOUNDWT=%%~$PATH:X)
-if defined FOUNDWT (goto models)
+for %%X in (wt.exe) do (set HasWT=%%~$PATH:X)
+if defined HasWT (goto models)
 echo.
 echo Microsoft Windows Terminal was not found.
 echo It is highly recommended you install it.
 :selectwt
 set /p openwt="Would you like to install Microsoft Windows Terminal now? (y/n) "
 if "%openwt%"=="y" (
-  curl -L "%WindowsTerminalURL%" -o wt.msixbundle
+  if defined HasCurl (
+    curl -L "%WindowsTerminalURL%" -o wt.msixbundle
+  ) else (
+    powershell Invoke-WebRequest -Uri "%WindowsTerminalURL%" -OutFile %cd%\wt.msixbundle
+  )
   start "" /wait /b wt.msixbundle
   pause
   del wt.msixbundle
