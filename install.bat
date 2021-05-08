@@ -23,7 +23,7 @@ for %%X in (tar.exe) do (set HasTar=%%~$PATH:X)
 echo AIDungeon2 Clover Edition installer for Windows 10 64-bit
 echo ----------------------------------------------------------------------------------------------
 echo.
-echo Using an Nvidia GPU requires 6 GB HDD space, 16 GB RAM, and at least 6 GB of VRAM on your GPU for GPT-2 or up to 11 GB of VRAM for GPT-Neo.
+echo Using an Nvidia GPU requires 6 GB HDD space, 16 GB RAM, and at least 6 GB of VRAM on your GPU for GPT-2 or up to 8 GB of VRAM for GPT-Neo.
 echo Using only your CPU requires 2 GB HDD space, 16 GB RAM.
 echo Additionally, models require between 6 and 10 GB HDD space each, and you will need at least one.
 echo.
@@ -48,9 +48,9 @@ cd venv
 :: Download Python
 echo Downloading Python...
 if defined HasCurl (
-  curl "%PythonURL%" -o %cd%\python.zip
+  curl "%PythonURL%" -o "%cd%\python.zip"
 ) else (
-  powershell Invoke-WebRequest -Uri "%PythonURL%" -OutFile %cd%\python.zip
+  powershell Invoke-WebRequest -Uri "%PythonURL%" -OutFile "%cd%\python.zip"
 )
 
 
@@ -67,7 +67,7 @@ echo Downloading pip...
 if defined HasCurl (
   curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 ) else (
-  powershell Invoke-WebRequest -Uri "https://bootstrap.pypa.io/get-pip.py" -OutFile %cd%\get-pip.py
+  powershell Invoke-WebRequest -Uri "https://bootstrap.pypa.io/get-pip.py" -OutFile "%cd%\get-pip.py"
 )
 echo Installing pip
 python.exe get-pip.py --no-warn-script-location
