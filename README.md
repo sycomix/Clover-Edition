@@ -8,6 +8,7 @@ Take a look at [AIDungeonPastes](https://aidungeonpastes.github.io/AID2-Art/) fo
 ## Features
 ------------------------
 
+* GPT-Neo support
 * Complete rewrite of the user interface
   * Colored text
   * Suggested actions
