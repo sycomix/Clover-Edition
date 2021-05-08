@@ -54,13 +54,13 @@ First [install python](https://www.python.org/downloads/). Some users reported p
 Next install pytorch (aka the `torch` python module.) For GPU support pytorch requires a recent version of NVIDIA's CUDA and may require or benefit from an NVIDIA software called "cuDNN". For just CPU select "None" as your CUDA version. Pytorch's installation instructions are available [here](https://pytorch.org/get-started/locally/) on their official website. You do not need the `torchvision` package. On Windows the command should look like the following:
 
 ```
-pip3 install torch -f https://download.pytorch.org/whl/torch_stable.html
+pip3 install torch
 ```
 
 Next we'll install the necessary python module `transformers`. This should be done with pip by entering a command like this:
 
 ```
-pip3 install transformers==2.3.0
+pip3 install https://github.com/finetuneanon/transformers/archive/refs/heads/gpt-neo-dungeon-localattention1.zip
 ```
 
 A recommended optional addition for other than Colab users is the Python Prompt Toolkit. It revises the input scheme and provides an alternative color scheme. Install it with the command `pip install -r optional-requirements.txt`
@@ -73,6 +73,14 @@ Then you will need to download a pytorch model and put it in the models folder:
 
 
 #### Models:
+
+finetuneanon's models can be downloaded here:
+
+* [gpt-neo-2.7B-horni](https://mega.nz/file/6BNykLJb#B6gxK3TnCKBpeOF1DJMXwaLc_gcTcqMS0Lhzr1SeJmc) [[Google Drive](https://drive.google.com/file/d/1-Jj_hlyNCQxuSnK7FFBXREGnRSMI5MoF/view?usp=sharing)] 5GB, for NSFW styled output
+* [gpt-neo-2.7B-horni-ln](https://mega.nz/file/rQcWCTZR#tCx3Ztf_PMe6OtfgI95KweFT5fFTcMm7Nx9Jly_0wpg) [[Google Drive](https://drive.google.com/file/d/1M1JY459RBIgLghtWDRDXlD4Z5DAjjMwg/view?usp=sharing)] 5GB, for light novel styled output
+* Torrent: magnet:?xt=urn:btih:31d956ff4a248dcf914b1b7e474cbac02d70d6a4&dn=gtp-neo-horni
+
+Unpack the tar files and put them into the models folder. Minimum requirements are 16GB of RAM and 8GB of VRAM. GTX works, but RTX is better.
 
 Thanks to @Rioghasarig, the models are available to download at this site: http://www.clover-browser.info/
 
