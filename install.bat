@@ -12,8 +12,8 @@ set WindowsTerminalURL=https://github.com/microsoft/terminal/releases/download/v
 :: update from https://pytorch.org/get-started/locally/
 set TorchCudaPip=torch==1.8.1+cu111 -f https://download.pytorch.org/whl/torch_stable.html
 
-:: in the future this might become: https://github.com/finetuneanon/transformers/archive/refs/heads/gpt-neo-dungeon-localattention1.zip
-set TransformersPip=transformers==2.3.0
+:: Finetuneanon's fork of Transformers
+set TransformersPip=https://github.com/finetuneanon/transformers/archive/refs/heads/gpt-neo-dungeon-localattention1.zip
 
 :: Checking if the user has curl and tar installed
 for %%X in (curl.exe) do (set HasCurl=%%~$PATH:X)
@@ -23,9 +23,9 @@ for %%X in (tar.exe) do (set HasTar=%%~$PATH:X)
 echo AIDungeon2 Clover Edition installer for Windows 10 64-bit
 echo ----------------------------------------------------------------------------------------------
 echo.
-echo Using an Nvidia GPU requires 6 GB HDD space, 16 GB RAM, and at least 6 GB of VRAM on your GPU.
+echo Using an Nvidia GPU requires 6 GB HDD space, 16 GB RAM, and at least 6 GB of VRAM on your GPU for GPT-2 or up to 11 GB of VRAM for GPT-Neo.
 echo Using only your CPU requires 2 GB HDD space, 16 GB RAM.
-echo Additionally, models require about 6 GB HDD space each, and you will need at least one later.
+echo Additionally, models require between 6 and 10 GB HDD space each, and you will need at least one.
 echo.
 :selectcuda
 echo 1) Install Nvidia GPU (CUDA) version
