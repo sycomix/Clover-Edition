@@ -113,7 +113,7 @@ if "%openwt%"=="y" (
   if defined HasCurl (
     curl -L "%WindowsTerminalURL%" -o wt.msixbundle
   ) else (
-    powershell Invoke-WebRequest -Uri "%WindowsTerminalURL%" -OutFile %cd%\wt.msixbundle
+    powershell Invoke-WebRequest -Uri "%WindowsTerminalURL%" -OutFile "%cd%\wt.msixbundle"
   )
   start "" /wait /b wt.msixbundle
   pause
