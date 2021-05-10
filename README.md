@@ -1,8 +1,15 @@
-# AIDungeon2 Clover Edition
+# AIDungeon2
+## Clover Edition
 
-A fork of AIDungeon2, now driven by huggingface's transformers repository using PyTorch GPT2 and GPT-Neo.
+A fork of AIDungeon2 with numerous improvements. Now supporting GPT-Neo.
 
-Take a look at [AIDungeonPastes](https://aidungeonpastes.github.io/AID2-Art/) for some drawn gameplay examples.
+![img](images/retro1.jpg)
+![img](images/retro2.jpg)
+![img](images/retro3.jpg)
+![img](images/original-screenshot.png)
+
+Also take a look at [AIDungeonPastes](https://aidungeonpastes.github.io/AID2-Art/) for some drawn gameplay examples.
+
 
 
 ## Features
@@ -28,7 +35,7 @@ Take a look at [AIDungeonPastes](https://aidungeonpastes.github.io/AID2-Art/) fo
 
 Officially we only support local installs. We encourage and recommend installing and running the game locally. However since the beginning most people have been playing it for free on Google's servers through their Colab platform. Allegedly it requires no effort to get started. Try [this link](https://colab.research.google.com/drive/1kYVhVeE6z4sUyyKDVxLGrzI4OTV43eEa) and go to the [4chan threads](https://boards.4chan.org/search#/aidungeon%20OR%20%22ai%20dungeon%22) for help and info.
 
-To play with GPU acceleration, you need an Nvidia GPU. On CPU, response times vary from about a minute on the XL GPT-2 1558M model, which is slow but usable, to about 6 minutes on GPT-Neo.
+To play with GPU acceleration, you need an Nvidia GPU. (Though some anons claim to have gotten it working with on AMD with ROCm) The original "XL" 1558M parameter model requires at least 4GB of VRAM. Smaller models may consume much less. On CPU, response times vary from about a minute on the XL GPT-2 1558M model, which is slow but usable, to about 6 minutes on GPT-Neo.
 
 After either of the following install steps, you must get one of the models.
 
@@ -68,6 +75,8 @@ You can have multiple models installed, but you need at least one.
 
 \* For EleutherAI's GPT-Neo-2.7B, Download only `pytorch_model.bin` and make sure it's named that, put it into a new folder (see below for the structure), then copy `config.json`, `merges.txt`, and `vocab.json` from one of finetuneanon's models and put them in the same folder.
 
+16-Bit models are half the size, and load 20 times faster (probably because they run out of RAM and hit the swap space). I found the original AID2 model (`pytorch-gpt2-xl-aid2-v5`) took 12.6 minutes to load, while the 16 bit version took 37 seconds.
+
 Once downloaded, your model folder should look like this:
 ```
     ./models
@@ -101,7 +110,9 @@ Fine-tuning is not currently a push button thing and requires some minimal techn
 
 I have made the [convert_gpt2_model.py](convert_gpt2_model.py) script an idiot proof simple way of quickly converting tensorflow models to pytorch models. Just run it on the folder containing a tensorflow model and you will get a pytorch model. You can use the --full flag to get a full 32bit model, but do try 16bit models as they will be potentially half the size for the same accuracy.
 
-See the [test-models.py](test-models.py) script to test the accuracy of 16 bit mode if you doubt the chad 16BIT models. My tests were well within expectations.
+See the [test-models.py](test-models.py) script to test the accuracy of 16 bit mode if you doubt the chad 16BIT models. My tests were well within expectations:
+
+![img](images/16bitvs32bit.png)
 
 
 ## Community
@@ -117,3 +128,5 @@ Otherwise see:
 ## Contributing
 ------------------------
 Contributions are more than welcome. You can fork the thing and send a  [pull request](https://help.github.com/articles/using-pull-requests/) from your fork.
+
+![cry.](images/cry.png)
