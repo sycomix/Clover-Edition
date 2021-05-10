@@ -558,6 +558,31 @@ class GameManager:
             else:
                 output("Please enter something valid to remember. ", "error")
 
+        elif command == "memalt":
+            while True:
+                output("Select a memory to alter: ", "menu")
+                list_items(self.story.memory + ["(Finish)"], "menu")
+                i = input_number(len(self.story.memory), default=-1)
+                if i == len(self.story.memory):
+                    break
+                else:
+                    self.story.memory[i] = alter_text(self.story.memory[i])
+                    if self.story.memory[i] == 0:
+                        del self.story.memory[i]
+
+        elif command == "memswap":
+            while True:
+                output("Select two memories to swap: ", "menu")
+                list_items(self.story.memory + ["(Finish)"], "menu")
+                i = input_number(len(self.story.memory), default=-1)
+                if i == len(self.story.memory):
+                    break
+                j = input_number(len(self.story.memory), default=-1)
+                if j == len(self.story.memory):
+                    break
+                else:
+                    self.story.memory[i], self.story.memory[j] = self.story.memory[j], self.story.memory[i]
+
         elif command == "forget":
             while True:
                 output("Select a memory to forget: ", "menu")
