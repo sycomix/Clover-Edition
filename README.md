@@ -37,14 +37,20 @@ After either of the following install steps, you must get one of the models.
 1. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it then select "Download Zip". Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed.
 2. Run `install.bat` and follow the on-screen instructions.
 
+#### Windows Troubleshooting
+
+- Some users have reported that some anti-virus (specifically Kaspersky) isn't happy with the install.bat script. Please whitelist or temporarily disable anti-virus when installing.
+- You can partially uninstall by deleting the `venv/` folder, and fully uninstall by just deleting the entire Clover Edition folder.
+
+
 ### Manual install
 
 1. Install [Python](https://www.python.org/downloads/). The installer should install `pip` and it should add it to your `PATH` automatically. Make sure you have the relevant options selected if the installer gives you any options.
 2. Install PyTorch (aka the `torch` python module.) PyTorch's installation instructions are available [here](https://pytorch.org/get-started/locally/) on their official website. You do not need the `torchvision` nor the `torchaudio` packages.
-    - For Windows or Linux CUDA (Nvidia GPU support), the command will look like the following: `pip install torch==1.8.1+cu111 -f https://download.pytorch.org/whl/torch_stable.html`
-    - For Windows or Linux with only CPU support, it will look like: `pip install torch==1.8.1+cpu -f https://download.pytorch.org/whl/torch_stable.html`
+    - For Windows or Linux CUDA (Nvidia GPU support), the command will look something like the following: `pip install torch==1.8.1+cu111 -f https://download.pytorch.org/whl/torch_stable.html`
+    - For Windows or Linux with only CPU support, it will look something like: `pip install torch==1.8.1+cpu -f https://download.pytorch.org/whl/torch_stable.html`
     - For MacOS users, you just have to: `pip install torch`, as the binaries don't support CUDA and you probably don't have an Nvidia GPU anyway.
-3. Install finetuneanon's Transformers: `pip install https://github.com/finetuneanon/transformers/archive/refs/heads/gpt-neo-dungeon-localattention1.zip`
+3. Install finetuneanon's Transformers: `pip --no-cache-dir install https://github.com/finetuneanon/transformers/archive/refs/heads/gpt-neo-dungeon-localattention1.zip`
 4. If you're playing on your desktop (i.e. not on Google Colab), install Prompt-Toolkit: `pip install prompt_toolkit`
 5. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it then select "Download Zip". Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed.
 

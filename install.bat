@@ -90,7 +90,7 @@ echo Installing Prompt_Toolkit
 
 :: Install Transformers
 echo Installing Transformers
-%PY% -m pip install %TransformersPip% --no-color --no-warn-script-location
+%PY% -m pip --no-cache-dir install %TransformersPip% --no-color --no-warn-script-location
 
 :: Install Torch
 echo Installing PyTorch
