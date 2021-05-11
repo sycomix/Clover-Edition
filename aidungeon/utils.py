@@ -6,7 +6,7 @@ import textwrap
 import os
 import sys
 
-from getconfig import logger, settings, colors, ptcolors
+from .getconfig import logger, settings, colors, ptcolors
 from shutil import get_terminal_size
 
 
@@ -64,7 +64,7 @@ if in_colab():
 else:
     try:
         if settings.getboolean('prompt-toolkit'):
-            from inline_editor import edit_multiline
+            from .inline_editor import edit_multiline
             from prompt_toolkit import prompt as ptprompt
             from prompt_toolkit import print_formatted_text
             from prompt_toolkit.styles import Style

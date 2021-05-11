@@ -1,7 +1,7 @@
 from urllib import request, error
 import re
 import os
-from utils import *
+from .utils import *
 from pathlib import Path
 
 fnamesSoFar = {}
