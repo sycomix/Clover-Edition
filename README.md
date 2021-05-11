@@ -52,7 +52,7 @@ After either of the following install steps, you must get one of the models.
 
 ### Linux install
 
-1. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it then select "Download Zip". Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed. Unzip it to a folder.
+1. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it then select "Download Zip", then unzip it to a folder. Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed.
 2. Go to your Clover Edition folder.
 3. Install [Python](https://www.python.org/downloads/) or use your package manager (e.g. `sudo apt-get install python3` or `sudo yum install python3` or something).
 4.. Run `.\install.sh` and follow the on-screen instructions.
@@ -60,12 +60,12 @@ After either of the following install steps, you must get one of the models.
 ### OS-agnostic manual install
 
 1. Install [Python](https://www.python.org/downloads/). The installer should install `pip` and it should add it to your `PATH` automatically. Make sure you have the relevant options selected if the installer gives you any options.
-2. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it then select "Download Zip". Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed. Unzip it to a folder.
+2. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it then select "Download Zip", then unzip it to a folder. Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed. 
 3. Open a command line or terminal and go to your Clover Edition folder.
 4. Run: `pip --no-cache-dir install -r requirements.txt`
 5. Install PyTorch (you must do one of the following):
-    - If you're using an Nvidia GPU with CUDA, run: `pip --no-cache-dir install -r cuda_requirements.txt`
-    - If you're planning on just using your CPU, run: `pip --no-cache-dir install -r cpu_requirements.txt`
+    - If you're using an Nvidia GPU with CUDA, run: `pip install -r cuda_requirements.txt`
+    - If you're planning on just using your CPU, run: `pip install -r cpu_requirements.txt`
 
 
 ## Models
