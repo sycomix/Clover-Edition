@@ -37,11 +37,11 @@ Officially we only support local installs. We encourage and recommend installing
 
 To play with GPU acceleration, you need an Nvidia GPU. (Though some anons claim to have gotten it working with on AMD with ROCm) The original "XL" 1558M parameter model requires at least 4GB of VRAM. Smaller models may consume much less. On CPU, response times vary from about a minute on the XL GPT-2 1558M model, which is slow but usable, to about 6 minutes on GPT-Neo.
 
-After either of the following install steps, you must get one of the models.
+After any of the following install steps, you must get one of the models.
 
 ### Windows 10 install
 
-1. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it then select "Download Zip". Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed. Unzip it to a folder.
+1. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it then select "Download Zip", Unzip it to a folder. Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed. 
 2. Go to your Clover Edition folder.
 3. Run `install.bat` and follow the on-screen instructions.
 
@@ -52,10 +52,10 @@ After either of the following install steps, you must get one of the models.
 
 ### Linux install
 
-1. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it then select "Download Zip", then unzip it to a folder. Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed.
-2. Go to your Clover Edition folder.
-3. Install [Python](https://www.python.org/downloads/) or use your package manager (e.g. `sudo apt-get install python3` or `sudo yum install python3` or something).
-4.. Run `.\install.sh` and follow the on-screen instructions.
+1. Install [Python](https://www.python.org/downloads/) or use your package manager (e.g. `sudo apt-get install python3` or `sudo yum install python3` or something).
+2. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it then select "Download Zip", then unzip it to a folder. Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed.
+3. Go to your Clover Edition folder.
+4. Run `.\install.sh` and follow the on-screen instructions.
 
 ### OS-agnostic manual install
 
