@@ -35,6 +35,7 @@ pip_install () {
 	source "${BASE_DIR}/venv/bin/activate"
 	pip install --upgrade pip setuptools
 	pip install -r "${BASE_DIR}/requirements.txt"
+	pip install -r "${BASE_DIR}/cuda_requirements.txt"
 }
 
 is_command() {
