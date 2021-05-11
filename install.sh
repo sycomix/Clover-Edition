@@ -17,13 +17,13 @@ pip_install () {
 	echo "You are using https://github.com/cloveranon/Clover-Edition/commit/${commit_hash}"
 	source "${BASE_DIR}/venv/bin/activate"
 	pip install --upgrade pip setuptools
-	pip --no-cache-dir install -r "${BASE_DIR}/requirements.txt"
+	pip --no-cache-dir install -r "${BASE_DIR}/requirements/requirements.txt"
 
 	echo "Would you like to install Nvidia CUDA support (~4.5gb) or just use your CPU (~800mb, but much slower)?"
 	select yn in "Nvidia CUDA" "CPU only"; do
 		case $yn in
-			"Nvidia CUDA" ) pip install -r "${BASE_DIR}/cuda_requirements.txt"; break;;
-			"CPU only" ) pip install -r "${BASE_DIR}/cpu_requirements.txt"; break;;
+			"Nvidia CUDA" ) pip install -r "${BASE_DIR}/requirements/cuda_requirements.txt"; break;;
+			"CPU only" ) pip install -r "${BASE_DIR}/requirements/cpu_requirements.txt"; break;;
 		esac
 	done
 }

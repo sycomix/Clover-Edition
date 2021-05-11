@@ -62,10 +62,10 @@ After any of the following install steps, you must get one of the models.
 1. Install [Python](https://www.python.org/downloads/). The installer should install `pip` and it should add it to your `PATH` automatically. Make sure you have the relevant options selected if the installer gives you any options.
 2. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it, select "Download Zip", then unzip it to a folder. Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed. 
 3. Open a command line or terminal and go to your Clover Edition folder.
-4. Run: `pip --no-cache-dir install -r requirements.txt`
+4. Run: `pip --no-cache-dir install -r requirements/requirements.txt`
 5. Install PyTorch (you must do one of the following):
-    - If you're using an Nvidia GPU with CUDA, run: `pip install -r cuda_requirements.txt`
-    - If you're planning on just using your CPU, run: `pip install -r cpu_requirements.txt`
+    - If you're using an Nvidia GPU with CUDA, run: `pip install -r requirements/cuda_requirements.txt`
+    - If you're planning on just using your CPU, run: `pip install -r requirements/cpu_requirements.txt`
 
 
 ## Models
