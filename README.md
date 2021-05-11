@@ -98,6 +98,7 @@ Once downloaded, your model folder should look like this:
 
 - Windows: double-click `play.bat`
 - Linux: `venv/bin/python play.py`
+- OS-agnostic install: `python play.py`
 
 
 ## Color support on Windows
