@@ -41,7 +41,7 @@ After any of the following install steps, you must get one of the models.
 
 ### Windows 10 install
 
-1. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it then select "Download Zip", Unzip it to a folder. Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed. 
+1. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it, select "Download Zip", then unzip it to a folder. Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed. 
 2. Go to your Clover Edition folder.
 3. Run `install.bat` and follow the on-screen instructions.
 
@@ -53,14 +53,14 @@ After any of the following install steps, you must get one of the models.
 ### Linux install
 
 1. Install [Python](https://www.python.org/downloads/) or use your package manager (e.g. `sudo apt-get install python3` or `sudo yum install python3` or something).
-2. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it then select "Download Zip", then unzip it to a folder. Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed.
+2. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it, select "Download Zip", then unzip it to a folder. Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed.
 3. Go to your Clover Edition folder.
-4. Run `.\install.sh` and follow the on-screen instructions.
+4. Run `sh install.sh` and follow the on-screen instructions.
 
 ### OS-agnostic manual install
 
 1. Install [Python](https://www.python.org/downloads/). The installer should install `pip` and it should add it to your `PATH` automatically. Make sure you have the relevant options selected if the installer gives you any options.
-2. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it then select "Download Zip", then unzip it to a folder. Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed. 
+2. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it, select "Download Zip", then unzip it to a folder. Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed. 
 3. Open a command line or terminal and go to your Clover Edition folder.
 4. Run: `pip --no-cache-dir install -r requirements.txt`
 5. Install PyTorch (you must do one of the following):
@@ -96,8 +96,8 @@ Once downloaded, your model folder should look like this:
 
 ## Playing
 
-- Windows: `play.bat`
-- Linux: `python play.py`
+- Windows: double-click `play.bat`
+- Linux: `venv/bin/python play.py`
 
 
 ## Color support on Windows
