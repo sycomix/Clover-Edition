@@ -30,7 +30,7 @@ Also take a look at [AIDungeonPastes](https://aidungeonpastes.github.io/AID2-Art
 * Lots of changes to story history sampling/truncation to hopefully stay on track with longer games
 * Eventually hope to improve the AI itself, but this will take some time
 
-## Install Instructions
+## Install instructions
 ------------------------
 
 Officially we only support local installs. We encourage and recommend installing and running the game locally. However since the beginning most people have been playing it for free on Google's servers through their Colab platform. Allegedly it requires no effort to get started. Try [this link](https://colab.research.google.com/drive/1kYVhVeE6z4sUyyKDVxLGrzI4OTV43eEa) and go to the [4chan threads](https://boards.4chan.org/search#/aidungeon%20OR%20%22ai%20dungeon%22) for help and info.
@@ -45,13 +45,19 @@ After either of the following install steps, you must get one of the models.
 2. Go to your Clover Edition folder.
 3. Run `install.bat` and follow the on-screen instructions.
 
-#### Windows Troubleshooting
+#### Windows troubleshooting
 
 - Users have reported that some anti-virus (specifically Kaspersky) isn't happy with the install.bat script. Please whitelist or temporarily disable anti-virus when installing.
 - You can partially uninstall by deleting the `venv/` folder, and fully uninstall by just deleting the entire Clover Edition folder.
 
+### Linux install
 
-### Manual install
+1. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it then select "Download Zip". Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed. Unzip it to a folder.
+2. Go to your Clover Edition folder.
+3. Install [Python](https://www.python.org/downloads/) or use your package manager (e.g. `sudo apt-get install python3` or `sudo yum install python3` or something).
+4.. Run `.\install.sh` and follow the on-screen instructions.
+
+### OS-agnostic manual install
 
 1. Install [Python](https://www.python.org/downloads/). The installer should install `pip` and it should add it to your `PATH` automatically. Make sure you have the relevant options selected if the installer gives you any options.
 2. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it then select "Download Zip". Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed. Unzip it to a folder.
@@ -99,17 +105,17 @@ Once downloaded, your model folder should look like this:
 Install [Windows Terminal](https://aka.ms/terminal) (recommended) or [cmder](https://cmder.net/) and use that as your terminal.
 
 
-## Datasets and Fine-tuning the AI
+## Datasets and fine-tuning the AI
 ---------------
 
 I threw together a quick page of some tips [here](DATASETS.md). I plan to throw any links to interesting datasets or guides for training and fine-tuning the AI there. Please send me anything interesting.
 
 Fine-tuning is not currently a push button thing and requires some minimal technical ability. Most people are using the program gpt-simple. You may have more luck with the much more advanced [Huggingface-Transformers](https://github.com/huggingface/transformers) program that we use to power Clover-Edition. [This](https://huggingface.co/transformers/examples.html#language-model-fine-tuning) seems to be their documentation on fine-tuning.
 
-## Converting Tensorflow model to Pytorch
+## Converting Tensorflow model to PyTorch
 ----------------
 
-I have made the [convert_gpt2_model.py](convert_gpt2_model.py) script an idiot proof simple way of quickly converting tensorflow models to pytorch models. Just run it on the folder containing a tensorflow model and you will get a pytorch model. You can use the --full flag to get a full 32bit model, but do try 16bit models as they will be potentially half the size for the same accuracy.
+I have made the [convert_gpt2_model.py](convert_gpt2_model.py) script an idiot proof simple way of quickly converting tensorflow models to PyTorch models. Just run it on the folder containing a tensorflow model and you will get a PyTorch model. You can use the --full flag to get a full 32bit model, but do try 16bit models as they will be potentially half the size for the same accuracy.
 
 See the [test-models.py](test-models.py) script to test the accuracy of 16 bit mode if you doubt the chad 16BIT models. My tests were well within expectations:
 
