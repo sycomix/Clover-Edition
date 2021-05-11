@@ -350,7 +350,7 @@ class GameManager:
                 return False
         elif new_game_option == 1:
             with open(
-                    Path("aidungeon/interface", "prompt-instructions.txt"), "r", encoding="utf-8"
+                    Path("interface/", "prompt-instructions.txt"), "r", encoding="utf-8"
             ) as file:
                 output(file.read(), "instructions", wrap=False)
             if use_ptoolkit():

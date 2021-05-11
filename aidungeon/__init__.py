@@ -12,10 +12,10 @@ from .utils import *
 def print_intro():
     print()
 
-    with open(Path("aidungeon/interface", "mainTitle.txt"), "r", encoding="utf-8") as file:
+    with open(Path("interface/", "mainTitle.txt"), "r", encoding="utf-8") as file:
         output(file.read(), "title", wrap=False, beg='')
 
-    with open(Path("aidungeon/interface", "subTitle.txt"), "r", encoding="utf-8") as file:
+    with open(Path("interface/", "subTitle.txt"), "r", encoding="utf-8") as file:
         output(file.read(), "subtitle", wrap=False, beg='')
 
     output("Go to https://github.com/cloveranon/Clover-Edition/ "
@@ -40,7 +40,7 @@ if not Path("prompts", "Anime").exists():
 
 
 if (__name__ == "__main__" or __name__ == "aidungeon"):
-    with open(Path("aidungeon/interface", "clover"), "r", encoding="utf-8") as file_:
+    with open(Path("interface/", "clover"), "r", encoding="utf-8") as file_:
         print(file_.read())
     try:
         gm = GameManager(get_generator())
