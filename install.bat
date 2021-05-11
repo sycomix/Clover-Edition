@@ -88,10 +88,10 @@ echo Installing universal dependencies
 :: Install Torch
 echo Installing PyTorch
 if %usecuda%==1 (
-  %PY% -m pip --no-cache-dir install -r cuda_requirements.txt --no-color --no-warn-script-location
+  %PY% -m pip install -r cuda_requirements.txt --no-color --no-warn-script-location
 )
 if %usecuda%==2 (
-  %PY% -m pip --no-cache-dir install -r cpu_requirements.txt --no-color --no-warn-script-location
+  %PY% -m pip install -r cpu_requirements.txt --no-color --no-warn-script-location
 )
 
 :: Check for and offer to help install Windows Terminal
