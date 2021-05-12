@@ -62,10 +62,10 @@ After any of the following install steps, you must get one of the models.
 1. Install [Python](https://www.python.org/downloads/). The installer should install `pip` and it should add it to your `PATH` automatically. Make sure you have the relevant options selected if the installer gives you any options.
 2. Download this repo. Github has a green download button to the top right that looks like: `[⤓ Code]`. Click it, select "Download Zip", then unzip it to a folder. Or you can use the git command `git clone --depth=1 "https://github.com/cloveranon/Clover-Edition/"` if you have git installed. 
 3. Open a command line or terminal and go to your Clover Edition folder.
-4. Run: `pip --no-cache-dir install -r requirements.txt`
+4. Run: `pip --no-cache-dir install -r requirements/requirements.txt`
 5. Install PyTorch (you must do one of the following):
-    - If you're using an Nvidia GPU with CUDA, run: `pip install -r cuda_requirements.txt`
-    - If you're planning on just using your CPU, run: `pip install -r cpu_requirements.txt`
+    - If you're using an Nvidia GPU with CUDA, run: `pip install -r requirements/cuda_requirements.txt`
+    - If you're planning on just using your CPU, run: `pip install -r requirements/cpu_requirements.txt`
 
 
 ## Models
@@ -97,8 +97,8 @@ Once downloaded, your model folder should look like this:
 ## Playing
 
 - Windows: double-click `play.bat`
-- Linux: `venv/bin/python play.py`
-- OS-agnostic install: `python play.py`
+- Linux: `sh play.sh`
+- OS-agnostic install: `python launch.py`
 
 
 ## Color support on Windows
@@ -138,3 +138,17 @@ Otherwise see:
 Contributions are more than welcome. You can fork the thing and send a  [pull request](https://help.github.com/articles/using-pull-requests/) from your fork.
 
 ![cry.](images/cry.png)
+
+
+## Model magnet links (for reference)
+------------------------
+
+finetuneanon's GPT-Neo-2.7B-horni and horni-ln:
+```
+magnet:?xt=urn:btih:31d956ff4a248dcf914b1b7e474cbac02d70d6a4&dn=gtp-neo-horni
+```
+
+Original AIDungeon2 Clover Edition GPT-2:
+```
+magnet:?xt=urn:btih:17dcfe3d12849db04a3f64070489e6ff5fc6f63f&dn=model_v5_pytorch&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce&tr=udp%3a%2f%2fopen.stealth.si%3a80%2fannounce&tr=udp%3a%2f%2fp4p.arenabg.com%3a1337%2fannounce&tr=udp%3a%2f%2ftracker.coppersurfer.tk%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.cyberia.is%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.moeking.me%3a6969%2fannounce&tr=udp%3a%2f%2f9.rarbg.me%3a2710%2fannounce&tr=udp%3a%2f%2ftracker3.itzmx.com%3a6961%2fannounce
+```

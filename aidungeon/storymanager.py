@@ -1,7 +1,7 @@
 import json
 import re
-from getconfig import settings
-from utils import output, format_result, format_input, get_similarity
+from .getconfig import settings
+from .utils import output, format_result, format_input, get_similarity
 
 
 class Story:
