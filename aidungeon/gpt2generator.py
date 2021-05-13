@@ -249,7 +249,7 @@ class GPT2Generator:
         # Load tokenizer and model
         model_class, tokenizer_class = MODEL_CLASSES["gpt2-experimental"] if settings.getboolean(
             "gpt2_experimental") else MODEL_CLASSES["gpt2"]
-        if "gpt-neo" in str(model_path):
+        if "gpt-neo" in str(model_path.lower()):
             self.max_history_tokens = 2048 - generate_num
             model_class = GPTNeoForCausalLM
         self.tokenizer = tokenizer_class.from_pretrained(str(self.checkpoint_path))
