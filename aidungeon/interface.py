@@ -1,4 +1,4 @@
-from .getconfig import settings, colors, setting_info
+from .getconfig import settings, setting_info
 from .utils import pad_text
 
 def boolValue(bool):
