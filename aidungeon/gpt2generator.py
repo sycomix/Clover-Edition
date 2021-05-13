@@ -1,4 +1,4 @@
-import os
+import json
 from pathlib import Path
 from typing import Union
 
@@ -249,7 +249,17 @@ class GPT2Generator:
         # Load tokenizer and model
         model_class, tokenizer_class = MODEL_CLASSES["gpt2-experimental"] if settings.getboolean(
             "gpt2_experimental") else MODEL_CLASSES["gpt2"]
-        if "gpt-neo" in str(model_path).lower():
+
+        # Checking 3 places to see if it's a gpt-neo model
+        with open(str(model_path) + "\\config.json") as f:
+            model_config = json.load(f)
+        neo_in_path = "gpt-neo" in str(model_path).lower()
+        neo_in_architectures = "architectures" in model_config and "GPTNeoForCausalLM" in model_config["architectures"]
+        neo_in_model_type = "model_type" in model_config and "gpt_neo" == model_config["model_type"]
+        logger.info(
+            "Looking for GPT-Neo - path:{}, arch:{}, type:{}".format(str(neo_in_path), str(neo_in_architectures), str(neo_in_model_type)))
+
+        if neo_in_path or neo_in_architectures or neo_in_model_type:
             self.max_history_tokens = settings.getint("history-gpt-neo") - generate_num
             model_class = GPTNeoForCausalLM
         
