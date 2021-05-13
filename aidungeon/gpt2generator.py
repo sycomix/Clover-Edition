@@ -35,10 +35,6 @@ def hackyEncode(tokenizer, s):
     return tokenizer('====\n ' + s, verbose=False).input_ids[2:]
 
 
-def hackyWhiteSpaceCutter(prompt):
-    return re.search(r'\s*$', prompt).group(0)
-
-
 def memory_merge(prompt, context, tokenizer, maxHistory=1024):
     assert (prompt + context)
     # print(prompt+context)
@@ -50,7 +46,7 @@ def memory_merge(prompt, context, tokenizer, maxHistory=1024):
         logger.debug("Clamping the amount of prompt tokens.")
         context_tokens = prompt_tokens[-maxHistory:]
     else:
-        context_tokens = hackyEncode(tokenizer, hackyWhiteSpaceCutter(prompt) + context)
+        context_tokens = hackyEncode(tokenizer, context)
         context_tokens = context_tokens[-(maxHistory - len(prompt_tokens)):]
         # logger.debug('DECODED CONTEXT TOKENS: `%r`', tokenizer.convert_ids_to_tokens(context_tokens))
         prompt_tokens.extend(context_tokens)
