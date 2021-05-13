@@ -80,7 +80,7 @@ You can have multiple models installed, but you need at least one.
 | Original Clover Edition | GPT-2 | 1.56 billion | 6 GB | 12 GB | 5 GB | [[torrent](tinyurl.com/pytorch-gpt2-model)] |
 | Collection of 4 models | GPT-2 | 774 million | 3 GB ea | 8 GB | 4 GB | [[mega](https://mega.nz/folder/4e5kRCIB#v7q0ItVjhhGcIqfZOZy9yA)] |
 
-\* For EleutherAI's GPT-Neo-2.7B, Download only `pytorch_model.bin` and make sure it's named that, put it into a new folder named `gpt-neo-2.7b` (case sensitive, see below for the structure), then copy `config.json`, `merges.txt`, and `vocab.json` from one of finetuneanon's models and put them in the same folder.
+\* For EleutherAI's GPT-Neo-2.7B, Download only `pytorch_model.bin` and make sure it's named that, put it into a new folder named `gpt-neo-2.7b` (see below for the structure), then copy `config.json`, `merges.txt`, and `vocab.json` from one of finetuneanon's models and put them in the same folder.
 
 16-Bit models are half the size, and load 20 times faster (probably because they run out of RAM and hit the swap space). I found the original AID2 model (`pytorch-gpt2-xl-aid2-v5`) took 12.6 minutes to load, while the 16 bit version took 37 seconds.
 
