@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 from typing import Union
 
@@ -247,7 +248,7 @@ class GPT2Generator:
             "gpt2_experimental") else MODEL_CLASSES["gpt2"]
 
         # Checking 3 places to see if it's a gpt-neo model
-        with open(str(model_path) + "\\config.json") as f:
+        with open(os.path.join(str(model_path), "config.json")) as f:
             model_config = json.load(f)
         neo_in_path = "gpt-neo" in str(model_path).lower()
         neo_in_architectures = "architectures" in model_config and "GPTNeoForCausalLM" in model_config["architectures"]
