@@ -24,6 +24,8 @@ echo Using an Nvidia GPU requires 6 GB HDD space, 16 GB RAM, and at least 6 GB o
 echo Using only your CPU requires 2 GB HDD space, 16 GB RAM.
 echo Additionally, models require between 6 and 10 GB HDD space each, and you will need at least one.
 echo.
+:: console bell
+echo 
 :selectcuda
 echo 1) Install Nvidia GPU (CUDA) version
 echo 2) Install CPU-only version
@@ -100,6 +102,8 @@ if defined HasWT (goto models)
 echo.
 echo Microsoft Windows Terminal was not found.
 echo It is highly recommended you install it.
+:: console bell
+echo 
 :selectwt
 set /p openwt="Would you like to install Microsoft Windows Terminal now? (y/n) "
 if "%openwt%"=="y" (
@@ -120,4 +124,6 @@ if "%openwt%"=="n" (goto models) else (goto selectwt)
 echo.
 echo You now need to download a model. See README.md for more details and links.
 echo When you have a model, just double-click play.bat to play!
+:: console bell
+echo 
 pause
