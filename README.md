@@ -35,7 +35,7 @@ Also take a look at [AIDungeonPastes](https://aidungeonpastes.github.io/AID2-Art
 
 Officially we only support local installs. We encourage and recommend installing and running the game locally. However since the beginning most people have been playing it for free on Google's servers through their Colab platform. Allegedly it requires no effort to get started. Try [this link](https://colab.research.google.com/drive/1kYVhVeE6z4sUyyKDVxLGrzI4OTV43eEa) and go to the [4chan threads](https://boards.4chan.org/search#/aidungeon%20OR%20%22ai%20dungeon%22) for help and info.
 
-To play with GPU acceleration, you need an Nvidia GPU. (Though some anons claim to have gotten it working with on AMD with ROCm) The original "XL" 1558M parameter model requires at least 4GB of VRAM. Smaller models may consume much less. On CPU, response times vary from about a minute on the XL GPT-2 1558M model, which is slow but usable, to about 6 minutes on GPT-Neo.
+To play with GPU acceleration, you need an Nvidia GPU, although some anons claim to have gotten it working with on AMD with ROCm in Linux. The original "XL" 1558M parameter model requires at least 4GB of VRAM. Smaller models may consume much less. On CPU, response times vary from about a minute on the XL GPT-2 1558M model, which is slow but usable, to about 6 minutes on GPT-Neo.
 
 After any of the following install steps, you must get one of the models.
 
@@ -140,15 +140,20 @@ Contributions are more than welcome. You can fork the thing and send a  [pull re
 ![cry.](images/cry.png)
 
 
-## Model magnet links (for reference)
+## PyTorch Model magnet links (for reference)
 ------------------------
 
-finetuneanon's GPT-Neo-2.7B-horni and horni-ln:
+GPT-Neo, finetuneanon's horni and horni-ln:
 ```
 magnet:?xt=urn:btih:31d956ff4a248dcf914b1b7e474cbac02d70d6a4&dn=gtp-neo-horni
 ```
 
-Original AIDungeon2 Clover Edition GPT-2:
+GPT-2, AIDungeon2 Clover Edition (16-bit):
+```
+magnet:?xt=urn:btih:9c774c51bac64e5bffd481187b86e834839b4141&dn=model%5Fv5%5Fpytorch%5F16bit&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=udp%3A%2F%2Ftracker.pomf.se%3A80%2Fannounce&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce&tr=udp%3A%2F%2Fp4p.arenabg.com%3A1337%2Fannounce&tr=udp%3A%2F%2F9.rarbg.me%3A2710%2Fannounce&tr=udp%3A%2F%2F9.rarbg.to%3A2710%2Fannounce
+```
+
+GPT-2, AIDungeon2 Clover Edition (32-bit):
 ```
 magnet:?xt=urn:btih:17dcfe3d12849db04a3f64070489e6ff5fc6f63f&dn=model_v5_pytorch&tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce&tr=udp%3a%2f%2fopen.stealth.si%3a80%2fannounce&tr=udp%3a%2f%2fp4p.arenabg.com%3a1337%2fannounce&tr=udp%3a%2f%2ftracker.coppersurfer.tk%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.cyberia.is%3a6969%2fannounce&tr=udp%3a%2f%2ftracker.moeking.me%3a6969%2fannounce&tr=udp%3a%2f%2f9.rarbg.me%3a2710%2fannounce&tr=udp%3a%2f%2ftracker3.itzmx.com%3a6961%2fannounce
 ```
