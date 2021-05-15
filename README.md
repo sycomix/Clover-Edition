@@ -97,7 +97,7 @@ Once downloaded, your model folder should look like this:
 ## Playing
 
 - Windows: double-click `play.bat`
-- Linux: `sh play.sh`
+- Linux: `bash play.sh`
 - OS-agnostic install: `python launch.py`
 
 
