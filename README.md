@@ -35,7 +35,7 @@ Also take a look at [AIDungeonPastes](https://aidungeonpastes.github.io/AID2-Art
 
 Officially we only support local installs. We encourage and recommend installing and running the game locally. However since the beginning most people have been playing it for free on Google's servers through their Colab platform. Allegedly it requires no effort to get started. Try [this link](https://colab.research.google.com/drive/1kYVhVeE6z4sUyyKDVxLGrzI4OTV43eEa) and go to the [4chan threads](https://boards.4chan.org/search#/aidungeon%20OR%20%22ai%20dungeon%22) for help and info.
 
-To play with GPU acceleration, you need an Nvidia GPU, although some anons claim to have gotten it working with on AMD with ROCm in Linux. The original "XL" 1558M parameter model requires at least 4GB of VRAM. Smaller models may consume much less. On CPU, response times vary from about a minute on the XL GPT-2 1558M model, which is slow but usable, to about 6 minutes on GPT-Neo.
+To play with GPU acceleration, you need an Nvidia GPU, although some anons claim to have gotten it working with an AMD with ROCm in Linux. The original "XL" 1558M parameter model requires at least 4GB of VRAM. Smaller models may consume much less. On CPU, response times vary from about a minute on the XL GPT-2 1558M model, which is slow but usable, to about 6 minutes on GPT-Neo.
 
 After any of the following install steps, you must get one of the models.
 
