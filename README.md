@@ -103,7 +103,7 @@ Once downloaded, your model folder should look like this:
 
 ## Color support on Windows
 
-Install [Windows Terminal](https://aka.ms/terminal) (recommended) or [cmder](https://cmder.net/) and use that as your terminal.
+Install [Windows Terminal](https://aka.ms/terminal) (recommended), [cmder](https://cmder.net/), or [hyper](https://hyper.is/), and use that as your terminal. If you installed Clover Edition with `install.bat`, you might already have Windows Terminal installed.
 
 
 ## Datasets and fine-tuning the AI
