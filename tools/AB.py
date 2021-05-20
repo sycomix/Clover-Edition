@@ -2,6 +2,7 @@ import configparser
 import torch
 from os import scandir
 from random import choice
+from random import shuffle
 from gpt2generator import GPT2Generator
 from numpy.random import beta
 from numpy import greater
@@ -42,6 +43,7 @@ while True:
     responses=[]
     genResponses(A, settings.getint('num-samples'), responses, 'A')
     genResponses(B, settings.getint('num-samples'), responses, 'B')
+    shuffle(responses)
     for r in responses:
         print(r['prompt']+r['output'])
         while True:
