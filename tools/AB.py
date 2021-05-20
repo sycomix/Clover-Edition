@@ -1,5 +1,6 @@
 import configparser
 import torch
+import gc
 from os import scandir
 from random import choice
 from random import shuffle
@@ -16,6 +17,8 @@ B = config['B']
 settings = config['All']
 files=list(scandir("AB-prompts"))
 def genResponses(settings, n, responses, name):
+    gc.collect()
+    torch.cuda.empty_cache()
     generator = GPT2Generator(
             model_path = settings['model-path'],
             dtype = torch.float16,
@@ -36,6 +39,9 @@ def genResponses(settings, n, responses, name):
                 repetition_penalty=settings.getfloat('repetition-penalty')
             )
         })
+    generator=None
+    gc.collect()
+    torch.cuda.empty_cache()
 
 
 totals={'A':{'y':0, 'n':0}, 'B':{'y':0, 'n':0}}
