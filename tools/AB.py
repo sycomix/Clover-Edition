@@ -26,6 +26,8 @@ def genResponses(settings, n, responses, name):
     )
     generator.top_p_first=settings.getboolean('top-p-first')
     for i in range(n):
+        gc.collect()
+        torch.cuda.empty_cache()
         with open(choice(files)) as file:
             prompt=file.read()
         responses.append({
