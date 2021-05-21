@@ -1,59 +1,25 @@
-import configparser
-import torch
-import gc
-from os import scandir
-from random import choice
+import json
 from random import shuffle
-from gpt2generator import GPT2Generator
 from numpy.random import beta
 from numpy import greater
 from numpy import mean
-#from numpy import std
+import subprocess
 samplesize=1024*16
-config = configparser.ConfigParser()
-config.read('AB.ini')
-A = config['A']
-B = config['B']
-settings = config['All']
-files=list(scandir("AB-prompts"))
-def genResponses(settings, n, responses, name):
-    gc.collect()
-    torch.cuda.empty_cache()
-    generator = GPT2Generator(
-            model_path = settings['model-path'],
-            dtype = torch.float16,
-            max_history_tokens=settings.getint('max-history-tokens')
-    )
-    generator.top_p_first=settings.getboolean('top-p-first')
-    for i in range(n):
-        gc.collect()
-        torch.cuda.empty_cache()
-        with open(choice(files)) as file:
-            prompt=file.read()
-        responses.append({
-            'name':name,
-            'prompt':prompt, 
-            'output':generator.generate(
-                context=prompt,
-                temperature=settings.getfloat('temp'),
-                top_p = settings.getfloat('top-p'),
-                top_k = settings.getint('top-keks'),
-                repetition_penalty=settings.getfloat('repetition-penalty')
-            )
-        })
-    generator=None
-    gc.collect()
-    torch.cuda.empty_cache()
-
 
 totals={'A':{'y':0, 'n':0}, 'B':{'y':0, 'n':0}}
 while True:
-    responses=[]
-    genResponses(A, settings.getint('num-samples'), responses, 'A')
-    genResponses(B, settings.getint('num-samples'), responses, 'B')
+    #a massive hack to avoid VRAM leak in torch
+    responses = json.loads(subprocess.check_output(['python', 'genresponses.py', 'A']))
+    lenres = len(responses)
+    responses.extend(json.loads(subprocess.check_output(['python', 'genresponses.py', 'B'])))
+    assert(len(responses)==lenres*2)
+
+    print("\a")
     shuffle(responses)
     for r in responses:
-        print(r['prompt']+r['output'])
+        with open(r['prompt']) as file:
+            p=file.read()
+        print(p+r['output'])
         while True:
             v=input('Good? y/n:')
             if v=='y' or v=='n':
