@@ -16,7 +16,7 @@ config = configparser.ConfigParser()
 config.read('AB.ini')
 A = config['A']
 B = config['B']
-settings = config['All']
+generalSettings = config['All']
 def genResponses(settings, n, name):
     responses = []
     files=list(Path("AB-prompts").iterdir())
@@ -57,7 +57,7 @@ name = argv[1]
 if name == 'A':
     testconfig=A
 elif name == 'B':
-    testconfig='B'
+    testconfig=B
 else:
     assert False,'input not A or B'
-print(json.dumps(genResponses(testconfig, settings.getint('num-samples'), name)))
+print(json.dumps(genResponses(testconfig, generalSettings.getint('num-samples'), name)))
