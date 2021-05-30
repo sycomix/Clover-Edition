@@ -50,6 +50,12 @@ After any of the following install steps, you must get one of the models.
 - Users have reported that some anti-virus (specifically Kaspersky) isn't happy with the install.bat script. Please whitelist or temporarily disable anti-virus when installing.
 - You can partially uninstall by deleting the `venv/` folder, and fully uninstall by just deleting the entire Clover Edition folder.
 
+### Windows 7+ install
+
+1. Visit [the repo for the Clover Edition installer project](https://github.com/AIDungeonWiXAnon/AID2-Installer-Project/releases/latest) and download the latest executable.
+2. Navigate to your folder for your downloads
+3. Run the executable (`Clover.Edition.Installer.exe`) and follow on-screen prompts.
+
 ### Linux install
 
 1. Install [Python](https://www.python.org/downloads/) or use your package manager (e.g. `sudo apt-get install python3` or `sudo yum install python3` or something).
@@ -97,6 +103,7 @@ Once downloaded, your model folder should look like this:
 ## Playing
 
 - Windows 10: double-click `play.bat`
+- Windows 7+: `python launch.py`
 - Linux: `bash play.sh`
 - OS-agnostic install: `python launch.py`
 
