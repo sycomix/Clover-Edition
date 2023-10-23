@@ -28,7 +28,7 @@ def genResponses(settings, n, name):
             max_history_tokens=settings.getint('max-history-tokens')
     )
     generator.top_p_first=settings.getboolean('top-p-first')
-    for i in range(n):
+    for _ in range(n):
         torch.cuda.synchronize()
         gc.collect()
         torch.cuda.empty_cache()

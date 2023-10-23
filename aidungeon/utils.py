@@ -13,7 +13,9 @@ from shutil import get_terminal_size
 def getTermWidth():
     termWidth = get_terminal_size()[0]
     if termWidth < 5:
-        logger.warning("Your detected terminal width is: "+str(get_terminal_size()[0]))
+        logger.warning(
+            f"Your detected terminal width is: {str(get_terminal_size()[0])}"
+        )
         termWidth = 999999999
     return termWidth
 
@@ -63,25 +65,24 @@ if in_colab():
     logger.warning("Colab mode enabled, disabling line clearing and readline to avoid colab bugs.")
 else:
     try:
-        if settings.getboolean('prompt-toolkit'):
-            from .inline_editor import edit_multiline
-            from prompt_toolkit import prompt as ptprompt
-            from prompt_toolkit import print_formatted_text
-            from prompt_toolkit.styles import Style
-            from prompt_toolkit.formatted_text import to_formatted_text, HTML
-        else:
+        if not settings.getboolean('prompt-toolkit'):
             raise ModuleNotFoundError
 
+        from .inline_editor import edit_multiline
+        from prompt_toolkit import prompt as ptprompt
+        from prompt_toolkit import print_formatted_text
+        from prompt_toolkit.styles import Style
+        from prompt_toolkit.formatted_text import to_formatted_text, HTML
         logger.info(
             'Python Prompt Toolkit has been imported. This enables a number of editing features but may cause bugs for colab users.')
-    except (ImportError, ModuleNotFoundError):
+    except ImportError:
         try:
             settings['prompt-toolkit'] = "off"
             import readline
 
             logger.info(
                 'readline has been imported. This enables a number of editting features but may cause bugs for colab users.')
-        except (ImportError, ModuleNotFoundError):
+        except ImportError:
             pass
 
 
@@ -115,7 +116,7 @@ def format_result(text):
 
 def end_sentence(text):
     if text[-1] not in [".", "?", "!"]:
-        text = text + "."
+        text = f"{text}."
     return text
 
 
@@ -126,33 +127,30 @@ def select_file(p, e, d=0):
     e: The extension to filter based on.
     d: The path depth. Used for knowing when to go back or when to abort a file selection. Do not set this yourself.
     """
-    if p.is_dir():
-        t_dirs = sorted([x for x in p.iterdir() if x.is_dir()])
-        t_files = sorted([x for x in p.iterdir() if x.is_file() and x.name.endswith(e)])
-        files = t_dirs + t_files
-        list_items(
-            ["(Random)"] +
-            [f.name[:-len(e)] if f.is_file() else f.name + "/" for f in files] +
-            ["(Cancel)" if d == 0 else "(Back)"],
-            "menu"
-        )
-        count = len(files) + 1
-        i = input_number(count)
-        if i == 0:
-            try:
-                i = random.randrange(1, count-1)
-            except ValueError:
-                i = 1
-        if i == count:
-            if d == 0:
-                output("Action cancelled. ", "message")
-                return None
-            else:
-                return select_file(p.parent, e, d-1)
-        else:
-            return select_file(files[i-1], e, d+1)
-    else:
+    if not p.is_dir():
         return p
+    t_dirs = sorted([x for x in p.iterdir() if x.is_dir()])
+    t_files = sorted([x for x in p.iterdir() if x.is_file() and x.name.endswith(e)])
+    files = t_dirs + t_files
+    list_items(
+        ["(Random)"]
+        + [f.name[: -len(e)] if f.is_file() else f"{f.name}/" for f in files]
+        + ["(Cancel)" if d == 0 else "(Back)"],
+        "menu",
+    )
+    count = len(files) + 1
+    i = input_number(count)
+    if i == 0:
+        try:
+            i = random.randrange(1, count-1)
+        except ValueError:
+            i = 1
+    if i != count:
+        return select_file(files[i-1], e, d+1)
+    if d != 0:
+        return select_file(p.parent, e, d-1)
+    output("Action cancelled. ", "message")
+    return None
 
 
 def fill_text(text, width):
@@ -202,8 +200,8 @@ def output(text1, col1=None,
         col1 = colors[col1] if col1 and colors[col1] and colors[col1][0].isdigit() else None
         col2 = colors[col2] if col2 and colors[col2] and colors[col2][0].isdigit() else None
 
-        clb1 = "\x1B[{}m".format(col1) if col1 else ""
-        clb2 = "\x1B[{}m".format(col2) if col2 else ""
+        clb1 = f"\x1B[{col1}m" if col1 else ""
+        clb2 = f"\x1B[{col2}m" if col2 else ""
         cle1 = "\x1B[0m" if col1 else ""
         cle2 = "\x1B[0m" if col2 else ""
         text1 = clb1 + text1 + cle1
@@ -231,16 +229,18 @@ def output(text1, col1=None,
 
 def input_bool(prompt, col1="default", default: bool = False):
     val = input_line(prompt, col1).strip().lower()
-    if not val or val[0] not in "yn":
-        return default
-    return val[0] == "y"
+    return default if not val or val[0] not in "yn" else val[0] == "y"
 
 def input_line(str, col1="default", default=""):
     if use_ptoolkit() and ptcolors['displaymethod'] == "prompt-toolkit":
         col1 = ptcolors[col1] if col1 and ptcolors[col1] else ""
         val = ptprompt(to_formatted_text(str, col1), default=default)
     else:
-        clb1 = "\x1B[{}m".format(colors[col1]) if col1 and colors[col1] and colors[col1][0].isdigit() else ""
+        clb1 = (
+            f"\x1B[{colors[col1]}m"
+            if col1 and colors[col1] and colors[col1][0].isdigit()
+            else ""
+        )
         cle1 = "\x1B[0m" if col1 and colors[col1] and colors[col1][0].isdigit() else ""
         val = input(clb1 + str + cle1)
         print("\x1B[0m", end="")
@@ -256,7 +256,7 @@ def input_number(max_choice, default=0):
     val = input_line(f"Enter a number from above (default {default}):", "selection-prompt")
     if not val:
         return default
-    elif not re.match("^\d+$", val) or 0 > int(val) or int(val) > max_choice:
+    elif not re.match("^\d+$", val) or int(val) < 0 or int(val) > max_choice:
         output("Invalid choice. ", "error")
         return input_number(max_choice)
     else:
@@ -278,7 +278,7 @@ websites = "[.](com|ca|gg|tv|co|net|org|io|gov)"
 
 def sentence_split(text):
     """Splits a paragraph of text into a list of sentences within the text."""
-    text = " " + text + "  "
+    text = f" {text}  "
     text = text.replace("...","<3elp><stop>")
     text = text.replace("..","<2elp><stop>")
     text = text.replace("\n"," ")
@@ -286,12 +286,16 @@ def sentence_split(text):
     text = re.sub(websites,"<prd>\\1",text)
     if "Ph.D" in text: text = text.replace("Ph.D.","Ph<prd>D<prd>")
     text = re.sub("\s" + alphabets + "[.] "," \\1<prd> ",text)
-    text = re.sub(acronyms+" "+starters,"\\1<stop> \\2",text)
-    text = re.sub(alphabets + "[.]" + alphabets + "[.]" + alphabets + "[.]","\\1<prd>\\2<prd>\\3<prd>",text)
-    text = re.sub(alphabets + "[.]" + alphabets + "[.]","\\1<prd>\\2<prd>",text)
-    text = re.sub(" "+suffixes+"[.] "+starters," \\1<stop> \\2",text)
-    text = re.sub(" "+suffixes+"[.]"," \\1<prd>",text)
-    text = re.sub(" " + alphabets + "[.]"," \\1<prd>",text)
+    text = re.sub(f"{acronyms} {starters}", "\\1<stop> \\2", text)
+    text = re.sub(
+        f"{alphabets}[.]{alphabets}[.]{alphabets}[.]",
+        "\\1<prd>\\2<prd>\\3<prd>",
+        text,
+    )
+    text = re.sub(f"{alphabets}[.]{alphabets}[.]", "\\1<prd>\\2<prd>", text)
+    text = re.sub(f" {suffixes}[.] {starters}", " \\1<stop> \\2", text)
+    text = re.sub(f" {suffixes}[.]", " \\1<prd>", text)
+    text = re.sub(f" {alphabets}[.]", " \\1<prd>", text)
     text = text.replace(".",".<stop>")
     text = text.replace("?","?<stop>")
     text = text.replace("!","!<stop>")
@@ -316,7 +320,7 @@ def list_items(items, col='menu', start=0, end=None, wrap=False):
     i = start
     digits = len(str(len(items)-1))
     for s in items:
-        output(str(i).rjust(digits) + ") " + s, col, end='', wrap=wrap)
+        output(f"{str(i).rjust(digits)}) {s}", col, end='', wrap=wrap)
         i += 1
     if end is not None:
         output('', end=end, wrap=wrap)
@@ -332,10 +336,14 @@ def _get_prefix(first_string ,second_string):
     if first_string == second_string:
         return first_string
     maximum_length = min(len(first_string), len(second_string))
-    for i in range(0, maximum_length):
-        if not first_string[i] == second_string[i]:
-            return first_string[0:i]
-    return first_string[0:maximum_length]
+    return next(
+        (
+            first_string[:i]
+            for i in range(0, maximum_length)
+            if first_string[i] != second_string[i]
+        ),
+        first_string[:maximum_length],
+    )
 
 
 def get_similarity(first_string, second_string, scaling=0.1):
@@ -351,9 +359,7 @@ def get_similarity(first_string, second_string, scaling=0.1):
         return 1.0
 
     maximum_matching_distance = (max(first_string_length, second_string_length) // 2) - 1
-    if maximum_matching_distance < 0:
-        maximum_matching_distance = 0
-
+    maximum_matching_distance = max(maximum_matching_distance, 0)
     for i in range (first_string_length):
         start = max(0, i - maximum_matching_distance)
         end = min(i + maximum_matching_distance + 1, second_string_length)
@@ -437,9 +443,8 @@ def cut_trailing_quotes(text):
     num_quotes = text.count('"')
     if num_quotes % 2 == 0:
         return text
-    else:
-        final_ind = text.rfind('"')
-        return text[:final_ind]
+    final_ind = text.rfind('"')
+    return text[:final_ind]
 
 
 def split_first_sentence(text):
@@ -451,9 +456,9 @@ def split_first_sentence(text):
     elif first_period > 0:
         split_point = first_period + 1
     else:
-        split_point = text[0:20]
+        split_point = text[:20]
 
-    return text[0:split_point], text[split_point:]
+    return text[:split_point], text[split_point:]
 
 
 def cut_trailing_action(text):
@@ -465,7 +470,7 @@ def cut_trailing_action(text):
         or "you say" in last_line
         or "You say" in last_line
     ) and len(lines) > 1:
-        text = "\n".join(lines[0:-1])
+        text = "\n".join(lines[:-1])
     return text
 
 
@@ -497,10 +502,7 @@ def clean_suggested_action(result_raw, min_length=4):
 
 def fix_trailing_quotes(text):
     num_quotes = text.count('"')
-    if num_quotes % 2 == 0:
-        return text
-    else:
-        return text + '"'
+    return text if num_quotes % 2 == 0 else f'{text}"'
 
 
 def cut_trailing_sentence(text, allow_action=False):
@@ -528,9 +530,8 @@ def cut_trailing_sentence(text, allow_action=False):
 
 def replace_outside_quotes(text, current_word, repl_word):
     text = standardize_punctuation(text)
-    reg_expr = re.compile(current_word + '(?=([^"]*"[^"]*")*[^"]*$)')
-    output = reg_expr.sub(repl_word, text)
-    return output
+    reg_expr = re.compile(f'{current_word}(?=([^"]*"[^"]*")*[^"]*$)')
+    return reg_expr.sub(repl_word, text)
 
 
 def is_first_person(text):
@@ -538,14 +539,11 @@ def is_first_person(text):
     for pair in first_to_second_mappings:
         variations = mapping_variation_pairs(pair)
         for variation in variations:
-            reg_expr = re.compile(variation[0] + '(?=([^"]*"[^"]*")*[^"]*$)')
+            reg_expr = re.compile(f'{variation[0]}(?=([^"]*"[^"]*")*[^"]*$)')
             matches = re.findall(reg_expr, text)
             count += len(matches)
 
-    if count > 3:
-        return True
-    else:
-        return False
+    return count > 3
 
 
 def is_second_person(text):
@@ -553,14 +551,11 @@ def is_second_person(text):
     for pair in second_to_first_mappings:
         variations = mapping_variation_pairs(pair)
         for variation in variations:
-            reg_expr = re.compile(variation[0] + '(?=([^"]*"[^"]*")*[^"]*$)')
+            reg_expr = re.compile(f'{variation[0]}(?=([^"]*"[^"]*")*[^"]*$)')
             matches = re.findall(reg_expr, text)
             count += len(matches)
 
-    if count > 3:
-        return True
-    else:
-        return False
+    return count > 3
 
 
 def capitalize(word):
@@ -568,19 +563,17 @@ def capitalize(word):
 
 
 def mapping_variation_pairs(mapping):
-    mapping_list = []
-    mapping_list.append((" " + mapping[0] + " ", " " + mapping[1] + " "))
-    mapping_list.append(
-        (" " + capitalize(mapping[0]) + " ", " " + capitalize(mapping[1]) + " ")
-    )
-
+    mapping_list = [
+        (f" {mapping[0]} ", f" {mapping[1]} "),
+        (f" {capitalize(mapping[0])} ", f" {capitalize(mapping[1])} "),
+    ]
     # Change you it's before a punctuation
     if mapping[0] == "you":
         mapping = ("you", "me")
-    mapping_list.append((" " + mapping[0] + ",", " " + mapping[1] + ","))
-    mapping_list.append((" " + mapping[0] + "\?", " " + mapping[1] + "\?"))
-    mapping_list.append((" " + mapping[0] + "\!", " " + mapping[1] + "\!"))
-    mapping_list.append((" " + mapping[0] + "\.", " " + mapping[1] + "."))
+    mapping_list.append((f" {mapping[0]},", f" {mapping[1]},"))
+    mapping_list.append((f" {mapping[0]}" + "\?", f" {mapping[1]}" + "\?"))
+    mapping_list.append((f" {mapping[0]}" + "\!", f" {mapping[1]}" + "\!"))
+    mapping_list.append((f" {mapping[0]}" + "\.", f" {mapping[1]}."))
 
     return mapping_list
 
@@ -663,7 +656,7 @@ def standardize_punctuation(text):
 
 
 def first_to_second_person(text):
-    text = " " + text
+    text = f" {text}"
     text = standardize_punctuation(text)
     if text[-1] not in [".", "?", "!"]:
         text += "."
@@ -675,7 +668,7 @@ def first_to_second_person(text):
 
 
 def second_to_first_person(text):
-    text = " " + text
+    text = f" {text}"
     text = standardize_punctuation(text)
     if text[-1] not in [".", "?", "!"]:
         text += "."

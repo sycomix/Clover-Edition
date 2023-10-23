@@ -40,7 +40,7 @@ def get_generator():
                         model = models[model_selection]
                 else:
                     model = models[0]
-                    logger.info("Using model: " + str(model))
+                    logger.info(f"Using model: {str(model)}")
                 assert isinstance(model, Path)
             generator = GPT2Generator(
                 model_path=model,
@@ -71,14 +71,6 @@ def get_generator():
 
 
 def d20ify_speech(action, d):
-    adjectives_say_d01 = [
-        "mumble",
-        "prattle",
-        "incoherently say",
-        "whine",
-        "ramble",
-        "wheeze",
-    ]
     adjectives_say_d20 = [
         "successfully",
         "persuasively",
@@ -89,48 +81,56 @@ def d20ify_speech(action, d):
         "aptly",
     ]
     if d == 1:
+        adjectives_say_d01 = [
+            "mumble",
+            "prattle",
+            "incoherently say",
+            "whine",
+            "ramble",
+            "wheeze",
+        ]
         adjective = random.sample(adjectives_say_d01, 1)[0]
-        action = "You " + adjective + " " + action
+        action = f"You {adjective} {action}"
     elif d == 20:
         adjective = random.sample(adjectives_say_d20, 1)[0]
-        action = "You " + adjective + " say " + action
+        action = f"You {adjective} say {action}"
     else:
-        action = "You say " + action
+        action = f"You say {action}"
     return action
 
 
 def d20ify_action(action, d):
-    adjective_action_d01 = [
-        "disastrously",
-        "incompetently",
-        "dangerously",
-        "stupidly",
-        "horribly",
-        "miserably",
-        "sadly",
-    ]
-    adjective_action_d20 = [
-        "successfully",
-        "expertly",
-        "conclusively",
-        "adroitly",
-        "aptly",
-        "masterfully",
-    ]
     if d == 1:
+        adjective_action_d01 = [
+            "disastrously",
+            "incompetently",
+            "dangerously",
+            "stupidly",
+            "horribly",
+            "miserably",
+            "sadly",
+        ]
         adjective = random.sample(adjective_action_d01, 1)[0]
-        action = "You " + adjective + " fail to " + action
+        action = f"You {adjective} fail to {action}"
     elif d < 5:
-        action = "You attempt to " + action
+        action = f"You attempt to {action}"
     elif d < 10:
-        action = "You try to " + action
+        action = f"You try to {action}"
     elif d < 15:
-        action = "You start to " + action
+        action = f"You start to {action}"
     elif d < 20:
-        action = "You " + action
+        action = f"You {action}"
     else:
+        adjective_action_d20 = [
+            "successfully",
+            "expertly",
+            "conclusively",
+            "adroitly",
+            "aptly",
+            "masterfully",
+        ]
         adjective = random.sample(adjective_action_d20, 1)[0]
-        action = "You " + adjective + " " + action
+        action = f"You {adjective} {action}"
     return action
 
 
@@ -147,16 +147,16 @@ def settings_menu():
             return
         else:
             key = all_settings[i]
-            output(key + ": " + setting_info[key][0], "menu")
-            output("Default: " + str(setting_info[key][1]), "menu", beg='')
-            output("Current: " + str(settings[key]), "menu", beg='')
+            output(f"{key}: {setting_info[key][0]}", "menu")
+            output(f"Default: {str(setting_info[key][1])}", "menu", beg='')
+            output(f"Current: {str(settings[key])}", "menu", beg='')
             new_value = input_line("Enter the new value: ", "query")
             if len(new_value.strip()) == 0:
                 output("Invalid value; cancelling. ", "error")
                 continue
-            output(key + ": " + setting_info[key][0], "menu")
-            output("Current: " + str(settings[key]), "menu", beg='')
-            output("New: " + str(new_value), "menu", beg='')
+            output(f"{key}: {setting_info[key][0]}", "menu")
+            output(f"Current: {str(settings[key])}", "menu", beg='')
+            output(f"New: {str(new_value)}", "menu", beg='')
             output("Saving an invalid option will corrupt file! ", "message")
             if input_bool("Change setting? (y/N): ", "selection-prompt"):
                 settings[key] = new_value
@@ -171,12 +171,8 @@ def load_prompt(f, format=True):
     with f.open('r', encoding="utf-8") as file:
         try:
             lines = file.read().strip().split('\n')
-            if len(lines) < 2:
-                context = lines[0]
-                prompt = ""
-            else:
-                context = lines[0]
-                prompt = ' '.join(lines[1:])
+            prompt = "" if len(lines) < 2 else ' '.join(lines[1:])
+            context = lines[0]
             if format:
                 return format_result(context), format_result(prompt)
             else:
@@ -223,7 +219,7 @@ def save_story(story, file_override=None, autosave=False):
     savefile = re.sub(r"^ *saves *[/\\] *(.*) *(?:\.json)?", "\\1", savefile).strip()
     story.savefile = savefile
     savedata = story.to_json()
-    finalpath = "saves/" + savefile + ".json"
+    finalpath = f"saves/{savefile}.json"
     try:
         os.makedirs(os.path.dirname(finalpath), exist_ok=True)
     except OSError:
@@ -233,7 +229,7 @@ def save_story(story, file_override=None, autosave=False):
         try:
             f.write(savedata)
             if not autosave:
-                output("Successfully saved to " + savefile, "message")
+                output(f"Successfully saved to {savefile}", "message")
         except IOError:
             if not autosave:
                 output("Unable to write to file; aborting. ", "error")
@@ -281,13 +277,12 @@ def alter_text(text):
                 i = input_number(len(sentences), default=-1)
                 if i == len(sentences):
                     break
-                else:
-                    output(sentences[i], 'menu')
-                    res = input_line("Enter the altered sentence: ", 'menu').strip()
-                    if len(res) == 0:
-                        output("Invalid sentence entered: returning to previous menu. ", 'error')
-                        continue
-                    sentences[i] = res
+                output(sentences[i], 'menu')
+                res = input_line("Enter the altered sentence: ", 'menu').strip()
+                if len(res) == 0:
+                    output("Invalid sentence entered: returning to previous menu. ", 'error')
+                    continue
+                sentences[i] = res
         elif i == 1:
             while True:
                 output("Choose the sentence you want to remove.", "menu")
@@ -305,12 +300,11 @@ def alter_text(text):
                 i = input_number(maxn, default=-1)
                 if i == maxn:
                     break
-                else:
-                    res = input_line("Enter the new sentence: ", 'menu').strip()
-                    if len(res) == 0:
-                        output("Invalid sentence entered: returning to previous menu. ", 'error')
-                        continue
-                    sentences.insert(i, res)
+                res = input_line("Enter the new sentence: ", 'menu').strip()
+                if len(res) == 0:
+                    output("Invalid sentence entered: returning to previous menu. ", 'error')
+                    continue
+                sentences.insert(i, res)
         elif i == 3:
             output(" ".join(sentences), 'menu')
             res = input_line("Enter the new altered prompt: ", 'menu').strip()
@@ -343,8 +337,7 @@ class GameManager:
         new_game_option = input_number(3)
 
         if new_game_option == 0:
-            prompt_file = select_file(Path("prompts"), ".txt")
-            if prompt_file:
+            if prompt_file := select_file(Path("prompts"), ".txt"):
                 self.context, self.prompt = load_prompt(prompt_file)
             else:
                 return False
@@ -365,13 +358,12 @@ class GameManager:
             filename = re.sub("-$", "", re.sub("^-", "", re.sub("[^a-zA-Z0-9_-]+", "-", filename)))
             if filename != "":
                 try:
-                    with open(Path("prompts", filename + ".txt"), "w", encoding="utf-8") as f:
+                    with open(Path("prompts", f"{filename}.txt"), "w", encoding="utf-8") as f:
                         f.write(self.context + "\n" + self.prompt)
                 except IOError:
                     output("Permission error! Unable to save custom prompt. ", "error")
         elif new_game_option == 2:
-            story_file = select_file(Path("saves"), ".json")
-            if story_file:
+            if story_file := select_file(Path("saves"), ".json"):
                 self.story, self.context, self.prompt = load_story(story_file, self.generator)
             else:
                 return False
@@ -423,9 +415,7 @@ class GameManager:
             if args[0] in settings:
                 curr_setting_val = settings[args[0]]
                 output(
-                    "Current Value of {}: {}     Changing to: {}".format(
-                        args[0], curr_setting_val, args[1]
-                    )
+                    f"Current Value of {args[0]}: {curr_setting_val}     Changing to: {args[1]}"
                 )
                 output("Saving an invalid option will corrupt file! ", "error")
                 if input_bool("Save setting? (y/N): ", "selection-prompt"):
@@ -514,7 +504,7 @@ class GameManager:
                 memory = memory.strip('!')
                 memory = memory.strip('?')
                 self.story.memory.append(memory[0].upper() + memory[1:] + ".")
-                output("You remember " + memory + ". ", "message")
+                output(f"You remember {memory}. ", "message")
             else:
                 output("Please enter something valid to remember. ", "error")
 
@@ -525,10 +515,9 @@ class GameManager:
                 i = input_number(len(self.story.memory), default=-1)
                 if i == len(self.story.memory):
                     break
-                else:
-                    self.story.memory[i] = alter_text(self.story.memory[i])
-                    if self.story.memory[i] == 0:
-                        del self.story.memory[i]
+                self.story.memory[i] = alter_text(self.story.memory[i])
+                if self.story.memory[i] == 0:
+                    del self.story.memory[i]
 
         elif command == "memswap":
             while True:
@@ -557,8 +546,7 @@ class GameManager:
             save_story(self.story)
 
         elif command == "load":
-            story_file = select_file(Path("saves"), ".json")
-            if story_file:
+            if story_file := select_file(Path("saves"), ".json"):
                 tstory, tcontext, tprompt = load_story(story_file, self.generator)
                 if tstory:
                     output("Loading story...", "message")
@@ -592,12 +580,12 @@ class GameManager:
             result = alter_text(self.story.results[-1])
             self.story.results[-1] = ""
             output("Regenerating result...", "message")
-            result += ' ' + self.story.act(result, record=False)
+            result += f' {self.story.act(result, record=False)}'
             self.story.results[-1] = result
             self.story.print_last()
 
         else:
-            output("Invalid command: " + command, "error")
+            output(f"Invalid command: {command}", "error")
         return False
 
     def process_action(self, action, suggested_actions=[]) -> bool:
@@ -609,17 +597,15 @@ class GameManager:
         """
         action = format_input(action)
 
-        story_insert_regex = re.search("^(?: *you +)?! *(.*)$", action, flags=re.I)
-
-        # If the player enters a story insert.
-        if story_insert_regex:
+        if story_insert_regex := re.search(
+            "^(?: *you +)?! *(.*)$", action, flags=re.I
+        ):
             action = story_insert_regex.group(1)
             if not action or len(action.strip()) == 0:
                 output("Invalid story insert. ", "error")
                 return False
             output(format_result(action), "user-text")
 
-        # If the player enters a real action
         elif action != "":
             # Roll a die. We'll use it later if action-d20 is enabled.
             d = random.randint(1, 20)
@@ -636,14 +622,14 @@ class GameManager:
             if sugg_action_regex:
                 action = sugg_action_regex.group(1)
                 if action in [str(i) for i in range(len(suggested_actions))]:
-                    action = "You " + suggested_actions[int(action)].strip()
+                    action = f"You {suggested_actions[int(action)].strip()}"
 
             elif user_speech_regex:
                 action = user_speech_regex.group(1)
                 if settings.getboolean("action-d20"):
                     action = d20ify_speech(action, d)
                 else:
-                    action = "You say " + action
+                    action = f"You say {action}"
                 action = end_sentence(action)
 
             elif user_action_regex:
@@ -651,7 +637,7 @@ class GameManager:
                 if settings.getboolean("action-d20"):
                     action = d20ify_action(action, d)
                 else:
-                    action = "You " + action
+                    action = f"You {action}"
                 action = end_sentence(action)
 
             # If the user enters nothing but leaves "you", treat it like an empty action (continue)
@@ -659,7 +645,7 @@ class GameManager:
                 action = ""
             else:
                 # Prompt the user with the formatted action
-                output("> " + format_result(action), "transformed-user-text")
+                output(f"> {format_result(action)}", "transformed-user-text")
 
         if action == "":
             output("Continuing...", "message")
@@ -709,15 +695,15 @@ class GameManager:
                     if len(suggested_action.strip()) > 0:
                         j = len(suggested_actions)
                         suggested_actions.append(suggested_action)
-                        suggestion = "{}) {}".format(j, suggested_action)
+                        suggestion = f"{j}) {suggested_action}"
                         action_suggestion_lines += \
-                            output(suggestion, "selection-value", beg='' if i != 0 else None)
+                                output(suggestion, "selection-value", beg='' if i != 0 else None)
 
             bell()
             print()
 
             if use_ptoolkit():
-                action = input_line("> ", "main-prompt", default="%s" % "You ")
+                action = input_line("> ", "main-prompt", default='You ')
             else:
                 action = input_line("> You ", "main-prompt")
 
@@ -725,18 +711,14 @@ class GameManager:
             if act_alts and not in_colab():
                 clear_lines(action_suggestion_lines + 2)
 
-            # Users can type in "/command", or "You /command" if prompt_toolkit is on and they left the "You" in
-            cmd_regex = re.search(r"^(?: *you *)?/([^ ]+) *(.*)$", action, flags=re.I)
-
-            # If this is a command
-            if cmd_regex:
+            if cmd_regex := re.search(
+                r"^(?: *you *)?/([^ ]+) *(.*)$", action, flags=re.I
+            ):
                 if self.process_command(cmd_regex):  # Go back to the menu
                     return
 
-            # Otherwise this is just a normal action.
-            else:
-                if self.process_action(action, suggested_actions):  # End of story
-                    return
+            elif self.process_action(action, suggested_actions):  # End of story
+                return
 
             # Autosave after every input from the user (if it's enabled)
             if settings.getboolean("autosave"):

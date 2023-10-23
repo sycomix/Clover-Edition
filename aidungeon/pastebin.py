@@ -13,7 +13,7 @@ def filename(s):
     fname2 = fname
     while fname2 in fnamesSoFar:
         n += 1
-        fname2 = fname + "-" + str(n)
+        fname2 = f"{fname}-{n}"
     fnamesSoFar[fname2] = True
     return fname2
 
@@ -24,9 +24,15 @@ except error.HTTPError as e:
     if e.code == 404:
         output("Unable to find pastebin for scraping.", "error")
     else:
-        output("Unable to load pastebin for custom prompts. Error code: {}".format(e.code), "error")
+        output(
+            f"Unable to load pastebin for custom prompts. Error code: {e.code}",
+            "error",
+        )
 except error.URLError as e:
-    output("Unexpected error while trying to load pastebin prompts! Error code: {}".format(e.code), "error")
+    output(
+        f"Unexpected error while trying to load pastebin prompts! Error code: {e.code}",
+        "error",
+    )
 paste = re.sub(r'\nTAGS:.*\n', '\n', paste)
 #pipe is never used in paste so use it as a seperator
 paste = re.sub("=====+", "|", paste)
@@ -42,13 +48,10 @@ for sect in sections[2:][:-1]:
         print(category)
     except IOError:
         output("Permission error! Unable to create directory for custom prompts.", "error")
-    for story in [x for x in filter(None, sect.split("\n\n"))][1:]:
+    for story in list(filter(None, sect.split("\n\n")))[1:]:
         title = re.search(r"^\(([^\)]+)", story)
-        if bool(title):
-            title = title.group(1)
-        else:
-            title = story[:30]
-        title = filename(title) + ".txt"
+        title = title.group(1) if bool(title) else story[:30]
+        title = f"{filename(title)}.txt"
         with Path("prompts", category, title).open("w", encoding="UTF-8") as f:
             try:
                 f.write(re.sub(r"^\([^\)]+\)\n", "", story))

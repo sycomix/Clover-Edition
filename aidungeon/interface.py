@@ -6,10 +6,10 @@ def boolValue(bool):
 
 def instructions():
     print('\n' +
-          'AID2: Clover Edition Instructions: \n' +
-          '  Enter actions starting with a verb ex. "go to the tavern" or "attack the orc."\n' +
-          '  To speak enter say "(thing you want to say)" or just "(thing you want to say)"\n' +
-		  '  To insert your own text into the story, enter !(thing you want to insert)')
+    'AID2: Clover Edition Instructions: \n' +
+    '  Enter actions starting with a verb ex. "go to the tavern" or "attack the orc."\n' +
+    '  To speak enter say "(thing you want to say)" or just "(thing you want to say)"\n' +
+    '  To insert your own text into the story, enter !(thing you want to insert)')
     print('The following commands can be entered for any action:')
     print('  "/revert"                Reverts the last action allowing you to pick a different action.')
     print('  "/quit"                  Quits the game and saves')
@@ -30,6 +30,17 @@ def instructions():
     print('  "/help"                  Prints these instructions again')
     print('  "/set [SETTING] [VALUE]" Sets the specified setting to the specified value.:')
     for k, v in setting_info.items():
-        print(pad_text('        ' + k, 27) + v[0] + (" " if v[0] else "") +
-              "Default: " + str(v[1]) + " | "
-              "Current: " + settings.get(k))
+        print(
+            (
+                (
+                    pad_text(f'        {k}', 27)
+                    + v[0]
+                    + (" " if v[0] else "")
+                    + "Default: "
+                )
+                + str(v[1])
+                + " | "
+                "Current: "
+            )
+            + settings.get(k)
+        )

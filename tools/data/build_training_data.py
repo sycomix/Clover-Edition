@@ -57,9 +57,9 @@ def make_stories(current_story, tree):
 
     if action[0] is '"':
         last_quote = action.rfind('"')
-        action = "You say " + action[: last_quote + 1]
+        action = f"You say {action[:last_quote + 1]}"
     elif first_word.lower() not in dont_add_you:
-        action = "You " + action[0].lower() + action[1:]
+        action = f"You {action[0].lower()}{action[1:]}"
 
     action = remove_phrase(action)
     result = remove_phrase(tree["result"])
@@ -68,12 +68,11 @@ def make_stories(current_story, tree):
     action_results = tree["action_results"]
     if len(action_results) == 0 or action_results[0] is None:
         return [current_story]
-    else:
-        stories += make_stories(current_story, action_results[0])
+    stories += make_stories(current_story, action_results[0])
 
-        for i in range(1, len(action_results)):
-            if action_results[i] is not None:
-                stories += make_stories(tree["result"], action_results[i])
+    for i in range(1, len(action_results)):
+        if action_results[i] is not None:
+            stories += make_stories(tree["result"], action_results[i])
 
     return stories
 
@@ -88,13 +87,13 @@ def get_stories(filename):
 
 output_file_path = "text_adventures.txt"
 with open(output_file_path, "w") as output_file:
-    filenames = ["stories/story" + str(i) + ".json" for i in range(0, 93)]
+    filenames = [f"stories/story{str(i)}.json" for i in range(0, 93)]
     # filenames = []
     for filename in filenames:
         tree = load_tree(filename)
         print('"' + tree["tree_id"] + '",')
 
-    filenames += ["stories/crowdsourcedstory" + str(i) + ".json" for i in range(0, 12)]
+    filenames += [f"stories/crowdsourcedstory{str(i)}.json" for i in range(0, 12)]
     stories = []
     for filename in filenames:
         filename_stories = get_stories(filename)

@@ -40,7 +40,7 @@ def convert_gpt2_checkpoint_to_pytorch(gpt2_checkpoint_path, full, gpt2_config_f
 
     if pytorch_dump_folder_path=='':
         prefix = '32BIT-' if full else '16BIT-'
-        pytorch_dump_folder_path='pytorch-'+prefix+gpt2_checkpoint_path.name
+        pytorch_dump_folder_path = f'pytorch-{prefix}{gpt2_checkpoint_path.name}'
     pytorch_dump_folder_path=Path(pytorch_dump_folder_path)
 
 
@@ -63,11 +63,11 @@ def convert_gpt2_checkpoint_to_pytorch(gpt2_checkpoint_path, full, gpt2_config_f
     # Save pytorch-model
     pytorch_weights_dump_path = pytorch_dump_folder_path/WEIGHTS_NAME
     pytorch_config_dump_path = pytorch_dump_folder_path/CONFIG_NAME
-    print("Save PyTorch model to {}".format(str(pytorch_weights_dump_path)))
+    print(f"Save PyTorch model to {str(pytorch_weights_dump_path)}")
 
     torch.save(model.state_dict(), pytorch_weights_dump_path)
 
-    print("Save configuration file to: "+str(pytorch_config_dump_path))
+    print(f"Save configuration file to: {str(pytorch_config_dump_path)}")
     with pytorch_config_dump_path.open("w", encoding="utf-8") as f:
         f.write(config.to_json_string())
 

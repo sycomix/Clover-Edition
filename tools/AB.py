@@ -22,7 +22,7 @@ while True:
         print(p+r['output'])
         while True:
             v=input('Good? y/n:')
-            if v=='y' or v=='n':
+            if v in ['y', 'n']:
                 break
         totals[r['name']][v]+=1
         print(totals)

@@ -8,8 +8,7 @@ def load_stories(file):
 
     try:
         with open(file) as fp:
-            stories = json.load(fp)
-            return stories
+            return json.load(fp)
     except:
         with open(file) as fp:
             stories = []
@@ -28,17 +27,14 @@ def modify_story(story):
 
     first_person = is_first_person(text)
     second_person = is_second_person(text)
-    if first_person or second_person:
-        return first_to_second_person(text)
-    else:
-        return None
+    return first_to_second_person(text) if first_person or second_person else None
 
 
 current = os.getcwd()
-files = os.listdir(current + "/writingprompts")
+files = os.listdir(f"{current}/writingprompts")
 output_file_path = "writing_prompts.txt"
 with open(output_file_path, "w") as output_file:
-    filenames = ["writingprompts/" + file for file in files]
+    filenames = [f"writingprompts/{file}" for file in files]
     cleaned_stories = []
     for filename in filenames:
         print("Processing file ", filename)

@@ -91,15 +91,11 @@ class MLP(torch.nn.Module):
         super(MLP, self).__init__()
         self.c_fc = Conv1D(n_state, config.n_embd)
         self.c_proj = Conv1D(config.n_embd, n_state)
-        if hasattr(torch.nn, 'GELU'):
-            self.act = torch.nn.GELU()  # New in torch 1.4.0, but different results from transformers gelu
-        else:
-            self.act = gelu  # the original gelu, written in pytorch
+        self.act = torch.nn.GELU() if hasattr(torch.nn, 'GELU') else gelu
 
     def forward(self, x):
         h = self.act(self.c_fc(x))
-        h2 = self.c_proj(h)
-        return h2
+        return self.c_proj(h)
 
 
 class Block(torch.nn.Module):

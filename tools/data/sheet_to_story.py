@@ -26,28 +26,25 @@ def data_to_forest(filename):
 
     with open(filename, newline="") as f:
         reader = csv.reader(f)
-        for row in reader:
-            rows.append(row)
-
+        rows.extend(iter(reader))
     for i in range(1, len(rows[0])):
-        tree = {}
-        tree["tree_id"] = "upwork" + str(i)
-        tree["context"] = ""
-        tree["first_story_block"] = rows[1][i]
-        tree["action_results"] = []
+        tree = {
+            "tree_id": f"upwork{str(i)}",
+            "context": "",
+            "first_story_block": rows[1][i],
+            "action_results": [],
+        }
         current_action_results = tree["action_results"]
-        row_ind = 2
-        while row_ind < len(rows):
-            action_result = {}
-            action_result["action"] = rows[row_ind][i]
-            if row_ind + 1 < len(rows):
-                action_result["result"] = rows[row_ind + 1][i]
-            else:
-                action_result["result"] = None
-            action_result["action_results"] = []
+        for row_ind in range(2, len(rows), 2):
+            action_result = {
+                "action": rows[row_ind][i],
+                "result": rows[row_ind + 1][i]
+                if row_ind + 1 < len(rows)
+                else None,
+                "action_results": [],
+            }
             current_action_results.append(action_result)
             current_action_results = action_result["action_results"]
-            row_ind += 2
         trees.append(tree)
 
     return trees
@@ -193,10 +190,10 @@ def save_tree(tree, filename):
 
 def save_forest(forest, forest_name):
 
-    if not os.path.exists("./" + forest_name):
-        os.mkdir("./" + forest_name)
+    if not os.path.exists(f"./{forest_name}"):
+        os.mkdir(f"./{forest_name}")
     for tree in forest:
-        save_tree(tree, "./" + forest_name + "/" + tree["tree_id"] + ".json")
+        save_tree(tree, f"./{forest_name}/" + tree["tree_id"] + ".json")
 
 
 def load_tree(filename):
@@ -207,11 +204,8 @@ def load_tree(filename):
 
 def load_forest(forest_name):
 
-    files = os.listdir("./" + forest_name)
-    forest = []
-    for file in files:
-        forest.append(load_tree("./" + forest_name + "/" + file))
-    return forest
+    files = os.listdir(f"./{forest_name}")
+    return [load_tree(f"./{forest_name}/{file}") for file in files]
 
 
 def csv_to_dict(file):
@@ -236,10 +230,10 @@ def csv_to_dict(file):
 def update_forest_with_results(forest_name, update_file):
     update_dict = csv_to_dict(update_file)
     tree_dict = {}
-    tree_filenames = os.listdir("./" + forest_name)
+    tree_filenames = os.listdir(f"./{forest_name}")
 
     for file_name in tree_filenames:
-        tree = load_tree("./" + forest_name + "/" + file_name)
+        tree = load_tree(f"./{forest_name}/{file_name}")
         tree_dict[tree["tree_id"]] = tree
 
     for i in range(len(update_dict["Input.tree_id"])):
@@ -259,10 +253,10 @@ def update_forest_with_results(forest_name, update_file):
 def update_forest_with_actions(forest_name, update_file):
     update_dict = csv_to_dict(update_file)
     tree_dict = {}
-    tree_filenames = os.listdir("./" + forest_name)
+    tree_filenames = os.listdir(f"./{forest_name}")
 
     for file_name in tree_filenames:
-        tree = load_tree("./" + forest_name + "/" + file_name)
+        tree = load_tree(f"./{forest_name}/{file_name}")
         tree_dict[tree["tree_id"]] = tree
 
     for i in range(len(update_dict["Input.tree_id"])):
@@ -294,5 +288,5 @@ def update_forest_with_actions(forest_name, update_file):
 
 tree = data_to_forest("upwork.csv")
 for i, story in enumerate(tree):
-    save_tree(story, "crowdsourcedstory" + str(i) + ".json")
+    save_tree(story, f"crowdsourcedstory{str(i)}.json")
 print("done")

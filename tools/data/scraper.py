@@ -58,7 +58,6 @@ class Scraper:
             "Your Outlaw Career has come to an end",
             "Thank you for taking the time to read my story",
             "You have no further part in the story, End Game and Leave Comments",
-            "",
             "You play no further part in this story. End Game and Leave Comments",
             "drivers",
             "Alas, poor Yorick, they slew you well",
@@ -110,12 +109,8 @@ class Scraper:
 
     def BuildTreeHelper(self, parent_story, action_num, depth, old_actions):
         depth += 1
-        action_result = {}
-
         action = old_actions[action_num]
         print("Action is ", repr(action))
-        action_result["action"] = action
-
         links = self.GetLinks()
         if action_num + 4 >= len(links):
             return None
@@ -129,8 +124,7 @@ class Scraper:
         self.texts.add(result)
         print(len(self.texts))
 
-        action_result["result"] = result
-
+        action_result = {"action": action, "result": result}
         actions = self.GetActions()
         action_result["action_results"] = []
 
@@ -147,12 +141,12 @@ class Scraper:
         scraper.GoToURL(url)
         text = scraper.GetText()
         actions = self.GetActions()
-        story_dict = {}
-        story_dict["tree_id"] = url
-        story_dict["context"] = ""
-        story_dict["first_story_block"] = text
-        story_dict["action_results"] = []
-
+        story_dict = {
+            "tree_id": url,
+            "context": "",
+            "first_story_block": text,
+            "action_results": [],
+        }
         for i, action in enumerate(actions):
             if action not in self.end_actions:
                 action_result = self.BuildTreeHelper(text, i, 0, actions)
@@ -270,6 +264,6 @@ urls = [
 for i in range(50, len(urls)):
     print("****** Extracting Adventure ", urls[i], " ***********")
     tree = scraper.BuildStoryTree(urls[i])
-    save_tree(tree, "stories/story" + str(41 + i) + ".json")
+    save_tree(tree, f"stories/story{str(41 + i)}.json")
 
 print("done")

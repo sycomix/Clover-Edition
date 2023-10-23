@@ -29,7 +29,7 @@ if not use_ptoolkit() and os.name == 'nt':
     output("INFO: ANSI escape sequence enabled")
 
 
-logger.info("Colab detected: {}".format(in_colab()))
+logger.info(f"Colab detected: {in_colab()}")
 
 
 if not Path("prompts", "Anime").exists():
@@ -39,7 +39,7 @@ if not Path("prompts", "Anime").exists():
         output("Continuing without downloading prompts...", "error")
 
 
-if (__name__ == "__main__" or __name__ == "aidungeon"):
+if __name__ in ["__main__", "aidungeon"]:
     with open(Path("interface/", "clover"), "r", encoding="utf-8") as file_:
         print(file_.read())
     try:

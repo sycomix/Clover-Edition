@@ -105,7 +105,8 @@ def sample_sequence(
 ):
     """Actually generate the tokens"""
     logger.debug(
-        'temp: {}    top_k: {}    top_p: {}    rep-pen: {}    rep-pen-range: {}    rep-pen-slope: {}'.format(temperature, top_k, top_p, repetition_penalty, repetition_penalty_range, repetition_penalty_slope))
+        f'temp: {temperature}    top_k: {top_k}    top_p: {top_p}    rep-pen: {repetition_penalty}    rep-pen-range: {repetition_penalty_range}    rep-pen-slope: {repetition_penalty_slope}'
+    )
     context_tokens = context
     context = torch.tensor(context, dtype=torch.long, device=device)
     # context = context.repeat(num_samples, 1)
@@ -116,7 +117,11 @@ def sample_sequence(
     clines = 0
 
     penalty = None
-    if not repetition_penalty_range is None and not repetition_penalty_slope is None and repetition_penalty_range > 0:
+    if (
+        repetition_penalty_range is not None
+        and repetition_penalty_slope is not None
+        and repetition_penalty_range > 0
+    ):
         penalty = (torch.arange(repetition_penalty_range)/(repetition_penalty_range - 1)) * 2. - 1
         penalty = (repetition_penalty_slope * penalty) / (1 + torch.abs(penalty) * (repetition_penalty_slope - 1))
         penalty = 1 + ((penalty + 1) / 2) * (repetition_penalty - 1)
@@ -174,11 +179,6 @@ def sample_sequence(
             generated.text = tokenizer.decode(
                 o, clean_up_tokenization_spaces=False, skip_special_tokens=True
             )
-            #if use_ptoolkit():
-            if False:
-                clear_lines(clines)
-                generated.text = format_result(generated.text)
-                clines = output(generated.text, "ai-text")
             if (
                     (stop_tokens is not None)
                     and (j > 4)
@@ -230,14 +230,15 @@ class GPT2Generator:
             self.checkpoint_path = model_path
             if not self.checkpoint_path.exists():
                 raise FileNotFoundError(
-                    "Could not find {} Make sure to download a pytorch model and put it in the models directory!".format(
-                        str(self.checkpoint_path)))
+                    f"Could not find {str(self.checkpoint_path)} Make sure to download a pytorch model and put it in the models directory!"
+                )
         else:
             raise ValueError(f"model_path must be either str or Path, got {type(model_path)}")
 
         self.device = torch.device("cuda" if self.dtype == torch.float16 else "cpu")
         logger.info(
-            "Using device={}, checkpoint={}, dtype={}".format(self.device, str(self.checkpoint_path), self.dtype))
+            f"Using device={self.device}, checkpoint={str(self.checkpoint_path)}, dtype={self.dtype}"
+        )
 
         # Load tokenizer and model
         model_class, tokenizer_class = MODEL_CLASSES["gpt2"]
@@ -247,15 +248,19 @@ class GPT2Generator:
             model_config = json.load(f)
         neo_in_path = "gpt-neo" in str(model_path).lower()
         neo_in_architectures = "architectures" in model_config and "GPTNeoForCausalLM" in model_config["architectures"]
-        neo_in_model_type = "model_type" in model_config and "gpt_neo" == model_config["model_type"]
+        neo_in_model_type = (
+            "model_type" in model_config
+            and model_config["model_type"] == "gpt_neo"
+        )
         logger.info(
-            "Looking for GPT-Neo - path:{}, arch:{}, type:{}".format(str(neo_in_path), str(neo_in_architectures), str(neo_in_model_type)))
+            f"Looking for GPT-Neo - path:{neo_in_path}, arch:{neo_in_architectures}, type:{neo_in_model_type}"
+        )
 
         if neo_in_path or neo_in_architectures or neo_in_model_type:
             self.max_history_tokens = settings.getint("history-gpt-neo") - generate_num
             model_class = GPTNeoForCausalLM
-        
-        logger.info("Max token history: " + str(self.max_history_tokens))
+
+        logger.info(f"Max token history: {str(self.max_history_tokens)}")
 
         self.tokenizer = tokenizer_class.from_pretrained(str(self.checkpoint_path))
         self.model = model_class.from_pretrained(str(self.checkpoint_path))
@@ -279,7 +284,7 @@ class GPT2Generator:
         repetition_penalty_slope = repetition_penalty_slope if repetition_penalty_slope is not None else self.repetition_penalty_slope
         length = len(context_tokens) + generate_num
 
-        out = sample_sequence(
+        return sample_sequence(
             model=self.model,
             context=context_tokens,
             length=generate_num,
@@ -296,7 +301,6 @@ class GPT2Generator:
             top_p_first=self.top_p_first
             # batch_size=self.batch_size,
         )
-        return out
 
     def result_replace(self, result, allow_action=False):
         # logger.debug("BEFORE RESULT_REPLACE: `%s`", repr(result))
@@ -340,7 +344,6 @@ class GPT2Generator:
                 # skip_special_tokens=True,
             ),
         )
-        generated = 0
         text = ""
         for _ in range(self.samples // self.batch_size):
             out = self.sample_sequence(
@@ -355,7 +358,6 @@ class GPT2Generator:
                 stop_tokens=stop_tokens,
             )
             text += out.text
-            generated += 1
             # disabled clean up of spaces, see what effect this has TODO
             if self.stop_token:
                 index = text.find(self.stop_token)

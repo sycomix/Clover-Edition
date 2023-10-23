@@ -38,7 +38,7 @@ class Story:
         col1 = 'user-text' if color else None
         col2 = 'ai-text' if color else None
         if i == 0 or len(self.actions) == 1:
-            start = format_result(self.context + ' ' + self.actions[0])
+            start = format_result(f'{self.context} {self.actions[0]}')
             result = format_result(self.results[0])
             is_start_end = re.match(r"[.!?]\s*$", start)  # if start ends logically
             is_result_continue = re.match(r"^\s*[a-z.!?,\"]", result)  # if result is a continuation
@@ -81,11 +81,10 @@ class Story:
                           repetition_penalty=1))
 
     def __str__(self):
-        return self.context + ' ' + self.get_story()
+        return f'{self.context} {self.get_story()}'
 
     def to_dict(self):
-        res = {}
-        res["temp"] = settings.getfloat('temp')
+        res = {"temp": settings.getfloat('temp')}
         res["top-p"] = settings.getfloat("top-p")
         res["top-keks"] = settings.getint("top-keks")
         res["rep-pen"] = settings.getfloat("rep-pen")
